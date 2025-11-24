@@ -1,0 +1,553 @@
+Command line invocation:
+    /Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild -project NMAPScanner.xcodeproj -scheme NMAPScanner -destination "platform=tvOS Simulator,name=Apple TV" clean build
+
+2025-11-24 09:06:35.702 xcodebuild[15656:34830688] warning:  The file reference for "HomeKitAdopter/Security/SecureStorageManager.swift" is a member of multiple groups ("HomeKitAdopter" and ""); this indicates a malformed project.  Only the membership in one of the groups will be preserved (but membership in targets will be unaffected).  If you want a reference to the same file in more than one group, please add another reference to the same path.
+2025-11-24 09:06:35.729 xcodebuild[15656:34830688] [MT] IDERunDestination: Supported platforms for the buildables in the current scheme is empty.
+2025-11-24 09:06:35.873 xcodebuild[15656:34830688] [MT] IDERunDestination: Supported platforms for the buildables in the current scheme is empty.
+2025-11-24 09:06:35.999 xcodebuild[15656:34830688] [MT] IDERunDestination: Supported platforms for the buildables in the current scheme is empty.
+CreateBuildRequest
+
+SendProjectDescription
+
+CreateBuildOperation
+
+** CLEAN SUCCEEDED **
+
+ComputePackagePrebuildTargetDependencyGraph
+
+Prepare packages
+
+CreateBuildRequest
+
+SendProjectDescription
+
+CreateBuildOperation
+
+ComputeTargetDependencyGraph
+note: Building targets in dependency order
+note: Target dependency graph (1 target)
+    Target 'NMAPScanner' in project 'NMAPScanner' (no dependencies)
+
+GatherProvisioningInputs
+
+CreateBuildDescription
+
+ExecuteExternalTool /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -v -E -dM -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/AppleTVSimulator.platform/Developer/SDKs/AppleTVSimulator26.1.sdk -x c -c /dev/null
+
+ExecuteExternalTool /Applications/Xcode.app/Contents/Developer/usr/bin/actool --print-asset-tag-combinations --output-format xml1 /Volumes/Data/xcode/NMAPScanner/HomeKitAdopter/Assets.xcassets
+
+ExecuteExternalTool /Applications/Xcode.app/Contents/Developer/usr/bin/actool --version --output-format xml1
+
+ExecuteExternalTool /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc --version
+
+ExecuteExternalTool /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ld -version_details
+
+Build description signature: 4580c409daa79bceeb44095831f1351c
+Build description path: /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/XCBuildData/4580c409daa79bceeb44095831f1351c.xcbuilddata
+ClangStatCache /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang-stat-cache /Applications/Xcode.app/Contents/Developer/Platforms/AppleTVSimulator.platform/Developer/SDKs/AppleTVSimulator26.1.sdk /Users/kochj/Library/Developer/Xcode/DerivedData/SDKStatCaches.noindex/appletvsimulator26.1-23J576-e98bea4a630767aaf7e0488225fccbf6.sdkstatcache
+    cd /Volumes/Data/xcode/NMAPScanner/NMAPScanner.xcodeproj
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang-stat-cache /Applications/Xcode.app/Contents/Developer/Platforms/AppleTVSimulator.platform/Developer/SDKs/AppleTVSimulator26.1.sdk -o /Users/kochj/Library/Developer/Xcode/DerivedData/SDKStatCaches.noindex/appletvsimulator26.1-23J576-e98bea4a630767aaf7e0488225fccbf6.sdkstatcache
+
+CreateBuildDirectory /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Products
+    cd /Volumes/Data/xcode/NMAPScanner/NMAPScanner.xcodeproj
+    builtin-create-build-directory /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Products
+
+CreateBuildDirectory /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex
+    cd /Volumes/Data/xcode/NMAPScanner/NMAPScanner.xcodeproj
+    builtin-create-build-directory /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex
+
+CreateBuildDirectory /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules
+    cd /Volumes/Data/xcode/NMAPScanner/NMAPScanner.xcodeproj
+    builtin-create-build-directory /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules
+
+CreateBuildDirectory /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/ExplicitPrecompiledModules
+    cd /Volumes/Data/xcode/NMAPScanner/NMAPScanner.xcodeproj
+    builtin-create-build-directory /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/ExplicitPrecompiledModules
+
+CreateBuildDirectory /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Products/Debug-appletvsimulator
+    cd /Volumes/Data/xcode/NMAPScanner/NMAPScanner.xcodeproj
+    builtin-create-build-directory /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Products/Debug-appletvsimulator
+
+CreateBuildDirectory /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/EagerLinkingTBDs/Debug-appletvsimulator
+    cd /Volumes/Data/xcode/NMAPScanner/NMAPScanner.xcodeproj
+    builtin-create-build-directory /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/EagerLinkingTBDs/Debug-appletvsimulator
+
+WriteAuxiliaryFile /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/NMAPScanner.build/Debug-appletvsimulator/NMAPScanner-6a460cddd12fef1c1f06975ea2d3b8be-VFS-appletvsimulator/all-product-headers.yaml
+    cd /Volumes/Data/xcode/NMAPScanner/NMAPScanner.xcodeproj
+    write-file /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/NMAPScanner.build/Debug-appletvsimulator/NMAPScanner-6a460cddd12fef1c1f06975ea2d3b8be-VFS-appletvsimulator/all-product-headers.yaml
+
+WriteAuxiliaryFile /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/NMAPScanner.build/Debug-appletvsimulator/NMAPScanner.build/NMAPScanner-DebugDylibPath-normal-arm64.txt (in target 'NMAPScanner' from project 'NMAPScanner')
+    cd /Volumes/Data/xcode/NMAPScanner
+    write-file /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/NMAPScanner.build/Debug-appletvsimulator/NMAPScanner.build/NMAPScanner-DebugDylibPath-normal-arm64.txt
+
+WriteAuxiliaryFile /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/NMAPScanner.build/Debug-appletvsimulator/NMAPScanner.build/NMAPScanner-own-target-headers.hmap (in target 'NMAPScanner' from project 'NMAPScanner')
+    cd /Volumes/Data/xcode/NMAPScanner
+    write-file /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/NMAPScanner.build/Debug-appletvsimulator/NMAPScanner.build/NMAPScanner-own-target-headers.hmap
+
+WriteAuxiliaryFile /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/NMAPScanner.build/Debug-appletvsimulator/NMAPScanner.build/NMAPScanner-generated-files.hmap (in target 'NMAPScanner' from project 'NMAPScanner')
+    cd /Volumes/Data/xcode/NMAPScanner
+    write-file /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/NMAPScanner.build/Debug-appletvsimulator/NMAPScanner.build/NMAPScanner-generated-files.hmap
+
+WriteAuxiliaryFile /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/NMAPScanner.build/Debug-appletvsimulator/NMAPScanner.build/NMAPScanner-all-target-headers.hmap (in target 'NMAPScanner' from project 'NMAPScanner')
+    cd /Volumes/Data/xcode/NMAPScanner
+    write-file /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/NMAPScanner.build/Debug-appletvsimulator/NMAPScanner.build/NMAPScanner-all-target-headers.hmap
+
+WriteAuxiliaryFile /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/NMAPScanner.build/Debug-appletvsimulator/NMAPScanner.build/NMAPScanner.hmap (in target 'NMAPScanner' from project 'NMAPScanner')
+    cd /Volumes/Data/xcode/NMAPScanner
+    write-file /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/NMAPScanner.build/Debug-appletvsimulator/NMAPScanner.build/NMAPScanner.hmap
+
+WriteAuxiliaryFile /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/NMAPScanner.build/Debug-appletvsimulator/NMAPScanner.build/NMAPScanner-DebugDylibInstallName-normal-arm64.txt (in target 'NMAPScanner' from project 'NMAPScanner')
+    cd /Volumes/Data/xcode/NMAPScanner
+    write-file /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/NMAPScanner.build/Debug-appletvsimulator/NMAPScanner.build/NMAPScanner-DebugDylibInstallName-normal-arm64.txt
+
+WriteAuxiliaryFile /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/NMAPScanner.build/Debug-appletvsimulator/NMAPScanner.build/NMAPScanner-project-headers.hmap (in target 'NMAPScanner' from project 'NMAPScanner')
+    cd /Volumes/Data/xcode/NMAPScanner
+    write-file /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/NMAPScanner.build/Debug-appletvsimulator/NMAPScanner.build/NMAPScanner-project-headers.hmap
+
+WriteAuxiliaryFile /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/NMAPScanner.build/Debug-appletvsimulator/NMAPScanner.build/NMAPScanner-all-non-framework-target-headers.hmap (in target 'NMAPScanner' from project 'NMAPScanner')
+    cd /Volumes/Data/xcode/NMAPScanner
+    write-file /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/NMAPScanner.build/Debug-appletvsimulator/NMAPScanner.build/NMAPScanner-all-non-framework-target-headers.hmap
+
+WriteAuxiliaryFile /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/NMAPScanner.build/Debug-appletvsimulator/NMAPScanner.build/NMAPScanner.DependencyMetadataFileList (in target 'NMAPScanner' from project 'NMAPScanner')
+    cd /Volumes/Data/xcode/NMAPScanner
+    write-file /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/NMAPScanner.build/Debug-appletvsimulator/NMAPScanner.build/NMAPScanner.DependencyMetadataFileList
+
+WriteAuxiliaryFile /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/NMAPScanner.build/Debug-appletvsimulator/NMAPScanner.build/NMAPScanner.DependencyStaticMetadataFileList (in target 'NMAPScanner' from project 'NMAPScanner')
+    cd /Volumes/Data/xcode/NMAPScanner
+    write-file /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/NMAPScanner.build/Debug-appletvsimulator/NMAPScanner.build/NMAPScanner.DependencyStaticMetadataFileList
+
+MkDir /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Products/Debug-appletvsimulator/NMAPScanner.app (in target 'NMAPScanner' from project 'NMAPScanner')
+    cd /Volumes/Data/xcode/NMAPScanner
+    /bin/mkdir -p /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Products/Debug-appletvsimulator/NMAPScanner.app
+
+WriteAuxiliaryFile /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/NMAPScanner.build/Debug-appletvsimulator/NMAPScanner.build/DerivedSources/Entitlements-Simulated.plist (in target 'NMAPScanner' from project 'NMAPScanner')
+    cd /Volumes/Data/xcode/NMAPScanner
+    write-file /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/NMAPScanner.build/Debug-appletvsimulator/NMAPScanner.build/DerivedSources/Entitlements-Simulated.plist
+
+WriteAuxiliaryFile /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/NMAPScanner.build/Debug-appletvsimulator/NMAPScanner.build/Objects-normal/arm64/NMAPScanner.SwiftFileList (in target 'NMAPScanner' from project 'NMAPScanner')
+    cd /Volumes/Data/xcode/NMAPScanner
+    write-file /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/NMAPScanner.build/Debug-appletvsimulator/NMAPScanner.build/Objects-normal/arm64/NMAPScanner.SwiftFileList
+
+WriteAuxiliaryFile /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/NMAPScanner.build/Debug-appletvsimulator/NMAPScanner.build/Objects-normal/arm64/NMAPScanner.LinkFileList (in target 'NMAPScanner' from project 'NMAPScanner')
+    cd /Volumes/Data/xcode/NMAPScanner
+    write-file /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/NMAPScanner.build/Debug-appletvsimulator/NMAPScanner.build/Objects-normal/arm64/NMAPScanner.LinkFileList
+
+WriteAuxiliaryFile /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/NMAPScanner.build/Debug-appletvsimulator/NMAPScanner.build/Objects-normal/arm64/NMAPScanner-OutputFileMap.json (in target 'NMAPScanner' from project 'NMAPScanner')
+    cd /Volumes/Data/xcode/NMAPScanner
+    write-file /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/NMAPScanner.build/Debug-appletvsimulator/NMAPScanner.build/Objects-normal/arm64/NMAPScanner-OutputFileMap.json
+
+WriteAuxiliaryFile /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/NMAPScanner.build/Debug-appletvsimulator/NMAPScanner.build/Objects-normal/arm64/NMAPScanner.SwiftConstValuesFileList (in target 'NMAPScanner' from project 'NMAPScanner')
+    cd /Volumes/Data/xcode/NMAPScanner
+    write-file /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/NMAPScanner.build/Debug-appletvsimulator/NMAPScanner.build/Objects-normal/arm64/NMAPScanner.SwiftConstValuesFileList
+
+WriteAuxiliaryFile /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/NMAPScanner.build/Debug-appletvsimulator/NMAPScanner.build/Objects-normal/arm64/NMAPScanner_const_extract_protocols.json (in target 'NMAPScanner' from project 'NMAPScanner')
+    cd /Volumes/Data/xcode/NMAPScanner
+    write-file /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/NMAPScanner.build/Debug-appletvsimulator/NMAPScanner.build/Objects-normal/arm64/NMAPScanner_const_extract_protocols.json
+
+ProcessProductPackaging "" /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/NMAPScanner.build/Debug-appletvsimulator/NMAPScanner.build/NMAPScanner.app-Simulated.xcent (in target 'NMAPScanner' from project 'NMAPScanner')
+    cd /Volumes/Data/xcode/NMAPScanner
+    
+    Entitlements:
+    
+    {
+    "application-identifier" = "QRRCB8HB3W.com.digitalnoise.nmapscanner";
+}
+    
+    builtin-productPackagingUtility -entitlements -format xml -o /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/NMAPScanner.build/Debug-appletvsimulator/NMAPScanner.build/NMAPScanner.app-Simulated.xcent
+
+ProcessProductPackagingDER /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/NMAPScanner.build/Debug-appletvsimulator/NMAPScanner.build/NMAPScanner.app-Simulated.xcent /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/NMAPScanner.build/Debug-appletvsimulator/NMAPScanner.build/NMAPScanner.app-Simulated.xcent.der (in target 'NMAPScanner' from project 'NMAPScanner')
+    cd /Volumes/Data/xcode/NMAPScanner
+    /usr/bin/derq query -f xml -i /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/NMAPScanner.build/Debug-appletvsimulator/NMAPScanner.build/NMAPScanner.app-Simulated.xcent -o /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/NMAPScanner.build/Debug-appletvsimulator/NMAPScanner.build/NMAPScanner.app-Simulated.xcent.der --raw
+
+Ld /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Products/Debug-appletvsimulator/NMAPScanner.app/__preview.dylib normal (in target 'NMAPScanner' from project 'NMAPScanner')
+    cd /Volumes/Data/xcode/NMAPScanner
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -Xlinker -reproducible -target arm64-apple-tvos16.0-simulator -dynamiclib -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/AppleTVSimulator.platform/Developer/SDKs/AppleTVSimulator26.1.sdk -O0 -L/Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Products/Debug-appletvsimulator -F/Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Products/Debug-appletvsimulator -install_name @rpath/NMAPScanner.debug.dylib -dead_strip -rdynamic -Xlinker -no_deduplicate -Xlinker -objc_abi_version -Xlinker 2 -Xlinker -dependency_info -Xlinker /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/NMAPScanner.build/Debug-appletvsimulator/NMAPScanner.build/Objects-normal/arm64/NMAPScanner_dependency_info.dat -Xlinker -sectcreate -Xlinker __TEXT -Xlinker __entitlements -Xlinker /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/NMAPScanner.build/Debug-appletvsimulator/NMAPScanner.build/NMAPScanner.app-Simulated.xcent -Xlinker -sectcreate -Xlinker __TEXT -Xlinker __ents_der -Xlinker /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/NMAPScanner.build/Debug-appletvsimulator/NMAPScanner.build/NMAPScanner.app-Simulated.xcent.der -Xlinker -no_adhoc_codesign -o /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Products/Debug-appletvsimulator/NMAPScanner.app/__preview.dylib
+
+GenerateAssetSymbols /Volumes/Data/xcode/NMAPScanner/HomeKitAdopter/Assets.xcassets (in target 'NMAPScanner' from project 'NMAPScanner')
+    cd /Volumes/Data/xcode/NMAPScanner
+    /Applications/Xcode.app/Contents/Developer/usr/bin/actool /Volumes/Data/xcode/NMAPScanner/HomeKitAdopter/Assets.xcassets --compile /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Products/Debug-appletvsimulator/NMAPScanner.app --output-format human-readable-text --notices --warnings --export-dependency-info /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/NMAPScanner.build/Debug-appletvsimulator/NMAPScanner.build/assetcatalog_dependencies --output-partial-info-plist /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/NMAPScanner.build/Debug-appletvsimulator/NMAPScanner.build/assetcatalog_generated_info.plist --app-icon AppIcon --accent-color AccentColor --compress-pngs --enable-on-demand-resources YES --development-region en --leaderboard-identifier-prefix NMAPScanner.game-center.leaderboard. --leaderboard-set-identifier-prefix NMAPScanner.game-center.leaderboard-set. --target-device tv --minimum-deployment-target 16.0 --platform appletvsimulator --bundle-identifier com.digitalnoise.nmapscanner --generate-swift-asset-symbols /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/NMAPScanner.build/Debug-appletvsimulator/NMAPScanner.build/DerivedSources/GeneratedAssetSymbols.swift --generate-objc-asset-symbols /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/NMAPScanner.build/Debug-appletvsimulator/NMAPScanner.build/DerivedSources/GeneratedAssetSymbols.h --generate-asset-symbol-index /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/NMAPScanner.build/Debug-appletvsimulator/NMAPScanner.build/DerivedSources/GeneratedAssetSymbols-Index.plist
+/* com.apple.actool.notices */
+/Volumes/Data/xcode/NMAPScanner/HomeKitAdopter/Assets.xcassets: warning: Failed to read file attributes for "/Volumes/Data/xcode/NMAPScanner/HomeKitAdopter/Assets.xcassets"
+    Failure Reason: No such file or directory
+/* com.apple.actool.compilation-results */
+/Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/NMAPScanner.build/Debug-appletvsimulator/NMAPScanner.build/DerivedSources/GeneratedAssetSymbols-Index.plist
+/Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/NMAPScanner.build/Debug-appletvsimulator/NMAPScanner.build/DerivedSources/GeneratedAssetSymbols.h
+/Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/NMAPScanner.build/Debug-appletvsimulator/NMAPScanner.build/DerivedSources/GeneratedAssetSymbols.swift
+
+
+MkDir /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/NMAPScanner.build/Debug-appletvsimulator/NMAPScanner.build/assetcatalog_output/thinned (in target 'NMAPScanner' from project 'NMAPScanner')
+    cd /Volumes/Data/xcode/NMAPScanner
+    /bin/mkdir -p /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/NMAPScanner.build/Debug-appletvsimulator/NMAPScanner.build/assetcatalog_output/thinned
+
+MkDir /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/NMAPScanner.build/Debug-appletvsimulator/NMAPScanner.build/assetcatalog_output/unthinned (in target 'NMAPScanner' from project 'NMAPScanner')
+    cd /Volumes/Data/xcode/NMAPScanner
+    /bin/mkdir -p /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/NMAPScanner.build/Debug-appletvsimulator/NMAPScanner.build/assetcatalog_output/unthinned
+
+CompileAssetCatalogVariant thinned /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Products/Debug-appletvsimulator/NMAPScanner.app /Volumes/Data/xcode/NMAPScanner/HomeKitAdopter/Assets.xcassets (in target 'NMAPScanner' from project 'NMAPScanner')
+    cd /Volumes/Data/xcode/NMAPScanner
+    /Applications/Xcode.app/Contents/Developer/usr/bin/actool /Volumes/Data/xcode/NMAPScanner/HomeKitAdopter/Assets.xcassets --compile /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/NMAPScanner.build/Debug-appletvsimulator/NMAPScanner.build/assetcatalog_output/thinned --output-format human-readable-text --notices --warnings --export-dependency-info /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/NMAPScanner.build/Debug-appletvsimulator/NMAPScanner.build/assetcatalog_dependencies_thinned --output-partial-info-plist /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/NMAPScanner.build/Debug-appletvsimulator/NMAPScanner.build/assetcatalog_generated_info.plist_thinned --app-icon AppIcon --accent-color AccentColor --compress-pngs --enable-on-demand-resources YES --filter-for-thinning-device-configuration AppleTV5,3 --filter-for-device-os-version 26.1 --development-region en --leaderboard-identifier-prefix NMAPScanner.game-center.leaderboard. --leaderboard-set-identifier-prefix NMAPScanner.game-center.leaderboard-set. --target-device tv --minimum-deployment-target 16.0 --platform appletvsimulator
+/* com.apple.actool.notices */
+/Volumes/Data/xcode/NMAPScanner/HomeKitAdopter/Assets.xcassets: warning: Failed to read file attributes for "/Volumes/Data/xcode/NMAPScanner/HomeKitAdopter/Assets.xcassets"
+    Failure Reason: No such file or directory
+/Volumes/Data/xcode/NMAPScanner/HomeKitAdopter/Assets.xcassets: warning: Accent color ‘AccentColor’ is not present in any asset catalogs.
+/Volumes/Data/xcode/NMAPScanner/HomeKitAdopter/Assets.xcassets: warning: None of the input catalogs contained a matching App Icon & Top Shelf Image brand assets collection named "AppIcon"
+/* com.apple.actool.compilation-results */
+/Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/NMAPScanner.build/Debug-appletvsimulator/NMAPScanner.build/assetcatalog_generated_info.plist_thinned
+
+
+LinkAssetCatalog /Volumes/Data/xcode/NMAPScanner/HomeKitAdopter/Assets.xcassets (in target 'NMAPScanner' from project 'NMAPScanner')
+    cd /Volumes/Data/xcode/NMAPScanner
+    builtin-linkAssetCatalog --thinned /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/NMAPScanner.build/Debug-appletvsimulator/NMAPScanner.build/assetcatalog_output/thinned --thinned-dependencies /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/NMAPScanner.build/Debug-appletvsimulator/NMAPScanner.build/assetcatalog_dependencies_thinned --thinned-info-plist-content /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/NMAPScanner.build/Debug-appletvsimulator/NMAPScanner.build/assetcatalog_generated_info.plist_thinned --unthinned /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/NMAPScanner.build/Debug-appletvsimulator/NMAPScanner.build/assetcatalog_output/unthinned --unthinned-dependencies /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/NMAPScanner.build/Debug-appletvsimulator/NMAPScanner.build/assetcatalog_dependencies_unthinned --unthinned-info-plist-content /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/NMAPScanner.build/Debug-appletvsimulator/NMAPScanner.build/assetcatalog_generated_info.plist_unthinned --output /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Products/Debug-appletvsimulator/NMAPScanner.app --plist-output /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/NMAPScanner.build/Debug-appletvsimulator/NMAPScanner.build/assetcatalog_generated_info.plist
+
+ProcessInfoPlistFile /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Products/Debug-appletvsimulator/NMAPScanner.app/Info.plist /Volumes/Data/xcode/NMAPScanner/NMAPScanner/Info.plist (in target 'NMAPScanner' from project 'NMAPScanner')
+    cd /Volumes/Data/xcode/NMAPScanner
+    builtin-infoPlistUtility /Volumes/Data/xcode/NMAPScanner/NMAPScanner/Info.plist -producttype com.apple.product-type.application -genpkginfo /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Products/Debug-appletvsimulator/NMAPScanner.app/PkgInfo -expandbuildsettings -format binary -platform appletvsimulator -additionalcontentfile /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/NMAPScanner.build/Debug-appletvsimulator/NMAPScanner.build/assetcatalog_generated_info.plist -o /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Products/Debug-appletvsimulator/NMAPScanner.app/Info.plist
+
+SwiftDriver NMAPScanner normal arm64 com.apple.xcode.tools.swift.compiler (in target 'NMAPScanner' from project 'NMAPScanner')
+    cd /Volumes/Data/xcode/NMAPScanner
+    builtin-SwiftDriver -- /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc -module-name NMAPScanner -Onone -enforce-exclusivity\=checked @/Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/NMAPScanner.build/Debug-appletvsimulator/NMAPScanner.build/Objects-normal/arm64/NMAPScanner.SwiftFileList -DDEBUG -enable-bare-slash-regex -enable-experimental-feature DebugDescriptionMacro -sdk /Applications/Xcode.app/Contents/Developer/Platforms/AppleTVSimulator.platform/Developer/SDKs/AppleTVSimulator26.1.sdk -target arm64-apple-tvos16.0-simulator -g -module-cache-path /Users/kochj/Library/Developer/Xcode/DerivedData/ModuleCache.noindex -Xfrontend -serialize-debugging-options -enable-testing -index-store-path /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Index.noindex/DataStore -Xcc -D_LIBCPP_HARDENING_MODE\=_LIBCPP_HARDENING_MODE_DEBUG -swift-version 5 -I /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Products/Debug-appletvsimulator -F /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Products/Debug-appletvsimulator -emit-localized-strings -emit-localized-strings-path /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/NMAPScanner.build/Debug-appletvsimulator/NMAPScanner.build/Objects-normal/arm64 -c -j32 -enable-batch-mode -incremental -Xcc -ivfsstatcache -Xcc /Users/kochj/Library/Developer/Xcode/DerivedData/SDKStatCaches.noindex/appletvsimulator26.1-23J576-e98bea4a630767aaf7e0488225fccbf6.sdkstatcache -output-file-map /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/NMAPScanner.build/Debug-appletvsimulator/NMAPScanner.build/Objects-normal/arm64/NMAPScanner-OutputFileMap.json -use-frontend-parseable-output -save-temps -no-color-diagnostics -explicit-module-build -module-cache-path /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules -clang-scanner-module-cache-path /Users/kochj/Library/Developer/Xcode/DerivedData/ModuleCache.noindex -sdk-module-cache-path /Users/kochj/Library/Developer/Xcode/DerivedData/ModuleCache.noindex -serialize-diagnostics -emit-dependencies -emit-module -emit-module-path /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/NMAPScanner.build/Debug-appletvsimulator/NMAPScanner.build/Objects-normal/arm64/NMAPScanner.swiftmodule -validate-clang-modules-once -clang-build-session-file /Users/kochj/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/Session.modulevalidation -Xcc -I/Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/NMAPScanner.build/Debug-appletvsimulator/NMAPScanner.build/swift-overrides.hmap -emit-const-values -Xfrontend -const-gather-protocols-file -Xfrontend /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/NMAPScanner.build/Debug-appletvsimulator/NMAPScanner.build/Objects-normal/arm64/NMAPScanner_const_extract_protocols.json -Xcc -iquote -Xcc /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/NMAPScanner.build/Debug-appletvsimulator/NMAPScanner.build/NMAPScanner-generated-files.hmap -Xcc -I/Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/NMAPScanner.build/Debug-appletvsimulator/NMAPScanner.build/NMAPScanner-own-target-headers.hmap -Xcc -I/Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/NMAPScanner.build/Debug-appletvsimulator/NMAPScanner.build/NMAPScanner-all-target-headers.hmap -Xcc -iquote -Xcc /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/NMAPScanner.build/Debug-appletvsimulator/NMAPScanner.build/NMAPScanner-project-headers.hmap -Xcc -I/Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Products/Debug-appletvsimulator/include -Xcc -I/Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/NMAPScanner.build/Debug-appletvsimulator/NMAPScanner.build/DerivedSources-normal/arm64 -Xcc -I/Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/NMAPScanner.build/Debug-appletvsimulator/NMAPScanner.build/DerivedSources/arm64 -Xcc -I/Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/NMAPScanner.build/Debug-appletvsimulator/NMAPScanner.build/DerivedSources -Xcc -DDEBUG\=1 -emit-objc-header -emit-objc-header-path /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/NMAPScanner.build/Debug-appletvsimulator/NMAPScanner.build/Objects-normal/arm64/NMAPScanner-Swift.h -working-directory /Volumes/Data/xcode/NMAPScanner -experimental-emit-module-separately -disable-cmo
+
+SwiftCompile normal arm64 Compiling\ ContentView.swift /Volumes/Data/xcode/NMAPScanner/NMAPScanner/ContentView.swift (in target 'NMAPScanner' from project 'NMAPScanner')
+
+SwiftCompile normal arm64 /Volumes/Data/xcode/NMAPScanner/NMAPScanner/ContentView.swift (in target 'NMAPScanner' from project 'NMAPScanner')
+    cd /Volumes/Data/xcode/NMAPScanner
+    
+
+SwiftCompile normal arm64 Compiling\ NMAPApp.swift /Volumes/Data/xcode/NMAPScanner/NMAPScanner/NMAPApp.swift (in target 'NMAPScanner' from project 'NMAPScanner')
+
+SwiftCompile normal arm64 /Volumes/Data/xcode/NMAPScanner/NMAPScanner/NMAPApp.swift (in target 'NMAPScanner' from project 'NMAPScanner')
+    cd /Volumes/Data/xcode/NMAPScanner
+    
+
+SwiftCompile normal arm64 Compiling\ SecurityAuditManager.swift /Volumes/Data/xcode/NMAPScanner/NMAPScanner/SecurityAuditManager.swift (in target 'NMAPScanner' from project 'NMAPScanner')
+SwiftCompile normal arm64 /Volumes/Data/xcode/NMAPScanner/NMAPScanner/SecurityAuditManager.swift (in target 'NMAPScanner' from project 'NMAPScanner')
+    cd /Volumes/Data/xcode/NMAPScanner
+    
+/Volumes/Data/xcode/NMAPScanner/NMAPScanner/SecurityAuditManager.swift:494:24: warning: reference to captured var 'hasResumed' in concurrently-executing code; this is an error in the Swift 6 language mode
+                guard !hasResumed else { return }
+                       ^
+/Volumes/Data/xcode/NMAPScanner/NMAPScanner/SecurityAuditManager.swift:498:21: warning: mutation of captured var 'hasResumed' in concurrently-executing code; this is an error in the Swift 6 language mode
+                    hasResumed = true
+                    ^
+/Volumes/Data/xcode/NMAPScanner/NMAPScanner/SecurityAuditManager.swift:503:21: warning: mutation of captured var 'hasResumed' in concurrently-executing code; this is an error in the Swift 6 language mode
+                    hasResumed = true
+                    ^
+
+SwiftCompile normal arm64 Compiling\ MonitoringViews.swift /Volumes/Data/xcode/NMAPScanner/NMAPScanner/MonitoringViews.swift (in target 'NMAPScanner' from project 'NMAPScanner')
+SwiftCompile normal arm64 /Volumes/Data/xcode/NMAPScanner/NMAPScanner/MonitoringViews.swift (in target 'NMAPScanner' from project 'NMAPScanner')
+    cd /Volumes/Data/xcode/NMAPScanner
+    
+
+SwiftCompile normal arm64 Compiling\ NetworkTrafficManager.swift /Volumes/Data/xcode/NMAPScanner/NMAPScanner/NetworkTrafficManager.swift (in target 'NMAPScanner' from project 'NMAPScanner')
+
+SwiftCompile normal arm64 /Volumes/Data/xcode/NMAPScanner/NMAPScanner/NetworkTrafficManager.swift (in target 'NMAPScanner' from project 'NMAPScanner')
+    cd /Volumes/Data/xcode/NMAPScanner
+    
+/Volumes/Data/xcode/NMAPScanner/NMAPScanner/NetworkTrafficManager.swift:163:24: warning: reference to captured var 'hasResumed' in concurrently-executing code; this is an error in the Swift 6 language mode
+                guard !hasResumed else { return }
+                       ^
+
+SwiftCompile normal arm64 Compiling\ DeviceDetailView.swift /Volumes/Data/xcode/NMAPScanner/NMAPScanner/DeviceDetailView.swift (in target 'NMAPScanner' from project 'NMAPScanner')
+
+SwiftCompile normal arm64 /Volumes/Data/xcode/NMAPScanner/NMAPScanner/DeviceDetailView.swift (in target 'NMAPScanner' from project 'NMAPScanner')
+    cd /Volumes/Data/xcode/NMAPScanner
+    
+
+SwiftCompile normal arm64 Compiling\ SecurityViews.swift /Volumes/Data/xcode/NMAPScanner/NMAPScanner/SecurityViews.swift (in target 'NMAPScanner' from project 'NMAPScanner')
+SwiftCompile normal arm64 /Volumes/Data/xcode/NMAPScanner/NMAPScanner/SecurityViews.swift (in target 'NMAPScanner' from project 'NMAPScanner')
+    cd /Volumes/Data/xcode/NMAPScanner
+    
+
+SwiftCompile normal arm64 Compiling\ ScanSettingsView.swift /Volumes/Data/xcode/NMAPScanner/NMAPScanner/ScanSettingsView.swift (in target 'NMAPScanner' from project 'NMAPScanner')
+SwiftCompile normal arm64 /Volumes/Data/xcode/NMAPScanner/NMAPScanner/ScanSettingsView.swift (in target 'NMAPScanner' from project 'NMAPScanner')
+    cd /Volumes/Data/xcode/NMAPScanner
+    
+
+SwiftCompile normal arm64 Compiling\ IntegratedDashboardView.swift /Volumes/Data/xcode/NMAPScanner/NMAPScanner/IntegratedDashboardView.swift (in target 'NMAPScanner' from project 'NMAPScanner')
+
+SwiftCompile normal arm64 /Volumes/Data/xcode/NMAPScanner/NMAPScanner/IntegratedDashboardView.swift (in target 'NMAPScanner' from project 'NMAPScanner')
+    cd /Volumes/Data/xcode/NMAPScanner
+    
+/Volumes/Data/xcode/NMAPScanner/NMAPScanner/IntegratedDashboardView.swift:772:24: warning: reference to captured var 'hasResumed' in concurrently-executing code; this is an error in the Swift 6 language mode
+                guard !hasResumed else { return }
+                       ^
+/Volumes/Data/xcode/NMAPScanner/NMAPScanner/IntegratedDashboardView.swift:776:21: warning: mutation of captured var 'hasResumed' in concurrently-executing code; this is an error in the Swift 6 language mode
+                    hasResumed = true
+                    ^
+/Volumes/Data/xcode/NMAPScanner/NMAPScanner/IntegratedDashboardView.swift:780:21: warning: mutation of captured var 'hasResumed' in concurrently-executing code; this is an error in the Swift 6 language mode
+                    hasResumed = true
+                    ^
+
+SwiftCompile normal arm64 Compiling\ VulnerabilityScanner.swift /Volumes/Data/xcode/NMAPScanner/NMAPScanner/VulnerabilityScanner.swift (in target 'NMAPScanner' from project 'NMAPScanner')
+
+SwiftCompile normal arm64 /Volumes/Data/xcode/NMAPScanner/NMAPScanner/VulnerabilityScanner.swift (in target 'NMAPScanner' from project 'NMAPScanner')
+    cd /Volumes/Data/xcode/NMAPScanner
+    
+/Volumes/Data/xcode/NMAPScanner/NMAPScanner/VulnerabilityScanner.swift:312:24: warning: reference to captured var 'hasResumed' in concurrently-executing code; this is an error in the Swift 6 language mode
+                guard !hasResumed else { return }
+                       ^
+/Volumes/Data/xcode/NMAPScanner/NMAPScanner/VulnerabilityScanner.swift:316:21: warning: mutation of captured var 'hasResumed' in concurrently-executing code; this is an error in the Swift 6 language mode
+                    hasResumed = true
+                    ^
+/Volumes/Data/xcode/NMAPScanner/NMAPScanner/VulnerabilityScanner.swift:321:21: warning: mutation of captured var 'hasResumed' in concurrently-executing code; this is an error in the Swift 6 language mode
+                    hasResumed = true
+                    ^
+
+SwiftCompile normal arm64 Compiling\ NetworkTopologyView.swift /Volumes/Data/xcode/NMAPScanner/NMAPScanner/NetworkTopologyView.swift (in target 'NMAPScanner' from project 'NMAPScanner')
+
+SwiftCompile normal arm64 /Volumes/Data/xcode/NMAPScanner/NMAPScanner/NetworkTopologyView.swift (in target 'NMAPScanner' from project 'NMAPScanner')
+    cd /Volumes/Data/xcode/NMAPScanner
+    
+
+SwiftCompile normal arm64 Compiling\ DashboardView.swift /Volumes/Data/xcode/NMAPScanner/NMAPScanner/DashboardView.swift (in target 'NMAPScanner' from project 'NMAPScanner')
+
+SwiftCompile normal arm64 /Volumes/Data/xcode/NMAPScanner/NMAPScanner/DashboardView.swift (in target 'NMAPScanner' from project 'NMAPScanner')
+    cd /Volumes/Data/xcode/NMAPScanner
+    
+/Volumes/Data/xcode/NMAPScanner/NMAPScanner/DashboardView.swift:613:24: warning: reference to captured var 'hasResumed' in concurrently-executing code; this is an error in the Swift 6 language mode
+                guard !hasResumed else { return }
+                       ^
+/Volumes/Data/xcode/NMAPScanner/NMAPScanner/DashboardView.swift:617:21: warning: mutation of captured var 'hasResumed' in concurrently-executing code; this is an error in the Swift 6 language mode
+                    hasResumed = true
+                    ^
+/Volumes/Data/xcode/NMAPScanner/NMAPScanner/DashboardView.swift:621:21: warning: mutation of captured var 'hasResumed' in concurrently-executing code; this is an error in the Swift 6 language mode
+                    hasResumed = true
+                    ^
+
+SwiftCompile normal arm64 Compiling\ ThreatViews.swift /Volumes/Data/xcode/NMAPScanner/NMAPScanner/ThreatViews.swift (in target 'NMAPScanner' from project 'NMAPScanner')
+SwiftCompile normal arm64 /Volumes/Data/xcode/NMAPScanner/NMAPScanner/ThreatViews.swift (in target 'NMAPScanner' from project 'NMAPScanner')
+    cd /Volumes/Data/xcode/NMAPScanner
+    
+
+SwiftCompile normal arm64 Compiling\ PacketCaptureManager.swift /Volumes/Data/xcode/NMAPScanner/NMAPScanner/PacketCaptureManager.swift (in target 'NMAPScanner' from project 'NMAPScanner')
+
+SwiftCompile normal arm64 /Volumes/Data/xcode/NMAPScanner/NMAPScanner/PacketCaptureManager.swift (in target 'NMAPScanner' from project 'NMAPScanner')
+    cd /Volumes/Data/xcode/NMAPScanner
+    
+
+SwiftCompile normal arm64 Compiling\ ThreatModel.swift /Volumes/Data/xcode/NMAPScanner/NMAPScanner/ThreatModel.swift (in target 'NMAPScanner' from project 'NMAPScanner')
+
+SwiftCompile normal arm64 /Volumes/Data/xcode/NMAPScanner/NMAPScanner/ThreatModel.swift (in target 'NMAPScanner' from project 'NMAPScanner')
+    cd /Volumes/Data/xcode/NMAPScanner
+    
+
+SwiftCompile normal arm64 Compiling\ DevicePersistence.swift /Volumes/Data/xcode/NMAPScanner/NMAPScanner/DevicePersistence.swift (in target 'NMAPScanner' from project 'NMAPScanner')
+
+SwiftCompile normal arm64 /Volumes/Data/xcode/NMAPScanner/NMAPScanner/DevicePersistence.swift (in target 'NMAPScanner' from project 'NMAPScanner')
+    cd /Volumes/Data/xcode/NMAPScanner
+    
+
+SwiftCompile normal arm64 Compiling\ DeviceWhitelistView.swift /Volumes/Data/xcode/NMAPScanner/NMAPScanner/DeviceWhitelistView.swift (in target 'NMAPScanner' from project 'NMAPScanner')
+
+SwiftCompile normal arm64 /Volumes/Data/xcode/NMAPScanner/NMAPScanner/DeviceWhitelistView.swift (in target 'NMAPScanner' from project 'NMAPScanner')
+    cd /Volumes/Data/xcode/NMAPScanner
+    
+
+SwiftCompile normal arm64 Compiling\ NetworkHistoryView.swift /Volumes/Data/xcode/NMAPScanner/NMAPScanner/NetworkHistoryView.swift (in target 'NMAPScanner' from project 'NMAPScanner')
+
+SwiftCompile normal arm64 /Volumes/Data/xcode/NMAPScanner/NMAPScanner/NetworkHistoryView.swift (in target 'NMAPScanner' from project 'NMAPScanner')
+    cd /Volumes/Data/xcode/NMAPScanner
+    
+
+SwiftEmitModule normal arm64 Emitting\ module\ for\ NMAPScanner (in target 'NMAPScanner' from project 'NMAPScanner')
+
+EmitSwiftModule normal arm64 (in target 'NMAPScanner' from project 'NMAPScanner')
+    cd /Volumes/Data/xcode/NMAPScanner
+    
+
+SwiftCompile normal arm64 Compiling\ PingScanner.swift /Volumes/Data/xcode/NMAPScanner/NMAPScanner/PingScanner.swift (in target 'NMAPScanner' from project 'NMAPScanner')
+
+SwiftCompile normal arm64 /Volumes/Data/xcode/NMAPScanner/NMAPScanner/PingScanner.swift (in target 'NMAPScanner' from project 'NMAPScanner')
+    cd /Volumes/Data/xcode/NMAPScanner
+    
+/Volumes/Data/xcode/NMAPScanner/NMAPScanner/PingScanner.swift:112:24: warning: reference to captured var 'hasResumed' in concurrently-executing code; this is an error in the Swift 6 language mode
+                guard !hasResumed else { return }
+                       ^
+/Volumes/Data/xcode/NMAPScanner/NMAPScanner/PingScanner.swift:116:21: warning: mutation of captured var 'hasResumed' in concurrently-executing code; this is an error in the Swift 6 language mode
+                    hasResumed = true
+                    ^
+/Volumes/Data/xcode/NMAPScanner/NMAPScanner/PingScanner.swift:120:21: warning: mutation of captured var 'hasResumed' in concurrently-executing code; this is an error in the Swift 6 language mode
+                    hasResumed = true
+                    ^
+/Volumes/Data/xcode/NMAPScanner/NMAPScanner/PingScanner.swift:204:24: warning: reference to captured var 'hasResumed' in concurrently-executing code; this is an error in the Swift 6 language mode
+                guard !hasResumed else { return }
+                       ^
+/Volumes/Data/xcode/NMAPScanner/NMAPScanner/PingScanner.swift:208:21: warning: mutation of captured var 'hasResumed' in concurrently-executing code; this is an error in the Swift 6 language mode
+                    hasResumed = true
+                    ^
+/Volumes/Data/xcode/NMAPScanner/NMAPScanner/PingScanner.swift:212:21: warning: mutation of captured var 'hasResumed' in concurrently-executing code; this is an error in the Swift 6 language mode
+                    hasResumed = true
+                    ^
+
+SwiftCompile normal arm64 Compiling\ GeneratedAssetSymbols.swift /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/NMAPScanner.build/Debug-appletvsimulator/NMAPScanner.build/DerivedSources/GeneratedAssetSymbols.swift (in target 'NMAPScanner' from project 'NMAPScanner')
+
+SwiftCompile normal arm64 /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/NMAPScanner.build/Debug-appletvsimulator/NMAPScanner.build/DerivedSources/GeneratedAssetSymbols.swift (in target 'NMAPScanner' from project 'NMAPScanner')
+    cd /Volumes/Data/xcode/NMAPScanner
+    
+
+SwiftCompile normal arm64 Compiling\ IntegratedDashboardViewV3.swift /Volumes/Data/xcode/NMAPScanner/NMAPScanner/IntegratedDashboardViewV3.swift (in target 'NMAPScanner' from project 'NMAPScanner')
+
+SwiftCompile normal arm64 /Volumes/Data/xcode/NMAPScanner/NMAPScanner/IntegratedDashboardViewV3.swift (in target 'NMAPScanner' from project 'NMAPScanner')
+    cd /Volumes/Data/xcode/NMAPScanner
+    
+/Volumes/Data/xcode/NMAPScanner/NMAPScanner/IntegratedDashboardViewV3.swift:807:13: warning: dictionary literal of type '[String : String]' has duplicate entries for string literal key '98:E0:D9'
+            "98:E0:D9": "Apple",
+            ^
+/Volumes/Data/xcode/NMAPScanner/NMAPScanner/IntegratedDashboardViewV3.swift:807:13: note: duplicate key declared here
+            "98:E0:D9": "Apple",
+            ^~~~~~~~~~~~~~~~~~~~
+                               
+/Volumes/Data/xcode/NMAPScanner/NMAPScanner/IntegratedDashboardViewV3.swift:1261:13: note: duplicate key declared here
+            "98:E0:D9": "Samsung",
+            ^~~~~~~~~~~~~~~~~~~~~~
+                                 
+/Volumes/Data/xcode/NMAPScanner/NMAPScanner/IntegratedDashboardViewV3.swift:851:13: warning: dictionary literal of type '[String : String]' has duplicate entries for string literal key 'B4:F0:AB'
+            "B4:F0:AB": "Apple",
+            ^
+/Volumes/Data/xcode/NMAPScanner/NMAPScanner/IntegratedDashboardViewV3.swift:851:13: note: duplicate key declared here
+            "B4:F0:AB": "Apple",
+            ^~~~~~~~~~~~~~~~~~~~
+                               
+/Volumes/Data/xcode/NMAPScanner/NMAPScanner/IntegratedDashboardViewV3.swift:1282:13: note: duplicate key declared here
+            "B4:F0:AB": "Samsung",
+            ^~~~~~~~~~~~~~~~~~~~~~
+                                 
+
+SwiftCompile normal arm64 Compiling\ SettingsView.swift /Volumes/Data/xcode/NMAPScanner/NMAPScanner/SettingsView.swift (in target 'NMAPScanner' from project 'NMAPScanner')
+
+SwiftCompile normal arm64 /Volumes/Data/xcode/NMAPScanner/NMAPScanner/SettingsView.swift (in target 'NMAPScanner' from project 'NMAPScanner')
+    cd /Volumes/Data/xcode/NMAPScanner
+    
+
+SwiftDriverJobDiscovery normal arm64 Compiling NMAPApp.swift (in target 'NMAPScanner' from project 'NMAPScanner')
+
+SwiftDriverJobDiscovery normal arm64 Compiling GeneratedAssetSymbols.swift (in target 'NMAPScanner' from project 'NMAPScanner')
+
+SwiftDriverJobDiscovery normal arm64 Compiling ContentView.swift (in target 'NMAPScanner' from project 'NMAPScanner')
+
+SwiftDriverJobDiscovery normal arm64 Compiling PingScanner.swift (in target 'NMAPScanner' from project 'NMAPScanner')
+
+SwiftDriverJobDiscovery normal arm64 Compiling VulnerabilityScanner.swift (in target 'NMAPScanner' from project 'NMAPScanner')
+
+SwiftDriverJobDiscovery normal arm64 Compiling NetworkTrafficManager.swift (in target 'NMAPScanner' from project 'NMAPScanner')
+
+SwiftDriverJobDiscovery normal arm64 Compiling DevicePersistence.swift (in target 'NMAPScanner' from project 'NMAPScanner')
+
+SwiftDriverJobDiscovery normal arm64 Emitting module for NMAPScanner (in target 'NMAPScanner' from project 'NMAPScanner')
+
+SwiftDriver\ Compilation\ Requirements NMAPScanner normal arm64 com.apple.xcode.tools.swift.compiler (in target 'NMAPScanner' from project 'NMAPScanner')
+    cd /Volumes/Data/xcode/NMAPScanner
+    builtin-Swift-Compilation-Requirements -- /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc -module-name NMAPScanner -Onone -enforce-exclusivity\=checked @/Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/NMAPScanner.build/Debug-appletvsimulator/NMAPScanner.build/Objects-normal/arm64/NMAPScanner.SwiftFileList -DDEBUG -enable-bare-slash-regex -enable-experimental-feature DebugDescriptionMacro -sdk /Applications/Xcode.app/Contents/Developer/Platforms/AppleTVSimulator.platform/Developer/SDKs/AppleTVSimulator26.1.sdk -target arm64-apple-tvos16.0-simulator -g -module-cache-path /Users/kochj/Library/Developer/Xcode/DerivedData/ModuleCache.noindex -Xfrontend -serialize-debugging-options -enable-testing -index-store-path /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Index.noindex/DataStore -Xcc -D_LIBCPP_HARDENING_MODE\=_LIBCPP_HARDENING_MODE_DEBUG -swift-version 5 -I /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Products/Debug-appletvsimulator -F /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Products/Debug-appletvsimulator -emit-localized-strings -emit-localized-strings-path /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/NMAPScanner.build/Debug-appletvsimulator/NMAPScanner.build/Objects-normal/arm64 -c -j32 -enable-batch-mode -incremental -Xcc -ivfsstatcache -Xcc /Users/kochj/Library/Developer/Xcode/DerivedData/SDKStatCaches.noindex/appletvsimulator26.1-23J576-e98bea4a630767aaf7e0488225fccbf6.sdkstatcache -output-file-map /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/NMAPScanner.build/Debug-appletvsimulator/NMAPScanner.build/Objects-normal/arm64/NMAPScanner-OutputFileMap.json -use-frontend-parseable-output -save-temps -no-color-diagnostics -explicit-module-build -module-cache-path /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules -clang-scanner-module-cache-path /Users/kochj/Library/Developer/Xcode/DerivedData/ModuleCache.noindex -sdk-module-cache-path /Users/kochj/Library/Developer/Xcode/DerivedData/ModuleCache.noindex -serialize-diagnostics -emit-dependencies -emit-module -emit-module-path /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/NMAPScanner.build/Debug-appletvsimulator/NMAPScanner.build/Objects-normal/arm64/NMAPScanner.swiftmodule -validate-clang-modules-once -clang-build-session-file /Users/kochj/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/Session.modulevalidation -Xcc -I/Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/NMAPScanner.build/Debug-appletvsimulator/NMAPScanner.build/swift-overrides.hmap -emit-const-values -Xfrontend -const-gather-protocols-file -Xfrontend /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/NMAPScanner.build/Debug-appletvsimulator/NMAPScanner.build/Objects-normal/arm64/NMAPScanner_const_extract_protocols.json -Xcc -iquote -Xcc /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/NMAPScanner.build/Debug-appletvsimulator/NMAPScanner.build/NMAPScanner-generated-files.hmap -Xcc -I/Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/NMAPScanner.build/Debug-appletvsimulator/NMAPScanner.build/NMAPScanner-own-target-headers.hmap -Xcc -I/Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/NMAPScanner.build/Debug-appletvsimulator/NMAPScanner.build/NMAPScanner-all-target-headers.hmap -Xcc -iquote -Xcc /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/NMAPScanner.build/Debug-appletvsimulator/NMAPScanner.build/NMAPScanner-project-headers.hmap -Xcc -I/Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Products/Debug-appletvsimulator/include -Xcc -I/Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/NMAPScanner.build/Debug-appletvsimulator/NMAPScanner.build/DerivedSources-normal/arm64 -Xcc -I/Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/NMAPScanner.build/Debug-appletvsimulator/NMAPScanner.build/DerivedSources/arm64 -Xcc -I/Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/NMAPScanner.build/Debug-appletvsimulator/NMAPScanner.build/DerivedSources -Xcc -DDEBUG\=1 -emit-objc-header -emit-objc-header-path /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/NMAPScanner.build/Debug-appletvsimulator/NMAPScanner.build/Objects-normal/arm64/NMAPScanner-Swift.h -working-directory /Volumes/Data/xcode/NMAPScanner -experimental-emit-module-separately -disable-cmo
+
+SwiftMergeGeneratedHeaders /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/NMAPScanner.build/Debug-appletvsimulator/NMAPScanner.build/DerivedSources/NMAPScanner-Swift.h /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/NMAPScanner.build/Debug-appletvsimulator/NMAPScanner.build/Objects-normal/arm64/NMAPScanner-Swift.h (in target 'NMAPScanner' from project 'NMAPScanner')
+    cd /Volumes/Data/xcode/NMAPScanner
+    builtin-swiftHeaderTool -arch arm64 /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/NMAPScanner.build/Debug-appletvsimulator/NMAPScanner.build/Objects-normal/arm64/NMAPScanner-Swift.h -o /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/NMAPScanner.build/Debug-appletvsimulator/NMAPScanner.build/DerivedSources/NMAPScanner-Swift.h
+
+Copy /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Products/Debug-appletvsimulator/NMAPScanner.swiftmodule/arm64-apple-tvos-simulator.swiftmodule /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/NMAPScanner.build/Debug-appletvsimulator/NMAPScanner.build/Objects-normal/arm64/NMAPScanner.swiftmodule (in target 'NMAPScanner' from project 'NMAPScanner')
+    cd /Volumes/Data/xcode/NMAPScanner
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -resolve-src-symlinks -rename /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/NMAPScanner.build/Debug-appletvsimulator/NMAPScanner.build/Objects-normal/arm64/NMAPScanner.swiftmodule /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Products/Debug-appletvsimulator/NMAPScanner.swiftmodule/arm64-apple-tvos-simulator.swiftmodule
+
+Copy /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Products/Debug-appletvsimulator/NMAPScanner.swiftmodule/arm64-apple-tvos-simulator.abi.json /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/NMAPScanner.build/Debug-appletvsimulator/NMAPScanner.build/Objects-normal/arm64/NMAPScanner.abi.json (in target 'NMAPScanner' from project 'NMAPScanner')
+    cd /Volumes/Data/xcode/NMAPScanner
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -resolve-src-symlinks -rename /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/NMAPScanner.build/Debug-appletvsimulator/NMAPScanner.build/Objects-normal/arm64/NMAPScanner.abi.json /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Products/Debug-appletvsimulator/NMAPScanner.swiftmodule/arm64-apple-tvos-simulator.abi.json
+
+Copy /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Products/Debug-appletvsimulator/NMAPScanner.swiftmodule/arm64-apple-tvos-simulator.swiftdoc /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/NMAPScanner.build/Debug-appletvsimulator/NMAPScanner.build/Objects-normal/arm64/NMAPScanner.swiftdoc (in target 'NMAPScanner' from project 'NMAPScanner')
+    cd /Volumes/Data/xcode/NMAPScanner
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -resolve-src-symlinks -rename /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/NMAPScanner.build/Debug-appletvsimulator/NMAPScanner.build/Objects-normal/arm64/NMAPScanner.swiftdoc /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Products/Debug-appletvsimulator/NMAPScanner.swiftmodule/arm64-apple-tvos-simulator.swiftdoc
+
+Copy /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Products/Debug-appletvsimulator/NMAPScanner.swiftmodule/Project/arm64-apple-tvos-simulator.swiftsourceinfo /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/NMAPScanner.build/Debug-appletvsimulator/NMAPScanner.build/Objects-normal/arm64/NMAPScanner.swiftsourceinfo (in target 'NMAPScanner' from project 'NMAPScanner')
+    cd /Volumes/Data/xcode/NMAPScanner
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -resolve-src-symlinks -rename /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/NMAPScanner.build/Debug-appletvsimulator/NMAPScanner.build/Objects-normal/arm64/NMAPScanner.swiftsourceinfo /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Products/Debug-appletvsimulator/NMAPScanner.swiftmodule/Project/arm64-apple-tvos-simulator.swiftsourceinfo
+
+SwiftDriverJobDiscovery normal arm64 Compiling PacketCaptureManager.swift (in target 'NMAPScanner' from project 'NMAPScanner')
+
+SwiftDriverJobDiscovery normal arm64 Compiling SecurityAuditManager.swift (in target 'NMAPScanner' from project 'NMAPScanner')
+
+SwiftDriverJobDiscovery normal arm64 Compiling NetworkTopologyView.swift (in target 'NMAPScanner' from project 'NMAPScanner')
+
+SwiftDriverJobDiscovery normal arm64 Compiling SettingsView.swift (in target 'NMAPScanner' from project 'NMAPScanner')
+
+SwiftDriverJobDiscovery normal arm64 Compiling DeviceDetailView.swift (in target 'NMAPScanner' from project 'NMAPScanner')
+
+SwiftDriverJobDiscovery normal arm64 Compiling MonitoringViews.swift (in target 'NMAPScanner' from project 'NMAPScanner')
+
+SwiftDriverJobDiscovery normal arm64 Compiling ThreatModel.swift (in target 'NMAPScanner' from project 'NMAPScanner')
+
+SwiftDriverJobDiscovery normal arm64 Compiling DeviceWhitelistView.swift (in target 'NMAPScanner' from project 'NMAPScanner')
+
+SwiftDriverJobDiscovery normal arm64 Compiling SecurityViews.swift (in target 'NMAPScanner' from project 'NMAPScanner')
+
+SwiftDriverJobDiscovery normal arm64 Compiling NetworkHistoryView.swift (in target 'NMAPScanner' from project 'NMAPScanner')
+
+SwiftDriverJobDiscovery normal arm64 Compiling DashboardView.swift (in target 'NMAPScanner' from project 'NMAPScanner')
+
+SwiftDriverJobDiscovery normal arm64 Compiling IntegratedDashboardViewV3.swift (in target 'NMAPScanner' from project 'NMAPScanner')
+
+SwiftDriverJobDiscovery normal arm64 Compiling IntegratedDashboardView.swift (in target 'NMAPScanner' from project 'NMAPScanner')
+
+SwiftDriverJobDiscovery normal arm64 Compiling ScanSettingsView.swift (in target 'NMAPScanner' from project 'NMAPScanner')
+
+SwiftDriverJobDiscovery normal arm64 Compiling ThreatViews.swift (in target 'NMAPScanner' from project 'NMAPScanner')
+
+SwiftDriver\ Compilation NMAPScanner normal arm64 com.apple.xcode.tools.swift.compiler (in target 'NMAPScanner' from project 'NMAPScanner')
+    cd /Volumes/Data/xcode/NMAPScanner
+    builtin-Swift-Compilation -- /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc -module-name NMAPScanner -Onone -enforce-exclusivity\=checked @/Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/NMAPScanner.build/Debug-appletvsimulator/NMAPScanner.build/Objects-normal/arm64/NMAPScanner.SwiftFileList -DDEBUG -enable-bare-slash-regex -enable-experimental-feature DebugDescriptionMacro -sdk /Applications/Xcode.app/Contents/Developer/Platforms/AppleTVSimulator.platform/Developer/SDKs/AppleTVSimulator26.1.sdk -target arm64-apple-tvos16.0-simulator -g -module-cache-path /Users/kochj/Library/Developer/Xcode/DerivedData/ModuleCache.noindex -Xfrontend -serialize-debugging-options -enable-testing -index-store-path /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Index.noindex/DataStore -Xcc -D_LIBCPP_HARDENING_MODE\=_LIBCPP_HARDENING_MODE_DEBUG -swift-version 5 -I /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Products/Debug-appletvsimulator -F /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Products/Debug-appletvsimulator -emit-localized-strings -emit-localized-strings-path /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/NMAPScanner.build/Debug-appletvsimulator/NMAPScanner.build/Objects-normal/arm64 -c -j32 -enable-batch-mode -incremental -Xcc -ivfsstatcache -Xcc /Users/kochj/Library/Developer/Xcode/DerivedData/SDKStatCaches.noindex/appletvsimulator26.1-23J576-e98bea4a630767aaf7e0488225fccbf6.sdkstatcache -output-file-map /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/NMAPScanner.build/Debug-appletvsimulator/NMAPScanner.build/Objects-normal/arm64/NMAPScanner-OutputFileMap.json -use-frontend-parseable-output -save-temps -no-color-diagnostics -explicit-module-build -module-cache-path /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules -clang-scanner-module-cache-path /Users/kochj/Library/Developer/Xcode/DerivedData/ModuleCache.noindex -sdk-module-cache-path /Users/kochj/Library/Developer/Xcode/DerivedData/ModuleCache.noindex -serialize-diagnostics -emit-dependencies -emit-module -emit-module-path /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/NMAPScanner.build/Debug-appletvsimulator/NMAPScanner.build/Objects-normal/arm64/NMAPScanner.swiftmodule -validate-clang-modules-once -clang-build-session-file /Users/kochj/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/Session.modulevalidation -Xcc -I/Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/NMAPScanner.build/Debug-appletvsimulator/NMAPScanner.build/swift-overrides.hmap -emit-const-values -Xfrontend -const-gather-protocols-file -Xfrontend /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/NMAPScanner.build/Debug-appletvsimulator/NMAPScanner.build/Objects-normal/arm64/NMAPScanner_const_extract_protocols.json -Xcc -iquote -Xcc /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/NMAPScanner.build/Debug-appletvsimulator/NMAPScanner.build/NMAPScanner-generated-files.hmap -Xcc -I/Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/NMAPScanner.build/Debug-appletvsimulator/NMAPScanner.build/NMAPScanner-own-target-headers.hmap -Xcc -I/Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/NMAPScanner.build/Debug-appletvsimulator/NMAPScanner.build/NMAPScanner-all-target-headers.hmap -Xcc -iquote -Xcc /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/NMAPScanner.build/Debug-appletvsimulator/NMAPScanner.build/NMAPScanner-project-headers.hmap -Xcc -I/Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Products/Debug-appletvsimulator/include -Xcc -I/Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/NMAPScanner.build/Debug-appletvsimulator/NMAPScanner.build/DerivedSources-normal/arm64 -Xcc -I/Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/NMAPScanner.build/Debug-appletvsimulator/NMAPScanner.build/DerivedSources/arm64 -Xcc -I/Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/NMAPScanner.build/Debug-appletvsimulator/NMAPScanner.build/DerivedSources -Xcc -DDEBUG\=1 -emit-objc-header -emit-objc-header-path /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/NMAPScanner.build/Debug-appletvsimulator/NMAPScanner.build/Objects-normal/arm64/NMAPScanner-Swift.h -working-directory /Volumes/Data/xcode/NMAPScanner -experimental-emit-module-separately -disable-cmo
+
+Ld /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Products/Debug-appletvsimulator/NMAPScanner.app/NMAPScanner.debug.dylib normal (in target 'NMAPScanner' from project 'NMAPScanner')
+    cd /Volumes/Data/xcode/NMAPScanner
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -Xlinker -reproducible -target arm64-apple-tvos16.0-simulator -dynamiclib -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/AppleTVSimulator.platform/Developer/SDKs/AppleTVSimulator26.1.sdk -O0 -L/Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/EagerLinkingTBDs/Debug-appletvsimulator -L/Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Products/Debug-appletvsimulator -F/Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/EagerLinkingTBDs/Debug-appletvsimulator -F/Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Products/Debug-appletvsimulator -filelist /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/NMAPScanner.build/Debug-appletvsimulator/NMAPScanner.build/Objects-normal/arm64/NMAPScanner.LinkFileList -install_name @rpath/NMAPScanner.debug.dylib -Xlinker -rpath -Xlinker /usr/lib/swift -Xlinker -rpath -Xlinker @executable_path/../Frameworks -dead_strip -Xlinker -object_path_lto -Xlinker /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/NMAPScanner.build/Debug-appletvsimulator/NMAPScanner.build/Objects-normal/arm64/NMAPScanner_lto.o -rdynamic -Xlinker -no_deduplicate -Xlinker -objc_abi_version -Xlinker 2 -Xlinker -dependency_info -Xlinker /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/NMAPScanner.build/Debug-appletvsimulator/NMAPScanner.build/Objects-normal/arm64/NMAPScanner_dependency_info.dat -fobjc-link-runtime -L/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/appletvsimulator -L/usr/lib/swift -Xlinker -add_ast_path -Xlinker /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/NMAPScanner.build/Debug-appletvsimulator/NMAPScanner.build/Objects-normal/arm64/NMAPScanner.swiftmodule @/Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/NMAPScanner.build/Debug-appletvsimulator/NMAPScanner.build/Objects-normal/arm64/NMAPScanner-linker-args.resp -Xlinker -alias -Xlinker _main -Xlinker ___debug_main_executable_dylib_entry_point -Xlinker -no_adhoc_codesign -o /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Products/Debug-appletvsimulator/NMAPScanner.app/NMAPScanner.debug.dylib
+
+ConstructStubExecutorLinkFileList /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/NMAPScanner.build/Debug-appletvsimulator/NMAPScanner.build/NMAPScanner-ExecutorLinkFileList-normal-arm64.txt (in target 'NMAPScanner' from project 'NMAPScanner')
+    cd /Volumes/Data/xcode/NMAPScanner
+    construct-stub-executor-link-file-list /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Products/Debug-appletvsimulator/NMAPScanner.app/NMAPScanner.debug.dylib /Applications/Xcode.app/Contents/Developer/Platforms/AppleTVSimulator.platform/Developer/usr/lib/libPreviewsJITStubExecutor_no_swift_entry_point.a /Applications/Xcode.app/Contents/Developer/Platforms/AppleTVSimulator.platform/Developer/usr/lib/libPreviewsJITStubExecutor.a --output /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/NMAPScanner.build/Debug-appletvsimulator/NMAPScanner.build/NMAPScanner-ExecutorLinkFileList-normal-arm64.txt
+note: Using stub executor library with Swift entry point. (in target 'NMAPScanner' from project 'NMAPScanner')
+
+Ld /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Products/Debug-appletvsimulator/NMAPScanner.app/NMAPScanner normal (in target 'NMAPScanner' from project 'NMAPScanner')
+    cd /Volumes/Data/xcode/NMAPScanner
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -Xlinker -reproducible -target arm64-apple-tvos16.0-simulator -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/AppleTVSimulator.platform/Developer/SDKs/AppleTVSimulator26.1.sdk -O0 -L/Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Products/Debug-appletvsimulator -F/Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Products/Debug-appletvsimulator -Xlinker -rpath -Xlinker @executable_path -Xlinker -rpath -Xlinker @executable_path/../Frameworks -rdynamic -Xlinker -no_deduplicate -Xlinker -objc_abi_version -Xlinker 2 -e ___debug_blank_executor_main -Xlinker -sectcreate -Xlinker __TEXT -Xlinker __debug_dylib -Xlinker /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/NMAPScanner.build/Debug-appletvsimulator/NMAPScanner.build/NMAPScanner-DebugDylibPath-normal-arm64.txt -Xlinker -sectcreate -Xlinker __TEXT -Xlinker __debug_instlnm -Xlinker /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/NMAPScanner.build/Debug-appletvsimulator/NMAPScanner.build/NMAPScanner-DebugDylibInstallName-normal-arm64.txt -Xlinker -filelist -Xlinker /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/NMAPScanner.build/Debug-appletvsimulator/NMAPScanner.build/NMAPScanner-ExecutorLinkFileList-normal-arm64.txt -Xlinker -sectcreate -Xlinker __TEXT -Xlinker __entitlements -Xlinker /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/NMAPScanner.build/Debug-appletvsimulator/NMAPScanner.build/NMAPScanner.app-Simulated.xcent -Xlinker -sectcreate -Xlinker __TEXT -Xlinker __ents_der -Xlinker /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/NMAPScanner.build/Debug-appletvsimulator/NMAPScanner.build/NMAPScanner.app-Simulated.xcent.der /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Products/Debug-appletvsimulator/NMAPScanner.app/NMAPScanner.debug.dylib -Xlinker -no_adhoc_codesign -o /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Products/Debug-appletvsimulator/NMAPScanner.app/NMAPScanner
+
+CopySwiftLibs /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Products/Debug-appletvsimulator/NMAPScanner.app (in target 'NMAPScanner' from project 'NMAPScanner')
+    cd /Volumes/Data/xcode/NMAPScanner
+    builtin-swiftStdLibTool --copy --verbose --sign - --scan-executable /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Products/Debug-appletvsimulator/NMAPScanner.app/NMAPScanner.debug.dylib --scan-folder /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Products/Debug-appletvsimulator/NMAPScanner.app/Frameworks --scan-folder /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Products/Debug-appletvsimulator/NMAPScanner.app/PlugIns --scan-folder /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Products/Debug-appletvsimulator/NMAPScanner.app/SystemExtensions --scan-folder /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Products/Debug-appletvsimulator/NMAPScanner.app/Extensions --platform appletvsimulator --toolchain /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain --destination /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Products/Debug-appletvsimulator/NMAPScanner.app/Frameworks --strip-bitcode --strip-bitcode-tool /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/bitcode_strip --emit-dependency-info /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/NMAPScanner.build/Debug-appletvsimulator/NMAPScanner.build/SwiftStdLibToolInputDependencies.dep --filter-for-swift-os
+
+ExtractAppIntentsMetadata (in target 'NMAPScanner' from project 'NMAPScanner')
+    cd /Volumes/Data/xcode/NMAPScanner
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/appintentsmetadataprocessor --toolchain-dir /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain --module-name NMAPScanner --sdk-root /Applications/Xcode.app/Contents/Developer/Platforms/AppleTVSimulator.platform/Developer/SDKs/AppleTVSimulator26.1.sdk --xcode-version 17B100 --platform-family tvOS --deployment-target 16.0 --bundle-identifier com.digitalnoise.nmapscanner --output /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Products/Debug-appletvsimulator/NMAPScanner.app --target-triple arm64-apple-tvos16.0-simulator --binary-file /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Products/Debug-appletvsimulator/NMAPScanner.app/NMAPScanner --dependency-file /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/NMAPScanner.build/Debug-appletvsimulator/NMAPScanner.build/Objects-normal/arm64/NMAPScanner_dependency_info.dat --stringsdata-file /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/NMAPScanner.build/Debug-appletvsimulator/NMAPScanner.build/Objects-normal/arm64/ExtractedAppShortcutsMetadata.stringsdata --source-file-list /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/NMAPScanner.build/Debug-appletvsimulator/NMAPScanner.build/Objects-normal/arm64/NMAPScanner.SwiftFileList --metadata-file-list /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/NMAPScanner.build/Debug-appletvsimulator/NMAPScanner.build/NMAPScanner.DependencyMetadataFileList --static-metadata-file-list /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/NMAPScanner.build/Debug-appletvsimulator/NMAPScanner.build/NMAPScanner.DependencyStaticMetadataFileList --swift-const-vals-list /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Intermediates.noindex/NMAPScanner.build/Debug-appletvsimulator/NMAPScanner.build/Objects-normal/arm64/NMAPScanner.SwiftConstValuesFileList --compile-time-extraction --deployment-aware-processing --validate-assistant-intents --no-app-shortcuts-localization
+2025-11-24 09:06:46.279 appintentsmetadataprocessor[15789:34831727] Starting appintentsmetadataprocessor export
+2025-11-24 09:06:46.280 appintentsmetadataprocessor[15789:34831727] warning: Metadata extraction skipped. No AppIntents.framework dependency found.
+
+CodeSign /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Products/Debug-appletvsimulator/NMAPScanner.app/NMAPScanner.debug.dylib (in target 'NMAPScanner' from project 'NMAPScanner')
+    cd /Volumes/Data/xcode/NMAPScanner
+    
+    Signing Identity:     "Sign to Run Locally"
+    
+    /usr/bin/codesign --force --sign - --timestamp\=none --generate-entitlement-der /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Products/Debug-appletvsimulator/NMAPScanner.app/NMAPScanner.debug.dylib
+
+CodeSign /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Products/Debug-appletvsimulator/NMAPScanner.app/__preview.dylib (in target 'NMAPScanner' from project 'NMAPScanner')
+    cd /Volumes/Data/xcode/NMAPScanner
+    
+    Signing Identity:     "Sign to Run Locally"
+    
+    /usr/bin/codesign --force --sign - --timestamp\=none --generate-entitlement-der /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Products/Debug-appletvsimulator/NMAPScanner.app/__preview.dylib
+
+CodeSign /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Products/Debug-appletvsimulator/NMAPScanner.app (in target 'NMAPScanner' from project 'NMAPScanner')
+    cd /Volumes/Data/xcode/NMAPScanner
+    
+    Signing Identity:     "Sign to Run Locally"
+    
+    /usr/bin/codesign --force --sign - --timestamp\=none --generate-entitlement-der /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Products/Debug-appletvsimulator/NMAPScanner.app
+
+RegisterExecutionPolicyException /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Products/Debug-appletvsimulator/NMAPScanner.app (in target 'NMAPScanner' from project 'NMAPScanner')
+    cd /Volumes/Data/xcode/NMAPScanner
+    builtin-RegisterExecutionPolicyException /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Products/Debug-appletvsimulator/NMAPScanner.app
+
+Validate /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Products/Debug-appletvsimulator/NMAPScanner.app (in target 'NMAPScanner' from project 'NMAPScanner')
+    cd /Volumes/Data/xcode/NMAPScanner
+    builtin-validationUtility /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Products/Debug-appletvsimulator/NMAPScanner.app -shallow-bundle -infoplist-subpath Info.plist
+
+Touch /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Products/Debug-appletvsimulator/NMAPScanner.app (in target 'NMAPScanner' from project 'NMAPScanner')
+    cd /Volumes/Data/xcode/NMAPScanner
+    /usr/bin/touch -c /Users/kochj/Library/Developer/Xcode/DerivedData/NMAPScanner-ffegycchbmjksyfozugmrrwzdhts/Build/Products/Debug-appletvsimulator/NMAPScanner.app
+
+** BUILD SUCCEEDED **
+
