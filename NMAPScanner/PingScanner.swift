@@ -34,8 +34,9 @@ class PingScanner: ObservableObject {
 
         status = "Pinging \(hosts.count) hosts in \(subnet).0/24..."
 
-        // Ping in batches for better performance
-        let batchSize = 50
+        // Ping in smaller batches for tvOS stability (reduced from 50 to 10)
+        // This prevents overwhelming the network stack with too many concurrent connections
+        let batchSize = 10
         for batchStart in stride(from: 0, to: hosts.count, by: batchSize) {
             let batchEnd = min(batchStart + batchSize, hosts.count)
             let batch = Array(hosts[batchStart..<batchEnd])
@@ -57,12 +58,14 @@ class PingScanner: ObservableObject {
                     if isAlive {
                         hostsAlive.insert(host)
                         status = "Found: \(host) (\(hostsAlive.count) alive)"
+                    } else {
+                        // Update status even for failed hosts so UI shows progress
+                        status = "Scanning \(subnet).0/24... (\(hostsScanned)/\(hosts.count))"
                     }
                 }
             }
 
-            // Small delay between batches to avoid overwhelming the network
-            try? await Task.sleep(nanoseconds: 100_000_000) // 0.1s
+            // No delay needed with smaller batches
         }
 
         status = "Ping scan complete - \(hostsAlive.count) hosts alive"
@@ -74,14 +77,16 @@ class PingScanner: ObservableObject {
     /// Ping a single host by attempting TCP connection to common ports
     /// Returns true if host responds on any port
     private func pingHost(_ host: String) async -> Bool {
-        // Try multiple ports for better detection
-        // Priority: HTTP (80), HTTPS (443), SSH (22)
-        let portsToTry = [80, 443, 22]
+        // For tvOS stability, only try port 80 (HTTP) with short timeout
+        // This reduces connection attempts from 3 per host to 1
+        // Priority: HTTP (80) - most common and fastest to respond
+        if await testConnection(host: host, port: 80, timeout: 0.3) {
+            return true
+        }
 
-        for port in portsToTry {
-            if await testConnection(host: host, port: port, timeout: 0.5) {
-                return true
-            }
+        // If HTTP fails, try HTTPS (443) as fallback
+        if await testConnection(host: host, port: 443, timeout: 0.3) {
+            return true
         }
 
         return false
