@@ -1,0 +1,438 @@
+//
+//  FeatureViews.swift
+//  HomeKitAdopter
+//
+//  Created by Jordan Koch & Claude Code on 2025-11-22.
+//  Copyright © 2025 Jordan Koch. All rights reserved.
+//
+
+import SwiftUI
+
+// MARK: - Export Views
+
+struct ExportSheetView: View {
+    @ObservedObject var networkDiscovery: NetworkDiscoveryManager
+    @Environment(\.dismiss) var dismiss
+    @State private var exportFormat: ExportFormat = .csv
+    @State private var privacyOptions = ExportManager.PrivacyOptions.none
+
+    enum ExportFormat {
+        case csv, json
+    }
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                Section("Export Format") {
+                    Picker("Format", selection: $exportFormat) {
+                        Text("CSV").tag(ExportFormat.csv)
+                        Text("JSON").tag(ExportFormat.json)
+                    }
+                }
+
+                Section("Privacy Options") {
+                    Toggle("Redact MAC Addresses", isOn: Binding(
+                        get: { privacyOptions.redactMAC },
+                        set: { privacyOptions.redactMAC = $0 }
+                    ))
+                    Toggle("Obfuscate IP Addresses", isOn: Binding(
+                        get: { privacyOptions.obfuscateIP },
+                        set: { privacyOptions.obfuscateIP = $0 }
+                    ))
+                    Toggle("Anonymize Device Names", isOn: Binding(
+                        get: { privacyOptions.anonymizeNames },
+                        set: { privacyOptions.anonymizeNames = $0 }
+                    ))
+                }
+
+                Section {
+                    Button("Export \(networkDiscovery.discoveredDevices.count) Devices") {
+                        performExport()
+                    }
+                }
+            }
+            .navigationTitle("Export Data")
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") { dismiss() }
+                }
+            }
+        }
+    }
+
+    private func performExport() {
+        let exportManager = ExportManager.shared
+        let devices = networkDiscovery.discoveredDevices
+        
+        switch exportFormat {
+        case .csv:
+            let csv = exportManager.exportToCSV(devices: devices, privacyOptions: privacyOptions)
+            print("CSV Export:\n\(csv)")
+        case .json:
+            let json = exportManager.exportToJSON(devices: devices, privacyOptions: privacyOptions)
+            print("JSON Export:\n\(json)")
+        }
+        
+        dismiss()
+    }
+}
+
+// MARK: - Security Audit Views
+
+struct SecurityAuditListView: View {
+    @ObservedObject var networkDiscovery: NetworkDiscoveryManager
+
+    var body: some View {
+        List(networkDiscovery.discoveredDevices) { device in
+            NavigationLink(destination: SecurityAuditDetailView(device: device)) {
+                HStack {
+                    Image(systemName: "shield.fill")
+                        .foregroundColor(.red)
+                    VStack(alignment: .leading) {
+                        Text(device.name)
+                            .font(.headline)
+                        Text("Run security audit")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                }
+            }
+        }
+        .navigationTitle("Security Audit")
+    }
+}
+
+struct SecurityAuditDetailView: View {
+    let device: NetworkDiscoveryManager.DiscoveredDevice
+    @State private var report: SecurityAuditManager.SecurityReport?
+
+    var body: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 20) {
+                if let report = report {
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text("Security Report")
+                            .font(.headline)
+
+                        HStack {
+                            Text("Risk Level:")
+                            Text(report.riskLevel.rawValue)
+                                .bold()
+                                .foregroundColor(colorForRisk(report.riskLevel))
+                        }
+
+                        if report.issues.isEmpty {
+                            Text("No security issues found")
+                                .foregroundColor(.green)
+                        } else {
+                            ForEach(report.issues, id: \.title) { issue in
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Text(issue.title)
+                                        .font(.subheadline)
+                                        .bold()
+                                    Text(issue.description)
+                                        .font(.caption)
+                                        .foregroundColor(.secondary)
+                                }
+                                .padding()
+                                .background(Color.gray.opacity(0.1))
+                                .cornerRadius(8)
+                            }
+                        }
+                    }
+                    .padding()
+                } else {
+                    ProgressView("Running security audit...")
+                }
+            }
+        }
+        .navigationTitle(device.name)
+        .onAppear {
+            runAudit()
+        }
+    }
+
+    private func runAudit() {
+        let manager = SecurityAuditManager.shared
+        report = manager.auditDevice(device)
+    }
+
+    private func colorForRisk(_ risk: SecurityAuditManager.RiskLevel) -> Color {
+        switch risk {
+        case .critical: return .red
+        case .high: return .orange
+        case .medium: return .yellow
+        case .low: return .green
+        }
+    }
+}
+
+// MARK: - Network Diagnostics Views
+
+struct NetworkDiagnosticsListView: View {
+    @ObservedObject var networkDiscovery: NetworkDiscoveryManager
+
+    var body: some View {
+        List(networkDiscovery.discoveredDevices.filter { $0.host != nil }) { device in
+            NavigationLink(destination: NetworkDiagnosticsDetailView(device: device)) {
+                HStack {
+                    Image(systemName: "stethoscope")
+                        .foregroundColor(.green)
+                    VStack(alignment: .leading) {
+                        Text(device.name)
+                            .font(.headline)
+                        if let host = device.host {
+                            Text(host)
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                    }
+                }
+            }
+        }
+        .navigationTitle("Network Diagnostics")
+    }
+}
+
+struct NetworkDiagnosticsDetailView: View {
+    let device: NetworkDiscoveryManager.DiscoveredDevice
+    @State private var diagnosticResult: NetworkDiagnosticsManager.DiagnosticResult?
+    @State private var isRunning = false
+
+    var body: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 20) {
+                Button("Run Diagnostics") {
+                    runDiagnostics()
+                }
+                .buttonStyle(.borderedProminent)
+                .disabled(isRunning)
+
+                if let result = diagnosticResult {
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text("Results")
+                            .font(.headline)
+
+                        HStack {
+                            Circle()
+                                .fill(result.isReachable ? Color.green : Color.red)
+                                .frame(width: 12, height: 12)
+                            Text(result.isReachable ? "Reachable" : "Unreachable")
+                                .font(.subheadline)
+                        }
+
+                        if let latency = result.latency {
+                            Text("Latency: \(Int(latency))ms")
+                                .font(.subheadline)
+                        }
+                    }
+                    .padding()
+                    .background(Color.gray.opacity(0.1))
+                    .cornerRadius(12)
+                }
+
+                if isRunning {
+                    ProgressView("Testing...")
+                }
+            }
+            .padding()
+        }
+        .navigationTitle(device.name)
+    }
+
+    private func runDiagnostics() {
+        guard let host = device.host else { return }
+        isRunning = true
+
+        Task {
+            let manager = NetworkDiagnosticsManager.shared
+            await manager.pingDevice(device)
+            // Get result
+            isRunning = false
+        }
+    }
+}
+
+// MARK: - Other Feature Views (Placeholders)
+
+struct FirmwareCheckView: View {
+    @ObservedObject var networkDiscovery: NetworkDiscoveryManager
+
+    var body: some View {
+        List(networkDiscovery.discoveredDevices) { device in
+            VStack(alignment: .leading) {
+                Text(device.name)
+                    .font(.headline)
+                if let firmware = FirmwareManager.shared.extractFirmware(from: device) {
+                    Text("Version: \(firmware.version)")
+                        .font(.caption)
+                        .foregroundColor(firmware.isOutdated ? .red : .green)
+                } else {
+                    Text("No firmware info")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+            }
+        }
+        .navigationTitle("Firmware Check")
+    }
+}
+
+struct DeviceHistoryListView: View {
+    var body: some View {
+        List {
+            Text("Device history tracking")
+        }
+        .navigationTitle("Device History")
+    }
+}
+
+struct ScanSchedulerView: View {
+    @StateObject private var scheduler = ScanSchedulerManager.shared
+
+    var body: some View {
+        Form {
+            Section("Schedule") {
+                Toggle("Enable Scheduled Scans", isOn: $scheduler.schedule.isEnabled)
+
+                Picker("Interval", selection: $scheduler.schedule.interval) {
+                    ForEach(ScanSchedulerManager.ScanInterval.allCases, id: \.self) { interval in
+                        Text(interval.rawValue).tag(interval)
+                    }
+                }
+            }
+
+            Section("Statistics") {
+                Text("Total Scans: \(scheduler.scanHistory.count)")
+            }
+        }
+        .navigationTitle("Scan Scheduler")
+    }
+}
+
+struct QRCodeListView: View {
+    @ObservedObject var networkDiscovery: NetworkDiscoveryManager
+
+    var body: some View {
+        List(networkDiscovery.discoveredDevices) { device in
+            VStack(alignment: .leading) {
+                Text(device.name)
+                if QRCodeManager.shared.extractSetupCode(from: device) != nil {
+                    Text("QR code available")
+                        .font(.caption)
+                        .foregroundColor(.green)
+                } else {
+                    Text("No QR code")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+            }
+        }
+        .navigationTitle("QR Codes")
+    }
+}
+
+struct PairingInstructionsListView: View {
+    var body: some View {
+        List {
+            Text("Device pairing instructions")
+        }
+        .navigationTitle("Pairing Guides")
+    }
+}
+
+struct DeviceNotesListView: View {
+    var body: some View {
+        List {
+            Text("Device notes and tags")
+        }
+        .navigationTitle("Device Notes")
+    }
+}
+
+struct MultiHomeView: View {
+    @StateObject private var homeManager = HomeManagerWrapper.shared
+
+    var body: some View {
+        List(homeManager.homes, id: \.uniqueIdentifier) { home in
+            VStack(alignment: .leading) {
+                Text(home.name)
+                    .font(.headline)
+                Text("\(home.accessories.count) accessories")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            }
+        }
+        .navigationTitle("Multi-Home")
+    }
+}
+
+struct PrivacySettingsView: View {
+    var body: some View {
+        Form {
+            Section("Data Protection") {
+                Text("Privacy settings")
+            }
+        }
+        .navigationTitle("Privacy")
+    }
+}
+
+struct LogsViewerView: View {
+    var body: some View {
+        ScrollView {
+            Text(LoggingManager.shared.getRecentLogs().joined(separator: "\n"))
+                .font(.system(.caption, design: .monospaced))
+                .padding()
+        }
+        .navigationTitle("Logs")
+    }
+}
+
+struct SettingsSheetView: View {
+    @Environment(\.dismiss) var dismiss
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                Section("App Settings") {
+                    Text("App preferences")
+                }
+            }
+            .navigationTitle("Settings")
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Done") { dismiss() }
+                }
+            }
+        }
+    }
+}
+
+struct AboutView: View {
+    var body: some View {
+        VStack(spacing: 20) {
+            Image(systemName: "antenna.radiowaves.left.and.right")
+                .font(.system(size: 100))
+                .foregroundColor(.blue)
+
+            Text("HomeKitAdopter 2.0")
+                .font(.title)
+                .bold()
+
+            Text("Network Scanner for Unadopted Devices")
+                .font(.subheadline)
+                .foregroundColor(.secondary)
+
+            Text("Created by Jordan Koch & Claude Code")
+                .font(.caption)
+                .foregroundColor(.secondary)
+
+            Text("November 2025")
+                .font(.caption)
+                .foregroundColor(.secondary)
+        }
+        .padding()
+        .navigationTitle("About")
+    }
+}

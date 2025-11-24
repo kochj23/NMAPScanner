@@ -1,0 +1,109 @@
+{
+  "" : {
+    "diagnostics" : "/Volumes/Data/xcode/HomeKitAdopter/build/HomeKitAdopter.build/Debug/HomeKitAdopter.build/Objects-normal/arm64/HomeKitAdopter-primary.dia",
+    "emit-module-dependencies" : "/Volumes/Data/xcode/HomeKitAdopter/build/HomeKitAdopter.build/Debug/HomeKitAdopter.build/Objects-normal/arm64/HomeKitAdopter-primary-emit-module.d",
+    "emit-module-diagnostics" : "/Volumes/Data/xcode/HomeKitAdopter/build/HomeKitAdopter.build/Debug/HomeKitAdopter.build/Objects-normal/arm64/HomeKitAdopter-primary-emit-module.dia",
+    "pch" : "/Volumes/Data/xcode/HomeKitAdopter/build/HomeKitAdopter.build/Debug/HomeKitAdopter.build/Objects-normal/arm64/HomeKitAdopter-primary-Bridging-header.pch",
+    "swift-dependencies" : "/Volumes/Data/xcode/HomeKitAdopter/build/HomeKitAdopter.build/Debug/HomeKitAdopter.build/Objects-normal/arm64/HomeKitAdopter-primary.swiftdeps"
+  },
+  "/Volumes/Data/xcode/HomeKitAdopter/HomeKitAdopter/ContentView.swift" : {
+    "const-values" : "/Volumes/Data/xcode/HomeKitAdopter/build/HomeKitAdopter.build/Debug/HomeKitAdopter.build/Objects-normal/arm64/ContentView.swiftconstvalues",
+    "dependencies" : "/Volumes/Data/xcode/HomeKitAdopter/build/HomeKitAdopter.build/Debug/HomeKitAdopter.build/Objects-normal/arm64/ContentView.d",
+    "diagnostics" : "/Volumes/Data/xcode/HomeKitAdopter/build/HomeKitAdopter.build/Debug/HomeKitAdopter.build/Objects-normal/arm64/ContentView.dia",
+    "index-unit-output-path" : "/HomeKitAdopter.build/Debug/HomeKitAdopter.build/Objects-normal/arm64/ContentView.o",
+    "llvm-bc" : "/Volumes/Data/xcode/HomeKitAdopter/build/HomeKitAdopter.build/Debug/HomeKitAdopter.build/Objects-normal/arm64/ContentView.bc",
+    "object" : "/Volumes/Data/xcode/HomeKitAdopter/build/HomeKitAdopter.build/Debug/HomeKitAdopter.build/Objects-normal/arm64/ContentView.o",
+    "swift-dependencies" : "/Volumes/Data/xcode/HomeKitAdopter/build/HomeKitAdopter.build/Debug/HomeKitAdopter.build/Objects-normal/arm64/ContentView.swiftdeps",
+    "swiftmodule" : "/Volumes/Data/xcode/HomeKitAdopter/build/HomeKitAdopter.build/Debug/HomeKitAdopter.build/Objects-normal/arm64/ContentView~partial.swiftmodule"
+  },
+  "/Volumes/Data/xcode/HomeKitAdopter/HomeKitAdopter/HomeKitAdopterApp.swift" : {
+    "const-values" : "/Volumes/Data/xcode/HomeKitAdopter/build/HomeKitAdopter.build/Debug/HomeKitAdopter.build/Objects-normal/arm64/HomeKitAdopterApp.swiftconstvalues",
+    "dependencies" : "/Volumes/Data/xcode/HomeKitAdopter/build/HomeKitAdopter.build/Debug/HomeKitAdopter.build/Objects-normal/arm64/HomeKitAdopterApp.d",
+    "diagnostics" : "/Volumes/Data/xcode/HomeKitAdopter/build/HomeKitAdopter.build/Debug/HomeKitAdopter.build/Objects-normal/arm64/HomeKitAdopterApp.dia",
+    "index-unit-output-path" : "/HomeKitAdopter.build/Debug/HomeKitAdopter.build/Objects-normal/arm64/HomeKitAdopterApp.o",
+    "llvm-bc" : "/Volumes/Data/xcode/HomeKitAdopter/build/HomeKitAdopter.build/Debug/HomeKitAdopter.build/Objects-normal/arm64/HomeKitAdopterApp.bc",
+    "object" : "/Volumes/Data/xcode/HomeKitAdopter/build/HomeKitAdopter.build/Debug/HomeKitAdopter.build/Objects-normal/arm64/HomeKitAdopterApp.o",
+    "swift-dependencies" : "/Volumes/Data/xcode/HomeKitAdopter/build/HomeKitAdopter.build/Debug/HomeKitAdopter.build/Objects-normal/arm64/HomeKitAdopterApp.swiftdeps",
+    "swiftmodule" : "/Volumes/Data/xcode/HomeKitAdopter/build/HomeKitAdopter.build/Debug/HomeKitAdopter.build/Objects-normal/arm64/HomeKitAdopterApp~partial.swiftmodule"
+  },
+  "/Volumes/Data/xcode/HomeKitAdopter/HomeKitAdopter/Managers/HomeKitDiscoveryManager.swift" : {
+    "const-values" : "/Volumes/Data/xcode/HomeKitAdopter/build/HomeKitAdopter.build/Debug/HomeKitAdopter.build/Objects-normal/arm64/HomeKitDiscoveryManager.swiftconstvalues",
+    "dependencies" : "/Volumes/Data/xcode/HomeKitAdopter/build/HomeKitAdopter.build/Debug/HomeKitAdopter.build/Objects-normal/arm64/HomeKitDiscoveryManager.d",
+    "diagnostics" : "/Volumes/Data/xcode/HomeKitAdopter/build/HomeKitAdopter.build/Debug/HomeKitAdopter.build/Objects-normal/arm64/HomeKitDiscoveryManager.dia",
+    "index-unit-output-path" : "/HomeKitAdopter.build/Debug/HomeKitAdopter.build/Objects-normal/arm64/HomeKitDiscoveryManager.o",
+    "llvm-bc" : "/Volumes/Data/xcode/HomeKitAdopter/build/HomeKitAdopter.build/Debug/HomeKitAdopter.build/Objects-normal/arm64/HomeKitDiscoveryManager.bc",
+    "object" : "/Volumes/Data/xcode/HomeKitAdopter/build/HomeKitAdopter.build/Debug/HomeKitAdopter.build/Objects-normal/arm64/HomeKitDiscoveryManager.o",
+    "swift-dependencies" : "/Volumes/Data/xcode/HomeKitAdopter/build/HomeKitAdopter.build/Debug/HomeKitAdopter.build/Objects-normal/arm64/HomeKitDiscoveryManager.swiftdeps",
+    "swiftmodule" : "/Volumes/Data/xcode/HomeKitAdopter/build/HomeKitAdopter.build/Debug/HomeKitAdopter.build/Objects-normal/arm64/HomeKitDiscoveryManager~partial.swiftmodule"
+  },
+  "/Volumes/Data/xcode/HomeKitAdopter/HomeKitAdopter/Managers/HomeManagerWrapper.swift" : {
+    "const-values" : "/Volumes/Data/xcode/HomeKitAdopter/build/HomeKitAdopter.build/Debug/HomeKitAdopter.build/Objects-normal/arm64/HomeManagerWrapper.swiftconstvalues",
+    "dependencies" : "/Volumes/Data/xcode/HomeKitAdopter/build/HomeKitAdopter.build/Debug/HomeKitAdopter.build/Objects-normal/arm64/HomeManagerWrapper.d",
+    "diagnostics" : "/Volumes/Data/xcode/HomeKitAdopter/build/HomeKitAdopter.build/Debug/HomeKitAdopter.build/Objects-normal/arm64/HomeManagerWrapper.dia",
+    "index-unit-output-path" : "/HomeKitAdopter.build/Debug/HomeKitAdopter.build/Objects-normal/arm64/HomeManagerWrapper.o",
+    "llvm-bc" : "/Volumes/Data/xcode/HomeKitAdopter/build/HomeKitAdopter.build/Debug/HomeKitAdopter.build/Objects-normal/arm64/HomeManagerWrapper.bc",
+    "object" : "/Volumes/Data/xcode/HomeKitAdopter/build/HomeKitAdopter.build/Debug/HomeKitAdopter.build/Objects-normal/arm64/HomeManagerWrapper.o",
+    "swift-dependencies" : "/Volumes/Data/xcode/HomeKitAdopter/build/HomeKitAdopter.build/Debug/HomeKitAdopter.build/Objects-normal/arm64/HomeManagerWrapper.swiftdeps",
+    "swiftmodule" : "/Volumes/Data/xcode/HomeKitAdopter/build/HomeKitAdopter.build/Debug/HomeKitAdopter.build/Objects-normal/arm64/HomeManagerWrapper~partial.swiftmodule"
+  },
+  "/Volumes/Data/xcode/HomeKitAdopter/HomeKitAdopter/Managers/LoggingManager.swift" : {
+    "const-values" : "/Volumes/Data/xcode/HomeKitAdopter/build/HomeKitAdopter.build/Debug/HomeKitAdopter.build/Objects-normal/arm64/LoggingManager.swiftconstvalues",
+    "dependencies" : "/Volumes/Data/xcode/HomeKitAdopter/build/HomeKitAdopter.build/Debug/HomeKitAdopter.build/Objects-normal/arm64/LoggingManager.d",
+    "diagnostics" : "/Volumes/Data/xcode/HomeKitAdopter/build/HomeKitAdopter.build/Debug/HomeKitAdopter.build/Objects-normal/arm64/LoggingManager.dia",
+    "index-unit-output-path" : "/HomeKitAdopter.build/Debug/HomeKitAdopter.build/Objects-normal/arm64/LoggingManager.o",
+    "llvm-bc" : "/Volumes/Data/xcode/HomeKitAdopter/build/HomeKitAdopter.build/Debug/HomeKitAdopter.build/Objects-normal/arm64/LoggingManager.bc",
+    "object" : "/Volumes/Data/xcode/HomeKitAdopter/build/HomeKitAdopter.build/Debug/HomeKitAdopter.build/Objects-normal/arm64/LoggingManager.o",
+    "swift-dependencies" : "/Volumes/Data/xcode/HomeKitAdopter/build/HomeKitAdopter.build/Debug/HomeKitAdopter.build/Objects-normal/arm64/LoggingManager.swiftdeps",
+    "swiftmodule" : "/Volumes/Data/xcode/HomeKitAdopter/build/HomeKitAdopter.build/Debug/HomeKitAdopter.build/Objects-normal/arm64/LoggingManager~partial.swiftmodule"
+  },
+  "/Volumes/Data/xcode/HomeKitAdopter/HomeKitAdopter/Views/AccessoryRowView.swift" : {
+    "const-values" : "/Volumes/Data/xcode/HomeKitAdopter/build/HomeKitAdopter.build/Debug/HomeKitAdopter.build/Objects-normal/arm64/AccessoryRowView.swiftconstvalues",
+    "dependencies" : "/Volumes/Data/xcode/HomeKitAdopter/build/HomeKitAdopter.build/Debug/HomeKitAdopter.build/Objects-normal/arm64/AccessoryRowView.d",
+    "diagnostics" : "/Volumes/Data/xcode/HomeKitAdopter/build/HomeKitAdopter.build/Debug/HomeKitAdopter.build/Objects-normal/arm64/AccessoryRowView.dia",
+    "index-unit-output-path" : "/HomeKitAdopter.build/Debug/HomeKitAdopter.build/Objects-normal/arm64/AccessoryRowView.o",
+    "llvm-bc" : "/Volumes/Data/xcode/HomeKitAdopter/build/HomeKitAdopter.build/Debug/HomeKitAdopter.build/Objects-normal/arm64/AccessoryRowView.bc",
+    "object" : "/Volumes/Data/xcode/HomeKitAdopter/build/HomeKitAdopter.build/Debug/HomeKitAdopter.build/Objects-normal/arm64/AccessoryRowView.o",
+    "swift-dependencies" : "/Volumes/Data/xcode/HomeKitAdopter/build/HomeKitAdopter.build/Debug/HomeKitAdopter.build/Objects-normal/arm64/AccessoryRowView.swiftdeps",
+    "swiftmodule" : "/Volumes/Data/xcode/HomeKitAdopter/build/HomeKitAdopter.build/Debug/HomeKitAdopter.build/Objects-normal/arm64/AccessoryRowView~partial.swiftmodule"
+  },
+  "/Volumes/Data/xcode/HomeKitAdopter/HomeKitAdopter/Views/AccessorySetupView.swift" : {
+    "const-values" : "/Volumes/Data/xcode/HomeKitAdopter/build/HomeKitAdopter.build/Debug/HomeKitAdopter.build/Objects-normal/arm64/AccessorySetupView.swiftconstvalues",
+    "dependencies" : "/Volumes/Data/xcode/HomeKitAdopter/build/HomeKitAdopter.build/Debug/HomeKitAdopter.build/Objects-normal/arm64/AccessorySetupView.d",
+    "diagnostics" : "/Volumes/Data/xcode/HomeKitAdopter/build/HomeKitAdopter.build/Debug/HomeKitAdopter.build/Objects-normal/arm64/AccessorySetupView.dia",
+    "index-unit-output-path" : "/HomeKitAdopter.build/Debug/HomeKitAdopter.build/Objects-normal/arm64/AccessorySetupView.o",
+    "llvm-bc" : "/Volumes/Data/xcode/HomeKitAdopter/build/HomeKitAdopter.build/Debug/HomeKitAdopter.build/Objects-normal/arm64/AccessorySetupView.bc",
+    "object" : "/Volumes/Data/xcode/HomeKitAdopter/build/HomeKitAdopter.build/Debug/HomeKitAdopter.build/Objects-normal/arm64/AccessorySetupView.o",
+    "swift-dependencies" : "/Volumes/Data/xcode/HomeKitAdopter/build/HomeKitAdopter.build/Debug/HomeKitAdopter.build/Objects-normal/arm64/AccessorySetupView.swiftdeps",
+    "swiftmodule" : "/Volumes/Data/xcode/HomeKitAdopter/build/HomeKitAdopter.build/Debug/HomeKitAdopter.build/Objects-normal/arm64/AccessorySetupView~partial.swiftmodule"
+  },
+  "/Volumes/Data/xcode/HomeKitAdopter/HomeKitAdopter/Views/PairingView.swift" : {
+    "const-values" : "/Volumes/Data/xcode/HomeKitAdopter/build/HomeKitAdopter.build/Debug/HomeKitAdopter.build/Objects-normal/arm64/PairingView.swiftconstvalues",
+    "dependencies" : "/Volumes/Data/xcode/HomeKitAdopter/build/HomeKitAdopter.build/Debug/HomeKitAdopter.build/Objects-normal/arm64/PairingView.d",
+    "diagnostics" : "/Volumes/Data/xcode/HomeKitAdopter/build/HomeKitAdopter.build/Debug/HomeKitAdopter.build/Objects-normal/arm64/PairingView.dia",
+    "index-unit-output-path" : "/HomeKitAdopter.build/Debug/HomeKitAdopter.build/Objects-normal/arm64/PairingView.o",
+    "llvm-bc" : "/Volumes/Data/xcode/HomeKitAdopter/build/HomeKitAdopter.build/Debug/HomeKitAdopter.build/Objects-normal/arm64/PairingView.bc",
+    "object" : "/Volumes/Data/xcode/HomeKitAdopter/build/HomeKitAdopter.build/Debug/HomeKitAdopter.build/Objects-normal/arm64/PairingView.o",
+    "swift-dependencies" : "/Volumes/Data/xcode/HomeKitAdopter/build/HomeKitAdopter.build/Debug/HomeKitAdopter.build/Objects-normal/arm64/PairingView.swiftdeps",
+    "swiftmodule" : "/Volumes/Data/xcode/HomeKitAdopter/build/HomeKitAdopter.build/Debug/HomeKitAdopter.build/Objects-normal/arm64/PairingView~partial.swiftmodule"
+  },
+  "/Volumes/Data/xcode/HomeKitAdopter/HomeKitAdopter/Views/SetupCodeScannerView.swift" : {
+    "const-values" : "/Volumes/Data/xcode/HomeKitAdopter/build/HomeKitAdopter.build/Debug/HomeKitAdopter.build/Objects-normal/arm64/SetupCodeScannerView.swiftconstvalues",
+    "dependencies" : "/Volumes/Data/xcode/HomeKitAdopter/build/HomeKitAdopter.build/Debug/HomeKitAdopter.build/Objects-normal/arm64/SetupCodeScannerView.d",
+    "diagnostics" : "/Volumes/Data/xcode/HomeKitAdopter/build/HomeKitAdopter.build/Debug/HomeKitAdopter.build/Objects-normal/arm64/SetupCodeScannerView.dia",
+    "index-unit-output-path" : "/HomeKitAdopter.build/Debug/HomeKitAdopter.build/Objects-normal/arm64/SetupCodeScannerView.o",
+    "llvm-bc" : "/Volumes/Data/xcode/HomeKitAdopter/build/HomeKitAdopter.build/Debug/HomeKitAdopter.build/Objects-normal/arm64/SetupCodeScannerView.bc",
+    "object" : "/Volumes/Data/xcode/HomeKitAdopter/build/HomeKitAdopter.build/Debug/HomeKitAdopter.build/Objects-normal/arm64/SetupCodeScannerView.o",
+    "swift-dependencies" : "/Volumes/Data/xcode/HomeKitAdopter/build/HomeKitAdopter.build/Debug/HomeKitAdopter.build/Objects-normal/arm64/SetupCodeScannerView.swiftdeps",
+    "swiftmodule" : "/Volumes/Data/xcode/HomeKitAdopter/build/HomeKitAdopter.build/Debug/HomeKitAdopter.build/Objects-normal/arm64/SetupCodeScannerView~partial.swiftmodule"
+  },
+  "/Volumes/Data/xcode/HomeKitAdopter/build/HomeKitAdopter.build/Debug/HomeKitAdopter.build/DerivedSources/GeneratedAssetSymbols.swift" : {
+    "const-values" : "/Volumes/Data/xcode/HomeKitAdopter/build/HomeKitAdopter.build/Debug/HomeKitAdopter.build/Objects-normal/arm64/GeneratedAssetSymbols.swiftconstvalues",
+    "dependencies" : "/Volumes/Data/xcode/HomeKitAdopter/build/HomeKitAdopter.build/Debug/HomeKitAdopter.build/Objects-normal/arm64/GeneratedAssetSymbols.d",
+    "diagnostics" : "/Volumes/Data/xcode/HomeKitAdopter/build/HomeKitAdopter.build/Debug/HomeKitAdopter.build/Objects-normal/arm64/GeneratedAssetSymbols.dia",
+    "index-unit-output-path" : "/HomeKitAdopter.build/Debug/HomeKitAdopter.build/Objects-normal/arm64/GeneratedAssetSymbols.o",
+    "llvm-bc" : "/Volumes/Data/xcode/HomeKitAdopter/build/HomeKitAdopter.build/Debug/HomeKitAdopter.build/Objects-normal/arm64/GeneratedAssetSymbols.bc",
+    "object" : "/Volumes/Data/xcode/HomeKitAdopter/build/HomeKitAdopter.build/Debug/HomeKitAdopter.build/Objects-normal/arm64/GeneratedAssetSymbols.o",
+    "swift-dependencies" : "/Volumes/Data/xcode/HomeKitAdopter/build/HomeKitAdopter.build/Debug/HomeKitAdopter.build/Objects-normal/arm64/GeneratedAssetSymbols.swiftdeps",
+    "swiftmodule" : "/Volumes/Data/xcode/HomeKitAdopter/build/HomeKitAdopter.build/Debug/HomeKitAdopter.build/Objects-normal/arm64/GeneratedAssetSymbols~partial.swiftmodule"
+  }
+}

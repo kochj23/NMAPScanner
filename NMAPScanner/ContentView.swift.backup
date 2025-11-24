@@ -1,0 +1,853 @@
+//
+//  ContentView.swift
+//  HomeKitAdopter - tvOS Network Scanner
+//
+//  Created by Jordan Koch & Claude Code on 2025-11-21.
+//  Copyright © 2025 Jordan Koch. All rights reserved.
+//
+
+import SwiftUI
+import HomeKit
+
+/// Main view for tvOS network scanner - discovers unadopted devices
+///
+/// This app scans the local network for HomeKit and Matter devices
+/// that are NOT yet adopted to your HomeKit home.
+///
+/// CAPABILITIES:
+/// - Discovers HomeKit (HAP) devices via Bonjour
+/// - Discovers Matter devices via mDNS
+/// - Filters to show only unadopted devices
+/// - Displays device information (name, IP, port, TXT records)
+///
+/// LIMITATIONS (tvOS):
+/// - Cannot pair devices (pairing APIs unavailable on tvOS)
+/// - Shows all devices, filtering is best-effort based on heuristics
+/// - Use iPhone/iPad Home app to actually pair discovered devices
+struct ContentView: View {
+    @StateObject private var networkDiscovery = NetworkDiscoveryManager()
+    @StateObject private var homeManager = HomeManagerWrapper.shared
+
+    @State private var showAllDevices = false
+    @State private var selectedDevice: NetworkDiscoveryManager.DiscoveredDevice?
+    @State private var filterType: NetworkDiscoveryManager.DiscoveredDevice.ServiceType?
+
+    var body: some View {
+        NavigationStack {
+            VStack(spacing: 0) {
+                // Header
+                headerView
+
+                Divider()
+
+                // Main content
+                if networkDiscovery.isScanning {
+                    scanningView
+                } else if filteredDevices.isEmpty && !networkDiscovery.isScanning {
+                    emptyStateView
+                } else {
+                    deviceListView
+                }
+            }
+            .sheet(item: $selectedDevice) { device in
+                deviceDetailView(device: device)
+            }
+        }
+    }
+
+    // MARK: - Header View
+
+    private var headerView: some View {
+        VStack(spacing: 12) {
+            Text("HomeKit & Matter")
+                .font(.largeTitle)
+                .bold()
+
+            Text("Network Device Scanner")
+                .font(.title3)
+                .foregroundColor(.secondary)
+
+            HStack(spacing: 16) {
+                Button(action: {
+                    if networkDiscovery.isScanning {
+                        networkDiscovery.stopDiscovery()
+                    } else {
+                        networkDiscovery.startDiscovery()
+                    }
+                }) {
+                    HStack {
+                        Image(systemName: networkDiscovery.isScanning ? "stop.circle.fill" : "antenna.radiowaves.left.and.right")
+                        Text(networkDiscovery.isScanning ? "Stop Scan" : "Start Scan")
+                    }
+                }
+                .buttonStyle(.borderedProminent)
+                .disabled(networkDiscovery.isScanning)
+
+                Button(action: {
+                    showAllDevices.toggle()
+                }) {
+                    HStack {
+                        Image(systemName: showAllDevices ? "checkmark.circle.fill" : "circle")
+                        Text("Show All Devices")
+                    }
+                }
+                .buttonStyle(.bordered)
+
+                if !showAllDevices {
+                    Text("(Unadopted Only)")
+                        .font(.caption)
+                        .foregroundColor(.green)
+                }
+            }
+            .padding(.top, 8)
+
+            // Filter buttons
+            HStack(spacing: 12) {
+                ForEach(NetworkDiscoveryManager.DiscoveredDevice.ServiceType.allCases, id: \.self) { type in
+                    Button(action: {
+                        filterType = (filterType == type) ? nil : type
+                    }) {
+                        HStack(spacing: 6) {
+                            Image(systemName: type.icon)
+                            Text(type.displayName)
+                        }
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 6)
+                        .background(filterType == type ? Color.blue : Color.gray.opacity(0.3))
+                        .cornerRadius(8)
+                    }
+                    .buttonStyle(.plain)
+                }
+
+                if filterType != nil {
+                    Button("Clear Filter") {
+                        filterType = nil
+                    }
+                    .buttonStyle(.bordered)
+                }
+            }
+
+            // Stats
+            if !networkDiscovery.discoveredDevices.isEmpty {
+                HStack(spacing: 24) {
+                    statBadge(icon: "wifi", value: "\(networkDiscovery.discoveredDevices.count)", label: "Total")
+                    statBadge(icon: "questionmark.circle", value: "\(networkDiscovery.getUnadoptedDevices().count)", label: "Unadopted")
+                    statBadge(icon: "house.fill", value: "\(homeManager.homes.flatMap { $0.accessories }.count)", label: "Adopted")
+                }
+            }
+
+            // Messages
+            if let error = networkDiscovery.errorMessage {
+                HStack {
+                    Image(systemName: "exclamationmark.triangle.fill")
+                        .foregroundColor(.red)
+                    Text(error)
+                        .font(.subheadline)
+                }
+                .padding(8)
+                .background(Color.red.opacity(0.2))
+                .cornerRadius(8)
+            }
+
+            if let success = networkDiscovery.successMessage {
+                HStack {
+                    Image(systemName: "checkmark.circle.fill")
+                        .foregroundColor(.green)
+                    Text(success)
+                        .font(.subheadline)
+                }
+                .padding(8)
+                .background(Color.green.opacity(0.2))
+                .cornerRadius(8)
+            }
+        }
+        .padding()
+        .background(Color.gray.opacity(0.2))
+    }
+
+    private func statBadge(icon: String, value: String, label: String) -> some View {
+        HStack(spacing: 6) {
+            Image(systemName: icon)
+                .foregroundColor(.blue)
+            Text(value)
+                .font(.title3)
+                .bold()
+            Text(label)
+                .font(.caption)
+                .foregroundColor(.secondary)
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 6)
+        .background(Color.gray.opacity(0.1))
+        .cornerRadius(8)
+    }
+
+    // MARK: - Device List View
+
+    private var filteredDevices: [NetworkDiscoveryManager.DiscoveredDevice] {
+        var devices = showAllDevices ? networkDiscovery.discoveredDevices : networkDiscovery.getUnadoptedDevices()
+
+        if let filterType = filterType {
+            devices = devices.filter { $0.serviceType == filterType }
+        }
+
+        return devices.sorted { $0.discoveredAt > $1.discoveredAt }
+    }
+
+    private var deviceListView: some View {
+        ScrollView {
+            LazyVGrid(columns: [GridItem(.adaptive(minimum: 350), spacing: 20)], spacing: 20) {
+                ForEach(filteredDevices) { device in
+                    deviceCard(device: device)
+                }
+            }
+            .padding()
+        }
+    }
+
+    // MARK: - Device Card
+
+    private func deviceCard(device: NetworkDiscoveryManager.DiscoveredDevice) -> some View {
+        let (confidence, reasons) = networkDiscovery.calculateConfidenceAndRecordHistory(for: device)
+        let confidenceColor = confidence >= 70 ? Color.green : confidence >= 40 ? Color.yellow : Color.red
+
+        return Button {
+            selectedDevice = device
+        } label: {
+            VStack(alignment: .leading, spacing: 12) {
+                // Header
+                HStack {
+                    Image(systemName: device.serviceType.icon)
+                        .font(.system(size: 32))
+                        .foregroundColor(confidence >= 50 ? .green : .blue)
+                        .frame(width: 50, height: 50)
+                        .background(confidence >= 50 ? Color.green.opacity(0.2) : Color.blue.opacity(0.2))
+                        .cornerRadius(10)
+
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(device.name)
+                            .font(.headline)
+                            .foregroundColor(.primary)
+                            .lineLimit(2)
+
+                        // Manufacturer badge (prominent)
+                        if let manufacturer = device.manufacturer {
+                            HStack(spacing: 4) {
+                                Image(systemName: "building.2.fill")
+                                    .font(.caption2)
+                                Text(manufacturer)
+                                    .font(.caption)
+                                    .bold()
+                            }
+                            .foregroundColor(.blue)
+                        }
+
+                        Text(device.serviceType.displayName)
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+
+                        // Confidence score
+                        HStack(spacing: 4) {
+                            Circle()
+                                .fill(confidenceColor)
+                                .frame(width: 8, height: 8)
+                            Text("\(confidence)% confident unadopted")
+                                .font(.caption2)
+                                .foregroundColor(confidenceColor)
+                        }
+                    }
+
+                    Spacer()
+
+                    if confidence >= 50 {
+                        VStack(spacing: 4) {
+                            Image(systemName: "exclamationmark.circle.fill")
+                                .foregroundColor(confidenceColor)
+                            Text("UNADOPTED")
+                                .font(.caption2)
+                                .bold()
+                                .foregroundColor(confidenceColor)
+                        }
+                    }
+                }
+
+                Divider()
+
+                // Key Information (Prominent Display)
+                VStack(alignment: .leading, spacing: 8) {
+                    // IP Address (always show)
+                    if let host = device.host {
+                        HStack(spacing: 8) {
+                            Image(systemName: "network")
+                                .foregroundColor(.blue)
+                                .frame(width: 24)
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text("IP Address")
+                                    .font(.caption2)
+                                    .foregroundColor(.secondary)
+                                Text(host)
+                                    .font(.subheadline)
+                                    .bold()
+                                    .foregroundColor(.primary)
+                            }
+                        }
+                        .padding(.vertical, 4)
+                    } else {
+                        HStack(spacing: 8) {
+                            Image(systemName: "network")
+                                .foregroundColor(.gray)
+                                .frame(width: 24)
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text("IP Address")
+                                    .font(.caption2)
+                                    .foregroundColor(.secondary)
+                                Text("Resolving...")
+                                    .font(.subheadline)
+                                    .foregroundColor(.secondary)
+                            }
+                        }
+                        .padding(.vertical, 4)
+                    }
+
+                    // MAC Address (prominent display)
+                    if let macAddress = device.macAddress {
+                        HStack(spacing: 8) {
+                            Image(systemName: "rectangle.connected.to.line.below")
+                                .foregroundColor(.purple)
+                                .frame(width: 24)
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text("MAC Address")
+                                    .font(.caption2)
+                                    .foregroundColor(.secondary)
+                                Text(macAddress)
+                                    .font(.subheadline)
+                                    .bold()
+                                    .foregroundColor(.primary)
+                                    .font(.system(.subheadline, design: .monospaced))
+                            }
+                        }
+                        .padding(.vertical, 4)
+                    }
+
+                    // Manufacturer (prominent display)
+                    if let manufacturer = device.manufacturer {
+                        HStack(spacing: 8) {
+                            Image(systemName: "building.2.fill")
+                                .foregroundColor(.orange)
+                                .frame(width: 24)
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text("Manufacturer")
+                                    .font(.caption2)
+                                    .foregroundColor(.secondary)
+                                Text(manufacturer)
+                                    .font(.subheadline)
+                                    .bold()
+                                    .foregroundColor(.primary)
+                            }
+                        }
+                        .padding(.vertical, 4)
+                    }
+
+                    Divider()
+
+                    // Additional Info (smaller)
+                    HStack(spacing: 16) {
+                        if let port = device.port {
+                            HStack(spacing: 4) {
+                                Image(systemName: "antenna.radiowaves.left.and.right")
+                                    .font(.caption2)
+                                    .foregroundColor(.secondary)
+                                Text("Port: \(port)")
+                                    .font(.caption2)
+                                    .foregroundColor(.secondary)
+                            }
+                        }
+
+                        HStack(spacing: 4) {
+                            Image(systemName: "clock")
+                                .font(.caption2)
+                                .foregroundColor(.secondary)
+                            Text(timeAgo(from: device.discoveredAt))
+                                .font(.caption2)
+                                .foregroundColor(.secondary)
+                        }
+
+                        if !device.txtRecords.isEmpty {
+                            HStack(spacing: 4) {
+                                Image(systemName: "doc.text")
+                                    .font(.caption2)
+                                    .foregroundColor(.secondary)
+                                Text("\(device.txtRecords.count) TXT")
+                                    .font(.caption2)
+                                    .foregroundColor(.secondary)
+                            }
+                        }
+                    }
+                }
+
+                // Status badge and match info
+                VStack(spacing: 8) {
+                    HStack {
+                        Spacer()
+                        Text(confidence >= 50 ? "Ready to Pair (via iOS)" : "Likely Adopted")
+                            .font(.caption)
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 4)
+                            .background(confidence >= 50 ? Color.green.opacity(0.2) : Color.gray.opacity(0.2))
+                            .cornerRadius(12)
+                        Spacer()
+                    }
+
+                    // Show possible match if similarity is high
+                    if let match = networkDiscovery.getBestMatchingAccessory(for: device), match.similarity > 0.6 {
+                        HStack(spacing: 8) {
+                            Image(systemName: "link.circle")
+                                .foregroundColor(.orange)
+                                .font(.caption)
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text("Possible match: \(match.accessory.name)")
+                                    .font(.caption2)
+                                    .bold()
+                                Text("\(Int(match.similarity * 100))% similar")
+                                    .font(.caption2)
+                                    .foregroundColor(.secondary)
+                            }
+                            Spacer()
+                        }
+                        .padding(6)
+                        .background(Color.orange.opacity(0.1))
+                        .cornerRadius(8)
+                    }
+                }
+            }
+            .padding()
+            .frame(maxWidth: .infinity)
+            .background(Color.gray.opacity(0.1))
+            .cornerRadius(12)
+            .overlay(
+                RoundedRectangle(cornerRadius: 12)
+                    .stroke(confidence >= 50 ? confidenceColor : Color.clear, lineWidth: 2)
+            )
+        }
+        .buttonStyle(.plain)
+    }
+
+    private func infoRow(icon: String, label: String, value: String) -> some View {
+        HStack(spacing: 8) {
+            Image(systemName: icon)
+                .foregroundColor(.secondary)
+                .frame(width: 20)
+            Text(label + ":")
+                .font(.caption)
+                .foregroundColor(.secondary)
+            Text(value)
+                .font(.caption)
+                .bold()
+        }
+    }
+
+    // MARK: - Device Detail View
+
+    private func deviceDetailView(device: NetworkDiscoveryManager.DiscoveredDevice) -> some View {
+        let (confidence, reasons) = networkDiscovery.calculateConfidenceAndRecordHistory(for: device)
+        let confidenceColor = confidence >= 70 ? Color.green : confidence >= 40 ? Color.yellow : Color.red
+        let history = DeviceHistoryManager.shared.getHistory(for: device)
+
+        return NavigationStack {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 20) {
+                    // Device header
+                    HStack {
+                        Image(systemName: device.serviceType.icon)
+                            .font(.system(size: 60))
+                            .foregroundColor(confidenceColor)
+
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text(device.name)
+                                .font(.title)
+                                .bold()
+
+                            Text(device.serviceType.displayName)
+                                .font(.subheadline)
+                                .foregroundColor(.secondary)
+
+                            // Confidence badge
+                            HStack(spacing: 6) {
+                                Circle()
+                                    .fill(confidenceColor)
+                                    .frame(width: 10, height: 10)
+                                Text("\(confidence)% Confident Unadopted")
+                                    .font(.caption)
+                                    .bold()
+                                    .foregroundColor(confidenceColor)
+                            }
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 4)
+                            .background(confidenceColor.opacity(0.2))
+                            .cornerRadius(8)
+                        }
+                    }
+                    .padding()
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .background(Color.gray.opacity(0.2))
+                    .cornerRadius(12)
+
+                    // Confidence Analysis
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text("Detection Analysis")
+                            .font(.headline)
+                            .padding(.bottom, 4)
+
+                        VStack(alignment: .leading, spacing: 8) {
+                            ForEach(Array(reasons.enumerated()), id: \.offset) { index, reason in
+                                HStack(alignment: .top, spacing: 8) {
+                                    Image(systemName: "checkmark.circle.fill")
+                                        .foregroundColor(.blue)
+                                        .font(.caption)
+                                    Text(reason)
+                                        .font(.caption)
+                                        .fixedSize(horizontal: false, vertical: true)
+                                }
+                            }
+                        }
+                        .padding(.vertical, 8)
+                    }
+                    .padding()
+                    .background(Color.gray.opacity(0.1))
+                    .cornerRadius(12)
+
+                    // Device History (if available)
+                    if let history = history {
+                        VStack(alignment: .leading, spacing: 12) {
+                            Text("Device History")
+                                .font(.headline)
+                                .padding(.bottom, 4)
+
+                            VStack(alignment: .leading, spacing: 8) {
+                                DetailRow(label: "First Seen", value: formatDate(history.firstSeen), icon: "calendar")
+                                DetailRow(label: "Last Seen", value: formatDate(history.lastSeen), icon: "clock")
+
+                                if !history.ipAddresses.isEmpty {
+                                    DetailRow(label: "IP Addresses", value: history.ipAddressHistory, icon: "network")
+                                }
+
+                                if let manufacturer = history.manufacturer {
+                                    DetailRow(label: "Manufacturer", value: manufacturer, icon: "building.2")
+                                }
+
+                                if let model = history.modelInfo {
+                                    DetailRow(label: "Model", value: model, icon: "cube")
+                                }
+
+                                if history.wasRecentlyAdopted {
+                                    HStack {
+                                        Image(systemName: "checkmark.circle.fill")
+                                            .foregroundColor(.green)
+                                        Text("Recently adopted!")
+                                            .font(.caption)
+                                            .bold()
+                                            .foregroundColor(.green)
+                                    }
+                                    .padding(6)
+                                    .background(Color.green.opacity(0.1))
+                                    .cornerRadius(8)
+                                }
+                            }
+                            .padding(.vertical, 8)
+                        }
+                        .padding()
+                        .background(Color.gray.opacity(0.1))
+                        .cornerRadius(12)
+                    }
+
+                    // Primary Device Information (Most Important)
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text("Device Information")
+                            .font(.headline)
+                            .padding(.bottom, 4)
+
+                        VStack(alignment: .leading, spacing: 16) {
+                            // Device Name
+                            DetailRow(label: "Device Name", value: device.name, icon: "tag.fill")
+
+                            // Manufacturer (if available)
+                            if let manufacturer = device.manufacturer {
+                                HStack {
+                                    Image(systemName: "building.2.fill")
+                                        .foregroundColor(.orange)
+                                        .frame(width: 30)
+                                    Text("Manufacturer:")
+                                        .font(.subheadline)
+                                        .foregroundColor(.secondary)
+                                    Spacer()
+                                    Text(manufacturer)
+                                        .font(.subheadline)
+                                        .bold()
+                                        .foregroundColor(.orange)
+                                }
+                            }
+
+                            Divider()
+
+                            // IP Address
+                            if let host = device.host {
+                                HStack {
+                                    Image(systemName: "network")
+                                        .foregroundColor(.blue)
+                                        .frame(width: 30)
+                                    Text("IP Address:")
+                                        .font(.subheadline)
+                                        .foregroundColor(.secondary)
+                                    Spacer()
+                                    Text(host)
+                                        .font(.subheadline)
+                                        .bold()
+                                        .foregroundColor(.blue)
+                                        .font(.system(.subheadline, design: .monospaced))
+                                }
+                            } else {
+                                DetailRow(label: "IP Address", value: "Resolving...", icon: "network")
+                            }
+
+                            // MAC Address (if available)
+                            if let macAddress = device.macAddress {
+                                HStack {
+                                    Image(systemName: "rectangle.connected.to.line.below")
+                                        .foregroundColor(.purple)
+                                        .frame(width: 30)
+                                    Text("MAC Address:")
+                                        .font(.subheadline)
+                                        .foregroundColor(.secondary)
+                                    Spacer()
+                                    Text(macAddress)
+                                        .font(.subheadline)
+                                        .bold()
+                                        .foregroundColor(.purple)
+                                        .font(.system(.subheadline, design: .monospaced))
+                                }
+                            }
+
+                            Divider()
+
+                            // Port
+                            if let port = device.port {
+                                DetailRow(label: "Port", value: "\(port)", icon: "antenna.radiowaves.left.and.right")
+                            }
+
+                            DetailRow(label: "Protocol", value: device.serviceType.displayName, icon: "link.circle")
+                            DetailRow(label: "Discovered", value: formatDate(device.discoveredAt), icon: "clock")
+                        }
+                        .padding(.vertical, 8)
+                    }
+                    .padding()
+                    .background(Color.gray.opacity(0.1))
+                    .cornerRadius(12)
+
+                    // TXT Records
+                    if !device.txtRecords.isEmpty {
+                        VStack(alignment: .leading, spacing: 12) {
+                            Text("TXT Records (Metadata)")
+                                .font(.headline)
+                                .padding(.bottom, 4)
+
+                            VStack(alignment: .leading, spacing: 8) {
+                                ForEach(Array(device.txtRecords.sorted(by: { $0.key < $1.key })), id: \.key) { key, value in
+                                    HStack {
+                                        Text(key)
+                                            .font(.caption)
+                                            .bold()
+                                            .foregroundColor(.secondary)
+                                        Spacer()
+                                        Text(value.isEmpty ? "(empty)" : value)
+                                            .font(.caption)
+                                            .foregroundColor(.primary)
+                                    }
+                                    .padding(.vertical, 4)
+
+                                    if key != device.txtRecords.sorted(by: { $0.key < $1.key }).last?.key {
+                                        Divider()
+                                    }
+                                }
+                            }
+                            .padding(.vertical, 8)
+                        }
+                        .padding()
+                        .background(Color.gray.opacity(0.1))
+                        .cornerRadius(12)
+                    }
+
+                    // Pairing instructions
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text("How to Pair This Device")
+                            .font(.headline)
+                            .padding(.bottom, 4)
+
+                        VStack(alignment: .leading, spacing: 12) {
+                            HStack {
+                                Image(systemName: "info.circle.fill")
+                                    .foregroundColor(.blue)
+                                Text("tvOS cannot pair HomeKit devices")
+                                    .font(.subheadline)
+                                    .bold()
+                            }
+
+                            Text("To pair this device:")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+
+                            VStack(alignment: .leading, spacing: 8) {
+                                InstructionRow(number: 1, text: "Open Home app on your iPhone or iPad")
+                                InstructionRow(number: 2, text: "Tap '+' to add accessory")
+                                InstructionRow(number: 3, text: "Scan QR code or enter setup code")
+                                InstructionRow(number: 4, text: "Device name: \(device.name)")
+                            }
+                        }
+                        .padding(.vertical, 8)
+                    }
+                    .padding()
+                    .background(Color.gray.opacity(0.1))
+                    .cornerRadius(12)
+                }
+                .padding()
+            }
+            .navigationTitle("Device Details")
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Close") {
+                        selectedDevice = nil
+                    }
+                }
+            }
+        }
+        .frame(minWidth: 800, minHeight: 600)
+    }
+
+    // MARK: - Empty State View
+
+    private var emptyStateView: some View {
+        VStack(spacing: 24) {
+            Spacer()
+
+            Image(systemName: "antenna.radiowaves.left.and.right")
+                .font(.system(size: 100))
+                .foregroundColor(.blue)
+
+            Text("No Unadopted Devices Found")
+                .font(.largeTitle)
+                .bold()
+
+            Text("Tap 'Start Scan' to search for HomeKit and Matter devices on your network")
+                .font(.title3)
+                .foregroundColor(.secondary)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 40)
+
+            Button(action: {
+                networkDiscovery.startDiscovery()
+            }) {
+                Label("Start Scanning Network", systemImage: "antenna.radiowaves.left.and.right")
+            }
+            .buttonStyle(.borderedProminent)
+            .controlSize(.large)
+
+            Spacer()
+        }
+        .padding()
+    }
+
+    // MARK: - Scanning View
+
+    private var scanningView: some View {
+        VStack(spacing: 24) {
+            Spacer()
+
+            ProgressView()
+                .scaleEffect(2.0)
+
+            Text("Scanning Network...")
+                .font(.title)
+                .bold()
+
+            Text("Searching for HomeKit and Matter devices")
+                .font(.body)
+                .foregroundColor(.secondary)
+
+            if !networkDiscovery.discoveredDevices.isEmpty {
+                Text("Found \(networkDiscovery.discoveredDevices.count) device(s) so far...")
+                    .font(.subheadline)
+                    .foregroundColor(.green)
+            }
+
+            Button("Stop Scanning") {
+                networkDiscovery.stopDiscovery()
+            }
+            .buttonStyle(.bordered)
+
+            Spacer()
+        }
+        .padding()
+    }
+
+    // MARK: - Helper Views
+
+    struct DetailRow: View {
+        let label: String
+        let value: String
+        let icon: String
+
+        var body: some View {
+            HStack {
+                Image(systemName: icon)
+                    .foregroundColor(.blue)
+                    .frame(width: 30)
+                Text(label + ":")
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+                Spacer()
+                Text(value)
+                    .font(.subheadline)
+                    .bold()
+            }
+        }
+    }
+
+    struct InstructionRow: View {
+        let number: Int
+        let text: String
+
+        var body: some View {
+            HStack(spacing: 12) {
+                Text("\(number)")
+                    .font(.caption)
+                    .bold()
+                    .foregroundColor(.white)
+                    .frame(width: 24, height: 24)
+                    .background(Color.blue)
+                    .clipShape(Circle())
+
+                Text(text)
+                    .font(.caption)
+            }
+        }
+    }
+
+    // MARK: - Helper Methods
+
+    private func timeAgo(from date: Date) -> String {
+        let seconds = Int(Date().timeIntervalSince(date))
+        if seconds < 60 { return "\(seconds)s ago" }
+        if seconds < 3600 { return "\(seconds / 60)m ago" }
+        return "\(seconds / 3600)h ago"
+    }
+
+    private func formatDate(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .medium
+        formatter.timeStyle = .medium
+        return formatter.string(from: date)
+    }
+}
+
+#Preview {
+    ContentView()
+}
