@@ -9,11 +9,15 @@ import SwiftUI
 import Network
 
 struct IntegratedDashboardViewV3: View {
-    @StateObject private var scanner = IntegratedScannerV3()
-    @StateObject private var threatAnalyzer = ThreatAnalyzer()
-    @StateObject private var persistenceManager = DevicePersistenceManager.shared
-    @StateObject private var notificationManager = NotificationManager.shared
-    @StateObject private var searchFilterManager = SearchFilterManager.shared
+    @StateObject private var scanner = IntegratedScannerV3.shared
+    @StateObject private var simpleScanner = SimpleNetworkScanner()
+    @StateObject private var anomalyManager = AnomalyDetectionManager.shared
+    @StateObject private var scheduledScanManager = ScheduledScanManager.shared
+    @StateObject private var groupingManager = DeviceGroupingManager.shared
+
+    // Re-adding DevicePersistenceManager (needed for device history)
+    // Note: Not using @StateObject to avoid triggering view updates
+    private let persistenceManager = DevicePersistenceManager.shared
 
     @State private var showingThreatDashboard = false
     @State private var showingDeviceThreats = false
@@ -22,57 +26,62 @@ struct IntegratedDashboardViewV3: View {
     @State private var showingExport = false
     @State private var showingPresets = false
     @State private var selectedDevice: EnhancedDevice?
+    @State private var showingManualScan = false
+    @State private var manualIPAddress = ""
+    @State private var showingTopology = false
+    @State private var showingHistoricalComparison = false
+    @State private var showingAnomalies = false
+    // @State private var deviceToExport: EnhancedDevice?
+    @State private var searchText = ""
+    @State private var selectedDevices: Set<String> = [] // For bulk operations
+    @AppStorage("enableBulkOperations") private var enableBulkOperations = false
+    // Port scanning mode - temporarily disabled until files are added to Xcode project
+    // @State private var selectedPortScanMode: PortScanMode = UserDefaults.standard.selectedPortScanMode
+    // @State private var showPortScanSettings = false
 
     var body: some View {
         NavigationStack {
             ScrollView {
-                VStack(alignment: .leading, spacing: 30) {
-                    // Header with Notification Bell and Settings Button
-                    HStack {
-                        Text("NMAP Plus Security Scanner")
-                            .font(.system(size: 50, weight: .bold))
+                VStack(alignment: .leading, spacing: 24) {
+                    // Header - Home app style
+                    HStack(alignment: .center) {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("Network")
+                                .font(.system(size: 34, weight: .bold))
+                                .foregroundColor(.primary)
+
+                            if !scanner.devices.isEmpty {
+                                Text("\(scanner.devices.count) devices")
+                                    .font(.system(size: 17, weight: .regular))
+                                    .foregroundColor(.secondary)
+                            }
+                        }
 
                         Spacer()
 
-                        // Notification Bell
-                        Button(action: {
-                            showingNotifications = true
-                        }) {
-                            ZStack {
-                                Image(systemName: "bell.fill")
-                                    .font(.system(size: 40))
-                                    .foregroundColor(.blue)
-
-                                if notificationManager.unreadCount > 0 {
-                                    Text("\(notificationManager.unreadCount)")
-                                        .font(.system(size: 16, weight: .bold))
-                                        .foregroundColor(.white)
-                                        .padding(6)
-                                        .background(Color.red)
-                                        .clipShape(Circle())
-                                        .offset(x: 15, y: -15)
-                                }
-                            }
-                        }
-                        .buttonStyle(.plain)
-
-                        // Settings Button
+                        // Settings Button - minimalist style
                         Button(action: {
                             showingSettings = true
                         }) {
-                            Image(systemName: "gearshape.fill")
-                                .font(.system(size: 40))
-                                .foregroundColor(.blue)
+                            Image(systemName: "gear")
+                                .font(.system(size: 22, weight: .medium))
+                                .foregroundColor(.secondary)
                         }
                         .buttonStyle(.plain)
                     }
+                    .padding(.horizontal, 20)
+                    .padding(.top, 20)
 
                     // Scanning Status
                     if scanner.isScanning {
                         ScanningStatusCardV3(scanner: scanner)
+                    } else if simpleScanner.isScanning {
+                        SimpleScanningStatusCard(scanner: simpleScanner)
                     }
 
-                    // Network Threat Summary (if scan complete)
+
+                    // Network Threat Summary - DISABLED (ThreatAnalyzer removed)
+                    /*
                     if let summary = threatAnalyzer.networkSummary {
                         Button(action: {
                             showingThreatDashboard = true
@@ -101,37 +110,148 @@ struct IntegratedDashboardViewV3: View {
                     if !scanner.devices.isEmpty {
                         SearchAndFilterView(devices: .constant(scanner.devices))
                     }
+                    */
 
-                    // Discovered Devices List
+                    // Devices Grid - Home app style cards
                     if !scanner.devices.isEmpty {
-                        let filteredDevices = searchFilterManager.filter(scanner.devices)
-                        DiscoveredDevicesList(
-                            devices: filteredDevices,
-                            threatAnalyzer: threatAnalyzer,
-                            selectedDevice: $selectedDevice
-                        )
+                        VStack(alignment: .leading, spacing: 16) {
+                            Text("Devices")
+                                .font(.system(size: 22, weight: .semibold))
+                                .foregroundColor(.primary)
+                                .padding(.horizontal, 20)
+
+                            LazyVGrid(columns: [
+                                GridItem(.adaptive(minimum: 320, maximum: 400), spacing: 16)
+                            ], spacing: 16) {
+                                ForEach(scanner.devices) { device in
+                                    DeviceCard(
+                                        device: device,
+                                        onTap: { selectedDevice = device },
+                                        onScan: {
+                                            Task {
+                                                await scanner.scanSingleDevice(device.ipAddress)
+                                                anomalyManager.analyzeScanResults(scanner.devices)
+                                            }
+                                        }
+                                    )
+                                }
+                            }
+                            .padding(.horizontal, 20)
+                        }
                     }
 
-                    // Action Buttons
-                    if !scanner.isScanning {
-                        HStack(spacing: 20) {
-                            // Rescan Button (Ping + Port Scan)
+                    // Action Buttons - Home app style
+                    if !scanner.isScanning && !simpleScanner.isScanning {
+                        VStack(spacing: 12) {
+                            // Manual Scan Button (New!)
+                            Button(action: {
+                                showingManualScan = true
+                            }) {
+                                HStack(spacing: 12) {
+                                    Image(systemName: "magnifyingglass")
+                                        .font(.system(size: 20, weight: .semibold))
+                                    Text("Scan Single Host")
+                                        .font(.system(size: 17, weight: .semibold))
+                                    Spacer()
+                                }
+                                .foregroundColor(.white)
+                                .padding(.horizontal, 20)
+                                .padding(.vertical, 16)
+                                .background(
+                                    LinearGradient(
+                                        colors: [Color.cyan, Color.cyan.opacity(0.8)],
+                                        startPoint: .topLeading,
+                                        endPoint: .bottomTrailing
+                                    )
+                                )
+                                .cornerRadius(14)
+                                .shadow(color: Color.black.opacity(0.1), radius: 8, x: 0, y: 4)
+                            }
+                            .buttonStyle(.plain)
+
+                            // Comprehensive Discovery Button - Uses ping sweep
+                            Button(action: {
+                                Task {
+                                    await simpleScanner.scanPingSweep(subnet: "192.168.1")
+                                    await scanner.importSimpleDevices(simpleScanner.discoveredIPs)
+                                    anomalyManager.analyzeScanResults(scanner.devices)
+                                }
+                            }) {
+                                HStack(spacing: 12) {
+                                    Image(systemName: "network.badge.shield.half.filled")
+                                        .font(.system(size: 20, weight: .semibold))
+                                    Text("Discover All Devices (Ping Sweep)")
+                                        .font(.system(size: 17, weight: .semibold))
+                                    Spacer()
+                                }
+                                .foregroundColor(.white)
+                                .padding(.horizontal, 20)
+                                .padding(.vertical, 16)
+                                .background(
+                                    LinearGradient(
+                                        colors: [Color.blue, Color.blue.opacity(0.8)],
+                                        startPoint: .topLeading,
+                                        endPoint: .bottomTrailing
+                                    )
+                                )
+                                .cornerRadius(14)
+                                .shadow(color: Color.black.opacity(0.1), radius: 8, x: 0, y: 4)
+                            }
+                            .buttonStyle(.plain)
+
+                            // Port Scan Button
+                            if !scanner.devices.isEmpty {
+                                Button(action: {
+                                    Task {
+                                        await scanner.scanPortsOnDevices()
+                                        anomalyManager.analyzeScanResults(scanner.devices)
+                                    }
+                                }) {
+                                    HStack(spacing: 12) {
+                                        Image(systemName: "antenna.radiowaves.left.and.right")
+                                            .font(.system(size: 20, weight: .semibold))
+                                        Text("Scan Ports")
+                                            .font(.system(size: 17, weight: .semibold))
+                                        Spacer()
+                                        Text("\(scanner.devices.count)")
+                                            .font(.system(size: 15, weight: .medium))
+                                            .foregroundColor(.white.opacity(0.8))
+                                    }
+                                    .foregroundColor(.white)
+                                    .padding(.horizontal, 20)
+                                    .padding(.vertical, 16)
+                                    .background(
+                                        LinearGradient(
+                                            colors: [Color.purple, Color.purple.opacity(0.8)],
+                                            startPoint: .topLeading,
+                                            endPoint: .bottomTrailing
+                                        )
+                                    )
+                                    .cornerRadius(14)
+                                    .shadow(color: Color.black.opacity(0.1), radius: 8, x: 0, y: 4)
+                                }
+                                .buttonStyle(.plain)
+                            }
+
+                            // Full Rescan Button (Ping + Port Scan) - DISABLED (blocks main thread)
+                            /*
                             Button(action: {
                                 Task {
                                     await scanner.startFullScan()
                                 }
                             }) {
-                                HStack {
+                                HStack(spacing: 12) {
                                     Image(systemName: "arrow.clockwise.circle.fill")
-                                        .font(.system(size: 32))
-                                    Text("Full Rescan")
-                                        .font(.system(size: 28, weight: .semibold))
+                                        .font(.system(size: 24))
+                                    Text("Full Rescan (ICMP)")
+                                        .font(.system(size: 22, weight: .semibold))
                                 }
-                                .frame(maxWidth: .infinity)
-                                .padding(.vertical, 20)
+                                .padding(.horizontal, 32)
+                                .padding(.vertical, 18)
                                 .background(Color.blue)
                                 .foregroundColor(.white)
                                 .cornerRadius(16)
+                                .shadow(color: Color.blue.opacity(0.4), radius: 12, x: 0, y: 6)
                             }
                             .buttonStyle(.plain)
 
@@ -141,171 +261,230 @@ struct IntegratedDashboardViewV3: View {
                                     await scanner.startQuickScan()
                                 }
                             }) {
-                                HStack {
+                                HStack(spacing: 12) {
                                     Image(systemName: "bolt.circle.fill")
-                                        .font(.system(size: 32))
-                                    Text("Quick Scan")
-                                        .font(.system(size: 28, weight: .semibold))
+                                        .font(.system(size: 24))
+                                    Text("Quick Scan (ICMP)")
+                                        .font(.system(size: 22, weight: .semibold))
                                 }
-                                .frame(maxWidth: .infinity)
-                                .padding(.vertical, 20)
-                                .background(Color.green)
+                                .padding(.horizontal, 32)
+                                .padding(.vertical, 18)
+                                .background(Color.orange)
                                 .foregroundColor(.white)
                                 .cornerRadius(16)
+                                .shadow(color: Color.orange.opacity(0.4), radius: 12, x: 0, y: 6)
                             }
                             .buttonStyle(.plain)
+                            */
                         }
 
-                        // Deep Scan Button (selected devices only)
+                        // Deep Scan Button - DISABLED (port scanning blocks main thread)
+                        /*
                         if !scanner.devices.isEmpty {
                             Button(action: {
                                 Task {
                                     await scanner.startDeepScan()
                                 }
                             }) {
-                                HStack {
+                                HStack(spacing: 12) {
                                     Image(systemName: "magnifyingglass.circle.fill")
-                                        .font(.system(size: 32))
+                                        .font(.system(size: 24))
                                     Text("Deep Scan (\(scanner.devices.count) devices)")
-                                        .font(.system(size: 28, weight: .semibold))
+                                        .font(.system(size: 22, weight: .semibold))
                                 }
-                                .frame(maxWidth: .infinity)
-                                .padding(.vertical, 20)
+                                .padding(.horizontal, 32)
+                                .padding(.vertical, 18)
                                 .background(Color.orange)
                                 .foregroundColor(.white)
                                 .cornerRadius(16)
+                                .shadow(color: Color.orange.opacity(0.4), radius: 12, x: 0, y: 6)
                             }
                             .buttonStyle(.plain)
                         }
+                        */
 
-                        // Additional Action Buttons
-                        if !scanner.devices.isEmpty {
-                            HStack(spacing: 20) {
-                                // Export Results Button
-                                Button(action: {
-                                    showingExport = true
-                                }) {
-                                    HStack {
-                                        Image(systemName: "square.and.arrow.up.fill")
-                                            .font(.system(size: 32))
-                                        Text("Export Results")
-                                            .font(.system(size: 28, weight: .semibold))
+                            // Export & Settings Buttons
+                            if !scanner.devices.isEmpty {
+                                HStack(spacing: 12) {
+                                    Button(action: {
+                                        showingExport = true
+                                    }) {
+                                        HStack(spacing: 8) {
+                                            Image(systemName: "square.and.arrow.up")
+                                                .font(.system(size: 17, weight: .semibold))
+                                            Text("Export")
+                                                .font(.system(size: 17, weight: .semibold))
+                                        }
+                                        .foregroundColor(.primary)
+                                        .padding(.horizontal, 20)
+                                        .padding(.vertical, 12)
+                                        .background(Color(NSColor.controlBackgroundColor))
+                                        .cornerRadius(10)
+                                        .overlay(
+                                            RoundedRectangle(cornerRadius: 10)
+                                                .stroke(Color.gray.opacity(0.2), lineWidth: 1)
+                                        )
                                     }
-                                    .frame(maxWidth: .infinity)
-                                    .padding(.vertical, 20)
-                                    .background(Color.purple)
-                                    .foregroundColor(.white)
-                                    .cornerRadius(16)
-                                }
-                                .buttonStyle(.plain)
+                                    .buttonStyle(.plain)
 
-                                // Scan Presets Button
-                                Button(action: {
-                                    showingPresets = true
-                                }) {
-                                    HStack {
-                                        Image(systemName: "list.bullet.circle.fill")
-                                            .font(.system(size: 32))
-                                        Text("Scan Presets")
-                                            .font(.system(size: 28, weight: .semibold))
+                                    Button(action: {
+                                        showingPresets = true
+                                    }) {
+                                        HStack(spacing: 8) {
+                                            Image(systemName: "list.bullet")
+                                                .font(.system(size: 17, weight: .semibold))
+                                            Text("Presets")
+                                                .font(.system(size: 17, weight: .semibold))
+                                        }
+                                        .foregroundColor(.primary)
+                                        .padding(.horizontal, 20)
+                                        .padding(.vertical, 12)
+                                        .background(Color(NSColor.controlBackgroundColor))
+                                        .cornerRadius(10)
+                                        .overlay(
+                                            RoundedRectangle(cornerRadius: 10)
+                                                .stroke(Color.gray.opacity(0.2), lineWidth: 1)
+                                        )
                                     }
-                                    .frame(maxWidth: .infinity)
-                                    .padding(.vertical, 20)
-                                    .background(Color.indigo)
-                                    .foregroundColor(.white)
-                                    .cornerRadius(16)
+                                    .buttonStyle(.plain)
                                 }
-                                .buttonStyle(.plain)
                             }
                         }
                     }
+                .padding(.bottom, 20)
+            }  // ScrollView
+            .background(Color(NSColor.windowBackgroundColor))
+            .sheet(item: $selectedDevice) { device in
+                ComprehensiveDeviceDetailView(device: device)
+            }
+            .sheet(isPresented: $showingSettings) {
+                EnhancedSettingsView()
+            }
+            .sheet(isPresented: $showingExport) {
+                ExportView(devices: scanner.devices, threats: [])
+            }
+            .sheet(isPresented: $showingPresets) {
+                PresetSelectionView { preset in
+                    showingPresets = false
+                    Task {
+                        await scanner.startScanWithPreset(preset)
+                        anomalyManager.analyzeScanResults(scanner.devices)
+                    }
                 }
-                .padding(40)
             }
-            .navigationTitle("Security Analysis")
-        }
-        .sheet(isPresented: $showingThreatDashboard) {
-            if let summary = threatAnalyzer.networkSummary {
-                NetworkThreatDashboard(summary: summary)
-            }
-        }
-        .sheet(isPresented: $showingDeviceThreats) {
-            DeviceThreatsListView(
-                summaries: threatAnalyzer.deviceSummaries,
-                selectedDevice: $selectedDevice
-            )
-        }
-        .sheet(item: $selectedDevice) { device in
-            // Find the rogue device threat if this is a rogue device
-            let rogueThreat = device.isRogue ? threatAnalyzer.allThreats.first {
-                $0.isRogueDevice && $0.affectedHost == device.ipAddress
-            } : nil
-            EnhancedDeviceDetailView(device: device, rogueThreat: rogueThreat)
-        }
-        .sheet(isPresented: $showingSettings) {
-            SettingsView()
-        }
-        .sheet(isPresented: $showingNotifications) {
-            NotificationCenterView()
-        }
-        .sheet(isPresented: $showingExport) {
-            ExportView(devices: scanner.devices, threats: threatAnalyzer.allThreats)
-        }
-        .sheet(isPresented: $showingPresets) {
-            PresetSelectionView { preset in
-                // Handle preset selection - would need to extend scanner to support custom port lists
-                showingPresets = false
-                NotificationManager.shared.showNotification(
-                    .systemAlert,
-                    title: "Preset Selected",
-                    message: "Selected preset: \(preset.name)"
+            .sheet(isPresented: $showingManualScan) {
+                ManualScanView(
+                    ipAddress: $manualIPAddress,
+                    onScan: {
+                        Task {
+                            await scanner.scanSingleDevice(manualIPAddress)
+                            showingManualScan = false
+                            anomalyManager.analyzeScanResults(scanner.devices)
+                        }
+                    },
+                    onCancel: {
+                        showingManualScan = false
+                    }
                 )
             }
-        }
-        .task {
-            // Auto-scan on launch if enabled
-            if persistenceManager.settings.enableAutomaticScanning && !scanner.hasScanned {
-                await scanner.startQuickScan()
+            .sheet(isPresented: $showingTopology) {
+                NetworkTopologyView(devices: scanner.devices)
             }
-        }
-        .onChange(of: scanner.devices) { _ in
-            // Analyze threats when devices change
-            threatAnalyzer.analyzeNetwork(devices: scanner.devices)
-        }
-    }
-}
+        }  // NavigationStack
+    }  // body
+}  // IntegratedDashboardViewV3
 
-// MARK: - Scanning Status Card V3
+// MARK: - Scanning Status Card V3 - Home App Style
 
 struct ScanningStatusCardV3: View {
     @ObservedObject var scanner: IntegratedScannerV3
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 20) {
-            HStack {
+        VStack(alignment: .leading, spacing: 16) {
+            HStack(spacing: 12) {
                 ProgressView()
-                    .scaleEffect(1.5)
+                    .controlSize(.regular)
                 Text(scanner.scanPhase)
-                    .font(.system(size: 36, weight: .semibold))
+                    .font(.system(size: 20, weight: .semibold))
+                    .foregroundColor(.primary)
             }
 
             ProgressView(value: scanner.progress)
-                .scaleEffect(y: 4)
+                .tint(.blue)
 
             Text(scanner.status)
-                .font(.system(size: 24))
+                .font(.system(size: 15))
                 .foregroundColor(.secondary)
+                .lineLimit(2)
 
-            HStack(spacing: 40) {
-                StatItem(label: "Hosts Scanned", value: "\(scanner.scannedHosts)/254")
-                StatItem(label: "Alive", value: "\(scanner.hostsAlive)")
-                StatItem(label: "Devices Found", value: "\(scanner.devices.count)")
-                StatItem(label: "Threats", value: "\(scanner.threatsDetected)")
+            HStack(spacing: 24) {
+                ScanStatItem(label: "Scanned", value: "\(scanner.scannedHosts)")
+                ScanStatItem(label: "Alive", value: "\(scanner.hostsAlive)")
+                ScanStatItem(label: "Devices", value: "\(scanner.devices.count)")
             }
         }
-        .padding(30)
-        .background(Color.blue.opacity(0.1))
-        .cornerRadius(20)
+        .padding(20)
+        .background(
+            RoundedRectangle(cornerRadius: 16)
+                .fill(Color(NSColor.controlBackgroundColor))
+                .shadow(color: Color.black.opacity(0.08), radius: 12, x: 0, y: 4)
+        )
+        .padding(.horizontal, 20)
+    }
+}
+
+// MARK: - Simple Scanning Status Card - Home App Style
+
+struct SimpleScanningStatusCard: View {
+    @ObservedObject var scanner: SimpleNetworkScanner
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            HStack(spacing: 12) {
+                ProgressView()
+                    .controlSize(.regular)
+                Text("Discovering Devices")
+                    .font(.system(size: 20, weight: .semibold))
+                    .foregroundColor(.primary)
+            }
+
+            ProgressView(value: scanner.progress)
+                .tint(.green)
+
+            Text(scanner.status)
+                .font(.system(size: 15))
+                .foregroundColor(.secondary)
+                .lineLimit(2)
+
+            HStack(spacing: 24) {
+                ScanStatItem(label: "Found", value: "\(scanner.discoveredIPs.count)")
+            }
+        }
+        .padding(20)
+        .background(
+            RoundedRectangle(cornerRadius: 16)
+                .fill(Color(NSColor.controlBackgroundColor))
+                .shadow(color: Color.black.opacity(0.08), radius: 12, x: 0, y: 4)
+        )
+        .padding(.horizontal, 20)
+    }
+}
+
+// MARK: - Scan Stat Item
+
+struct ScanStatItem: View {
+    let label: String
+    let value: String
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text(value)
+                .font(.system(size: 22, weight: .semibold))
+                .foregroundColor(.primary)
+            Text(label)
+                .font(.system(size: 13, weight: .regular))
+                .foregroundColor(.secondary)
+        }
     }
 }
 
@@ -313,6 +492,8 @@ struct ScanningStatusCardV3: View {
 
 @MainActor
 class IntegratedScannerV3: ObservableObject {
+    static let shared = IntegratedScannerV3()
+
     @Published var isScanning = false
     @Published var hasScanned = false
     @Published var progress: Double = 0
@@ -328,6 +509,494 @@ class IntegratedScannerV3: ObservableObject {
     private let arpScanner = ARPScanner()
     private let persistenceManager = DevicePersistenceManager.shared
     private let historicalTracker = HistoricalTracker.shared
+    private let dnsResolver = CustomDNSResolver.shared
+
+    /// Custom port list for preset scans (nil = use standard ports)
+    var customPortList: [Int]?
+
+    private init() {
+        // Load persisted devices from last session
+        Task { @MainActor in
+            await loadPersistedDevices()
+        }
+    }
+
+    /// Load devices from persistent storage (from previous app sessions)
+    func loadPersistedDevices() async {
+        print("💾 Scanner: Loading persisted devices from previous sessions...")
+
+        let persistedDevices = persistenceManager.persistedDevices
+        guard !persistedDevices.isEmpty else {
+            print("💾 Scanner: No persisted devices found")
+            return
+        }
+
+        print("💾 Scanner: Found \(persistedDevices.count) persisted devices")
+
+        // Convert persisted devices to EnhancedDevice
+        var loadedDevices: [EnhancedDevice] = []
+        for persisted in persistedDevices {
+            let deviceType: EnhancedDevice.DeviceType
+            switch persisted.deviceType {
+            case "Router": deviceType = .router
+            case "Server": deviceType = .server
+            case "Computer": deviceType = .computer
+            case "Mobile Device": deviceType = .mobile
+            case "IoT Device": deviceType = .iot
+            case "Printer": deviceType = .printer
+            default: deviceType = .unknown
+            }
+
+            let device = EnhancedDevice(
+                ipAddress: persisted.ipAddress,
+                macAddress: persisted.macAddress,
+                hostname: persisted.hostname,
+                manufacturer: persisted.manufacturer,
+                deviceType: deviceType,
+                openPorts: [], // Will be updated during incremental scan
+                isOnline: false, // Will be verified during incremental scan
+                firstSeen: persisted.firstSeen,
+                lastSeen: persisted.lastSeen,
+                isKnownDevice: persisted.isWhitelisted,
+                operatingSystem: nil,
+                deviceName: persisted.customName
+            )
+            loadedDevices.append(device)
+        }
+
+        devices = loadedDevices
+        hasScanned = true
+        print("💾 Scanner: Loaded \(devices.count) devices into memory")
+    }
+
+    /// Get ports to scan based on user preference or custom preset
+    private var portsToScan: [Int] {
+        // Use custom port list if set (from preset), otherwise use standard ports
+        if let customPorts = customPortList {
+            return customPorts
+        }
+        return CommonPorts.standard
+    }
+
+    /// Import devices discovered via Bonjour/mDNS
+    func importBonjourDevices(_ ipAddresses: Set<String>, bonjourScanner: BonjourScanner) async {
+        status = "Processing Bonjour discoveries..."
+        devices = []
+
+        for host in sortIPAddresses(Array(ipAddresses)) {
+            let services = bonjourScanner.getServices(for: host)
+
+            // Create basic device with Bonjour info
+            let device = createBasicDevice(host: host, macAddress: nil)
+            devices.append(device)
+
+            // Update persistence
+            persistenceManager.addOrUpdateDevice(device)
+        }
+
+        // Update network history
+        let subnet = detectSubnet()
+        persistenceManager.addOrUpdateNetwork(subnet: subnet, deviceCount: devices.count)
+
+        // Remove duplicates
+        deduplicateDevices()
+
+        // Sort devices by IP address
+        devices.sort { sortIPAddresses([$0.ipAddress, $1.ipAddress])[0] == $0.ipAddress }
+
+        status = "Bonjour discovery complete - \(devices.count) devices found"
+        hasScanned = true
+
+        // Send notification
+        NotificationManager.shared.notifyScanComplete(deviceCount: devices.count, threatCount: 0)
+    }
+
+    /// Enrich discovered devices with HomeKit information
+    func enrichDevicesWithHomeKit() async {
+        let homeKitDiscovery = HomeKitDiscoveryMacOS.shared
+
+        // Check if HomeKit discovery has run
+        guard !homeKitDiscovery.discoveredDevices.isEmpty else {
+            print("📱 HomeKit: No devices to enrich with")
+            return
+        }
+
+        print("📱 HomeKit: Enriching \(devices.count) devices with HomeKit data")
+
+        var updatedDevices: [EnhancedDevice] = []
+
+        for device in devices {
+            var enrichedDevice = device
+
+            // Check if this device has HomeKit info
+            if let homeKitDevice = homeKitDiscovery.getDeviceInfo(for: device.ipAddress) {
+                print("📱 HomeKit: Found HomeKit info for \(device.ipAddress) - \(homeKitDevice.displayName)")
+
+                // Create HomeKit info
+                let homeKitInfo = HomeKitMDNSInfo(
+                    deviceName: homeKitDevice.displayName,
+                    serviceType: homeKitDevice.serviceType,
+                    category: homeKitDevice.category,
+                    isHomeKitAccessory: homeKitDevice.isHomeKitAccessory,
+                    discoveredAt: homeKitDevice.discoveredAt
+                )
+
+                // Create updated device with HomeKit info
+                enrichedDevice = EnhancedDevice(
+                    ipAddress: device.ipAddress,
+                    macAddress: device.macAddress,
+                    hostname: device.hostname,
+                    manufacturer: device.manufacturer,
+                    deviceType: device.deviceType,  // Keep original device type
+                    openPorts: device.openPorts,
+                    isOnline: device.isOnline,
+                    firstSeen: device.firstSeen,
+                    lastSeen: device.lastSeen,
+                    isKnownDevice: device.isKnownDevice,
+                    operatingSystem: device.operatingSystem,
+                    deviceName: homeKitDevice.displayName,
+                    homeKitMDNSInfo: homeKitInfo
+                )
+
+                print("📱 HomeKit: Enriched device: \(enrichedDevice.displayName) [\(homeKitInfo.category)]")
+            }
+
+            updatedDevices.append(enrichedDevice)
+        }
+
+        await MainActor.run {
+            self.devices = updatedDevices
+            print("📱 HomeKit: Enrichment complete - \(devices.count) devices processed")
+        }
+
+        // Update persistence
+        for device in updatedDevices {
+            persistenceManager.addOrUpdateDevice(device)
+        }
+    }
+
+    /// Check if HomeKit data exists for an IP address and return it
+    private func getHomeKitInfoForIP(_ ipAddress: String) -> HomeKitMDNSInfo? {
+        let homeKitDiscovery = HomeKitDiscoveryMacOS.shared
+
+        guard let homeKitDevice = homeKitDiscovery.getDeviceInfo(for: ipAddress) else {
+            return nil
+        }
+
+        return HomeKitMDNSInfo(
+            deviceName: homeKitDevice.displayName,
+            serviceType: homeKitDevice.serviceType,
+            category: homeKitDevice.category,
+            isHomeKitAccessory: homeKitDevice.isHomeKitAccessory,
+            discoveredAt: homeKitDevice.discoveredAt
+        )
+    }
+
+    /// Start a network scan with a specific preset configuration
+    func startScanWithPreset(_ preset: ScanPreset) async {
+        print("🎯 Starting scan with preset: \(preset.name)")
+        print("🎯 Scanning \(preset.ports.count) ports: \(preset.ports)")
+
+        // Set custom port list for this scan
+        customPortList = preset.ports
+
+        // Set scanner to scanning state
+        isScanning = true
+        status = "Starting \(preset.name) scan..."
+        scanPhase = "Initializing"
+        progress = 0
+
+        // Run the port scan with custom ports
+        await scanPortsOnDevices()
+
+        // Clear custom port list after scan
+        customPortList = nil
+
+        print("🎯 Preset scan complete: \(preset.name)")
+    }
+
+    /// Remove duplicate devices based on IP address (keeps most recent/complete)
+    /// Handles interface suffixes like "192.168.1.100$/en1" from Bonjour
+    private func deduplicateDevices() {
+        var devicesByBaseIP: [String: [EnhancedDevice]] = [:]
+
+        // Group devices by base IP (strip interface suffix)
+        for device in devices {
+            let baseIP = stripInterfaceSuffix(device.ipAddress)
+            if devicesByBaseIP[baseIP] == nil {
+                devicesByBaseIP[baseIP] = []
+            }
+            devicesByBaseIP[baseIP]?.append(device)
+        }
+
+        var uniqueDevices: [EnhancedDevice] = []
+        var mergedCount = 0
+
+        // For each base IP, merge all versions into best one
+        for (baseIP, duplicates) in devicesByBaseIP {
+            if duplicates.count > 1 {
+                print("🔧 Dedup: Found \(duplicates.count) versions of \(baseIP) - merging...")
+                mergedCount += duplicates.count - 1
+
+                // Merge all duplicates into single device with combined data
+                let merged = mergeDevices(duplicates, baseIP: baseIP)
+                uniqueDevices.append(merged)
+
+                print("🔧 Dedup: Merged into \(merged.ipAddress) with \(merged.openPorts.count) ports")
+            } else {
+                // Single device, just use it (but ensure clean IP)
+                var device = duplicates[0]
+                if device.ipAddress != baseIP {
+                    print("🔧 Dedup: Cleaning IP \(device.ipAddress) → \(baseIP)")
+                    device = EnhancedDevice(
+                        ipAddress: baseIP,  // Use clean IP
+                        macAddress: device.macAddress,
+                        hostname: device.hostname,
+                        manufacturer: device.manufacturer,
+                        deviceType: device.deviceType,
+                        openPorts: device.openPorts,
+                        isOnline: device.isOnline,
+                        firstSeen: device.firstSeen,
+                        lastSeen: device.lastSeen,
+                        isKnownDevice: device.isKnownDevice,
+                        operatingSystem: device.operatingSystem,
+                        deviceName: device.deviceName
+                    )
+                }
+                uniqueDevices.append(device)
+            }
+        }
+
+        if mergedCount > 0 {
+            print("✅ Dedup: Merged \(mergedCount) duplicate devices")
+        }
+
+        devices = uniqueDevices
+    }
+
+    /// Strip interface suffix from IP address (e.g., "192.168.1.100$/en1" → "192.168.1.100")
+    private func stripInterfaceSuffix(_ ip: String) -> String {
+        if let dollarIndex = ip.firstIndex(of: "$") {
+            return String(ip[..<dollarIndex])
+        }
+        return ip
+    }
+
+    /// Merge multiple device instances into single best representation
+    private func mergeDevices(_ devices: [EnhancedDevice], baseIP: String) -> EnhancedDevice {
+        // Start with first device as base
+        var merged = devices[0]
+
+        // Merge data from all versions
+        var allPorts: [PortInfo] = []
+        var bestHostname: String? = merged.hostname
+        var bestMac: String? = merged.macAddress
+        var bestManufacturer: String? = merged.manufacturer
+        var bestDeviceName: String? = merged.deviceName
+        var earliestFirstSeen = merged.firstSeen
+        var latestLastSeen = merged.lastSeen
+        var isAnyOnline = merged.isOnline
+        var homeKitInfo: HomeKitMDNSInfo? = merged.homeKitMDNSInfo
+
+        for device in devices {
+            // Collect all unique ports
+            for port in device.openPorts {
+                if !allPorts.contains(where: { $0.port == port.port }) {
+                    allPorts.append(port)
+                }
+            }
+
+            // Keep best hostname (prefer non-nil, non-IP)
+            if let hostname = device.hostname, !hostname.isEmpty, !hostname.contains(".") || bestHostname == nil {
+                bestHostname = hostname
+            }
+
+            // Keep MAC if available
+            if device.macAddress != nil {
+                bestMac = device.macAddress
+            }
+
+            // Keep manufacturer if available
+            if device.manufacturer != nil {
+                bestManufacturer = device.manufacturer
+            }
+
+            // Keep device name if available
+            if device.deviceName != nil {
+                bestDeviceName = device.deviceName
+            }
+
+            // Track earliest first seen
+            if device.firstSeen < earliestFirstSeen {
+                earliestFirstSeen = device.firstSeen
+            }
+
+            // Track latest last seen
+            if device.lastSeen > latestLastSeen {
+                latestLastSeen = device.lastSeen
+            }
+
+            // Online if any version is online
+            if device.isOnline {
+                isAnyOnline = true
+            }
+
+            // Keep HomeKit info if available
+            if device.homeKitMDNSInfo != nil {
+                homeKitInfo = device.homeKitMDNSInfo
+            }
+        }
+
+        // Create merged device with clean IP and combined data
+        var mergedDevice = EnhancedDevice(
+            ipAddress: baseIP,  // Use clean base IP without suffix
+            macAddress: bestMac,
+            hostname: bestHostname,
+            manufacturer: bestManufacturer,
+            deviceType: merged.deviceType,
+            openPorts: allPorts.sorted { $0.port < $1.port },
+            isOnline: isAnyOnline,
+            firstSeen: earliestFirstSeen,
+            lastSeen: latestLastSeen,
+            isKnownDevice: merged.isKnownDevice,
+            operatingSystem: merged.operatingSystem,
+            deviceName: bestDeviceName
+        )
+
+        mergedDevice.homeKitMDNSInfo = homeKitInfo
+
+        return mergedDevice
+    }
+
+    /// Import devices discovered via SimpleNetworkScanner (ARP/Ping) with incremental updates
+    func importSimpleDevices(_ ipAddresses: [String]) async {
+        print("📥 IntegratedScannerV3: ========== STARTING INCREMENTAL IMPORT ==========")
+        print("📥 IntegratedScannerV3: Importing \(ipAddresses.count) devices from SimpleNetworkScanner...")
+        print("📥 IntegratedScannerV3: IP addresses: \(ipAddresses)")
+
+        print("📥 IntegratedScannerV3: Setting status message...")
+        status = "Processing discovered devices (incremental mode)..."
+
+        // Keep existing devices dictionary for quick lookup
+        var existingDevicesByIP: [String: EnhancedDevice] = [:]
+        for device in devices {
+            existingDevicesByIP[device.ipAddress] = device
+        }
+        print("📥 IntegratedScannerV3: Found \(existingDevicesByIP.count) existing devices in memory")
+
+        // Track changes
+        var updatedDevices: [EnhancedDevice] = []
+        var newDevicesCount = 0
+        var existingDevicesCount = 0
+        var offlineDevicesCount = 0
+
+        // Get MAC addresses from ARP table for all discovered IPs
+        print("📥 IntegratedScannerV3: Getting MAC addresses from ARP scanner...")
+        let macAddresses = await arpScanner.getMACAddresses(for: ipAddresses)
+        print("📥 IntegratedScannerV3: Got \(macAddresses.count) MAC addresses: \(macAddresses)")
+
+        print("📥 IntegratedScannerV3: Sorting IP addresses...")
+        let sortedIPs = sortIPAddresses(ipAddresses)
+        print("📥 IntegratedScannerV3: Sorted IPs: \(sortedIPs)")
+
+        print("📥 IntegratedScannerV3: Processing devices (incremental mode)...")
+        for (index, host) in sortedIPs.enumerated() {
+            print("📥 IntegratedScannerV3: [\(index+1)/\(sortedIPs.count)] Processing \(host)...")
+
+            if let existingDevice = existingDevicesByIP[host] {
+                // Device already exists - update it (mark as online, update lastSeen)
+                print("📥 IntegratedScannerV3: [\(index+1)/\(sortedIPs.count)] Existing device found - updating...")
+                var updatedDevice = existingDevice
+                updatedDevice = EnhancedDevice(
+                    ipAddress: existingDevice.ipAddress,
+                    macAddress: macAddresses[host] ?? existingDevice.macAddress,
+                    hostname: existingDevice.hostname,
+                    manufacturer: existingDevice.manufacturer,
+                    deviceType: existingDevice.deviceType,
+                    openPorts: existingDevice.openPorts,
+                    isOnline: true, // Mark as online
+                    firstSeen: existingDevice.firstSeen,
+                    lastSeen: Date(), // Update lastSeen
+                    isKnownDevice: existingDevice.isKnownDevice,
+                    operatingSystem: existingDevice.operatingSystem,
+                    deviceName: existingDevice.deviceName
+                )
+                updatedDevices.append(updatedDevice)
+                existingDevicesCount += 1
+                print("📥 IntegratedScannerV3: [\(index+1)/\(sortedIPs.count)] Device updated")
+            } else {
+                // New device discovered
+                print("📥 IntegratedScannerV3: [\(index+1)/\(sortedIPs.count)] New device - creating...")
+                let device = createBasicDevice(host: host, macAddress: macAddresses[host])
+                updatedDevices.append(device)
+                newDevicesCount += 1
+                print("📥 IntegratedScannerV3: [\(index+1)/\(sortedIPs.count)] New device created: \(device.ipAddress), MAC: \(device.macAddress ?? "none")")
+            }
+
+            // Update persistence for all devices
+            persistenceManager.addOrUpdateDevice(updatedDevices.last!)
+        }
+
+        // Mark offline devices (existed before but not found in current scan)
+        for existingDevice in existingDevicesByIP.values {
+            if !ipAddresses.contains(existingDevice.ipAddress) {
+                print("📥 IntegratedScannerV3: Device \(existingDevice.ipAddress) is now offline")
+                var offlineDevice = existingDevice
+                offlineDevice = EnhancedDevice(
+                    ipAddress: existingDevice.ipAddress,
+                    macAddress: existingDevice.macAddress,
+                    hostname: existingDevice.hostname,
+                    manufacturer: existingDevice.manufacturer,
+                    deviceType: existingDevice.deviceType,
+                    openPorts: existingDevice.openPorts,
+                    isOnline: false, // Mark as offline
+                    firstSeen: existingDevice.firstSeen,
+                    lastSeen: existingDevice.lastSeen,
+                    isKnownDevice: existingDevice.isKnownDevice,
+                    operatingSystem: existingDevice.operatingSystem,
+                    deviceName: existingDevice.deviceName
+                )
+                updatedDevices.append(offlineDevice)
+                offlineDevicesCount += 1
+            }
+        }
+
+        // Replace devices with updated list
+        devices = updatedDevices
+
+        // Update network history
+        print("📥 IntegratedScannerV3: Detecting subnet...")
+        let subnet = detectSubnet()
+        print("📥 IntegratedScannerV3: Subnet: \(subnet)")
+
+        print("📥 IntegratedScannerV3: Updating network history...")
+        persistenceManager.addOrUpdateNetwork(subnet: subnet, deviceCount: devices.count)
+        print("📥 IntegratedScannerV3: Network history updated")
+
+        // Remove duplicates
+        print("📥 IntegratedScannerV3: Deduplicating devices...")
+        deduplicateDevices()
+        print("📥 IntegratedScannerV3: After deduplication: \(devices.count) devices")
+
+        // Sort devices by IP address
+        print("📥 IntegratedScannerV3: Final sort of devices...")
+        devices.sort { sortIPAddresses([$0.ipAddress, $1.ipAddress])[0] == $0.ipAddress }
+        print("📥 IntegratedScannerV3: Devices sorted")
+
+        print("📥 IntegratedScannerV3: Setting completion status...")
+        let onlineCount = devices.filter { $0.isOnline }.count
+        status = "Incremental scan complete - \(onlineCount) online, \(newDevicesCount) new, \(offlineDevicesCount) offline"
+        hasScanned = true
+        print("📥 IntegratedScannerV3: Status set, hasScanned = true")
+        print("📥 IntegratedScannerV3: Summary - New: \(newDevicesCount), Existing: \(existingDevicesCount), Offline: \(offlineDevicesCount)")
+
+        // Send notification with change details
+        print("📥 IntegratedScannerV3: Sending completion notification...")
+        NotificationManager.shared.notifyScanComplete(deviceCount: devices.count, threatCount: 0)
+        print("📥 IntegratedScannerV3: Notification sent")
+
+        print("📥 IntegratedScannerV3: ========== INCREMENTAL IMPORT COMPLETE - \(devices.count) TOTAL DEVICES ==========")
+    }
 
     /// Quick scan - ping only to find alive hosts
     func startQuickScan() async {
@@ -364,6 +1033,9 @@ class IntegratedScannerV3: ObservableObject {
         // Update network history
         persistenceManager.addOrUpdateNetwork(subnet: subnet, deviceCount: devices.count)
 
+        // Remove duplicates
+        deduplicateDevices()
+
         // Sort devices by IP address
         devices.sort { sortIPAddresses([$0.ipAddress, $1.ipAddress])[0] == $0.ipAddress }
 
@@ -376,12 +1048,12 @@ class IntegratedScannerV3: ObservableObject {
         NotificationManager.shared.notifyScanComplete(deviceCount: devices.count, threatCount: 0)
     }
 
-    /// Full scan - ping + port scan on all alive hosts
+    /// Full scan - ping + port scan + HomeKit discovery on all alive hosts
     func startFullScan() async {
         isScanning = true
         scanPhase = "Full Scan"
         progress = 0
-        status = "Starting full network scan..."
+        status = "Starting comprehensive network scan..."
         devices = []
         scannedHosts = 0
         hostsAlive = 0
@@ -394,7 +1066,7 @@ class IntegratedScannerV3: ObservableObject {
         let aliveHosts = await pingScanner.pingSubnet(subnet)
         hostsAlive = aliveHosts.count
         scannedHosts = 254
-        progress = 0.3 // 30% done after ping
+        progress = 0.2 // 20% done after ping
 
         if aliveHosts.isEmpty {
             status = "No hosts found"
@@ -406,33 +1078,157 @@ class IntegratedScannerV3: ObservableObject {
         // Phase 2: Get MAC addresses
         status = "Phase 2: Gathering MAC addresses..."
         let macAddresses = await arpScanner.getMACAddresses(for: Array(aliveHosts))
-        progress = 0.4 // 40% done after MAC collection
+        progress = 0.3 // 30% done after MAC collection
 
-        // Phase 3: Port scan
+        // Phase 3: HomeKit/Bonjour Discovery
+        status = "Phase 3: Discovering HomeKit devices..."
+        let bonjourScanner = BonjourScanner()
+        await bonjourScanner.startScan()
+        let bonjourIPs = bonjourScanner.getDiscoveredIPs()
+        print("📱 Full Scan: Bonjour found \(bonjourIPs.count) HomeKit/Apple devices")
+        progress = 0.4 // 40% done after Bonjour
+
+        // Phase 4: PARALLEL Port scan (OPTIMIZED)
         scanPhase = "Port Scanning"
-        status = "Phase 3: Scanning ports on \(aliveHosts.count) hosts..."
+        status = "Phase 4: Scanning ports on \(aliveHosts.count) hosts in parallel..."
 
         let sortedHosts = sortIPAddresses(Array(aliveHosts))
-        for (index, host) in sortedHosts.enumerated() {
-            progress = 0.4 + (Double(index + 1) / Double(sortedHosts.count) * 0.6) // 40-100%
-            status = "Scanning \(host) (\(index + 1)/\(sortedHosts.count))..."
+        let totalHosts = sortedHosts.count
+        var completedCount = 0
 
-            let openPorts = await portScanner.scanPorts(host: host, ports: CommonPorts.standard)
+        print("🚀 Full Scan: Starting PARALLEL port scan of \(totalHosts) hosts with concurrency limit of 10")
 
-            if !openPorts.isEmpty {
-                let device = createEnhancedDevice(host: host, openPorts: openPorts, macAddress: macAddresses[host])
-                devices.append(device)
+        await withTaskGroup(of: (String, [PortInfo]).self) { group in
+            var activeScans = 0
+            let maxConcurrent = 10
 
-                // Update persistence
-                persistenceManager.addOrUpdateDevice(device)
+            for host in sortedHosts {
+                // Wait if we've hit the concurrency limit
+                while activeScans >= maxConcurrent {
+                    if let result = await group.next() {
+                        activeScans -= 1
+                        completedCount += 1
+                        progress = 0.4 + (Double(completedCount) / Double(totalHosts) * 0.6)
+                        status = "Phase 4: Scanned \(completedCount)/\(totalHosts) hosts..."
+
+                        // Process completed scan
+                        let (completedHost, openPorts) = result
+                        if !openPorts.isEmpty || bonjourIPs.contains(completedHost) {
+                            var device = createEnhancedDevice(host: completedHost, openPorts: openPorts, macAddress: macAddresses[completedHost])
+
+                            // Enrich with HomeKit/Bonjour metadata
+                            if bonjourIPs.contains(completedHost) {
+                                let services = bonjourScanner.getServices(for: completedHost)
+                                let metadata = bonjourScanner.getMetadata(for: completedHost)
+
+                                if let metadata = metadata {
+                                    device = EnhancedDevice(
+                                        ipAddress: device.ipAddress,
+                                        macAddress: device.macAddress,
+                                        hostname: device.hostname,
+                                        manufacturer: device.manufacturer,
+                                        deviceType: .iot,
+                                        openPorts: device.openPorts,
+                                        isOnline: device.isOnline,
+                                        firstSeen: device.firstSeen,
+                                        lastSeen: device.lastSeen,
+                                        isKnownDevice: device.isKnownDevice,
+                                        operatingSystem: device.operatingSystem,
+                                        deviceName: metadata.displayName
+                                    )
+                                    device.homeKitMDNSInfo = HomeKitMDNSInfo(
+                                        deviceName: metadata.displayName,
+                                        serviceType: services.joined(separator: ", "),
+                                        category: metadata.category,
+                                        isHomeKitAccessory: true,
+                                        discoveredAt: Date()
+                                    )
+                                    print("📱 Full Scan: Enriched \(completedHost) with HomeKit data: \(metadata.displayName)")
+                                } else {
+                                    device.homeKitMDNSInfo = HomeKitMDNSInfo(
+                                        deviceName: completedHost,
+                                        serviceType: services.joined(separator: ", "),
+                                        category: "HomeKit Device",
+                                        isHomeKitAccessory: true,
+                                        discoveredAt: Date()
+                                    )
+                                }
+                            }
+
+                            devices.append(device)
+                            persistenceManager.addOrUpdateDevice(device)
+                        }
+                    }
+                }
+
+                // Start new scan
+                group.addTask {
+                    let ports = await self.portScanner.scanPorts(host: host, ports: self.portsToScan)
+                    return (host, ports)
+                }
+                activeScans += 1
             }
 
-            // Small delay
-            try? await Task.sleep(nanoseconds: 50_000_000) // 0.05s
+            // Process remaining results
+            for await result in group {
+                completedCount += 1
+                progress = 0.4 + (Double(completedCount) / Double(totalHosts) * 0.6)
+                status = "Phase 4: Scanned \(completedCount)/\(totalHosts) hosts..."
+
+                let (completedHost, openPorts) = result
+                if !openPorts.isEmpty || bonjourIPs.contains(completedHost) {
+                    var device = createEnhancedDevice(host: completedHost, openPorts: openPorts, macAddress: macAddresses[completedHost])
+
+                    if bonjourIPs.contains(completedHost) {
+                        let services = bonjourScanner.getServices(for: completedHost)
+                        let metadata = bonjourScanner.getMetadata(for: completedHost)
+
+                        if let metadata = metadata {
+                            device = EnhancedDevice(
+                                ipAddress: device.ipAddress,
+                                macAddress: device.macAddress,
+                                hostname: device.hostname,
+                                manufacturer: device.manufacturer,
+                                deviceType: .iot,
+                                openPorts: device.openPorts,
+                                isOnline: device.isOnline,
+                                firstSeen: device.firstSeen,
+                                lastSeen: device.lastSeen,
+                                isKnownDevice: device.isKnownDevice,
+                                operatingSystem: device.operatingSystem,
+                                deviceName: metadata.displayName
+                            )
+                            device.homeKitMDNSInfo = HomeKitMDNSInfo(
+                                deviceName: metadata.displayName,
+                                serviceType: services.joined(separator: ", "),
+                                category: metadata.category,
+                                isHomeKitAccessory: true,
+                                discoveredAt: Date()
+                            )
+                        } else {
+                            device.homeKitMDNSInfo = HomeKitMDNSInfo(
+                                deviceName: completedHost,
+                                serviceType: services.joined(separator: ", "),
+                                category: "HomeKit Device",
+                                isHomeKitAccessory: true,
+                                discoveredAt: Date()
+                            )
+                        }
+                    }
+
+                    devices.append(device)
+                    persistenceManager.addOrUpdateDevice(device)
+                }
+            }
         }
+
+        print("🚀 Full Scan: Parallel port scanning complete - scanned \(completedCount) hosts")
 
         // Update network history
         persistenceManager.addOrUpdateNetwork(subnet: subnet, deviceCount: devices.count)
+
+        // Remove duplicates
+        deduplicateDevices()
 
         // Sort devices by IP address
         devices.sort { sortIPAddresses([$0.ipAddress, $1.ipAddress])[0] == $0.ipAddress }
@@ -440,13 +1236,155 @@ class IntegratedScannerV3: ObservableObject {
         // Analyze and record changes for historical tracking
         historicalTracker.analyzeAndRecordChanges(devices: devices)
 
-        status = "Full scan complete - \(devices.count) devices with open ports"
+        let homeKitCount = devices.filter { $0.homeKitMDNSInfo != nil }.count
+        status = "Full scan complete - \(devices.count) devices (\(homeKitCount) HomeKit)"
         progress = 1.0
         isScanning = false
         hasScanned = true
 
         // Send notification
         NotificationManager.shared.notifyScanComplete(deviceCount: devices.count, threatCount: threatsDetected)
+    }
+
+    /// Port scan on discovered devices (non-blocking, uses Task groups) + HomeKit enrichment
+    /// Helper function to process a scanned device (extracted for parallel scanning)
+    private func processScannedDevice(_ host: String, openPorts: [PortInfo], bonjourIPs: Set<String>, bonjourScanner: BonjourScanner, scannedDevices: inout [EnhancedDevice]) async {
+        // Update device with port info
+        if let deviceIndex = devices.firstIndex(where: { $0.ipAddress == host }) {
+            let existingDevice = devices[deviceIndex]
+            var updatedDevice = createEnhancedDevice(
+                host: host,
+                openPorts: openPorts,
+                macAddress: existingDevice.macAddress,
+                existingDevice: existingDevice
+            )
+
+            // Enrich with HomeKit/Bonjour metadata if available
+            if bonjourIPs.contains(host) {
+                let services = bonjourScanner.getServices(for: host)
+                let metadata = bonjourScanner.getMetadata(for: host)
+
+                if let metadata = metadata {
+                    // Create new device with HomeKit metadata
+                    updatedDevice = EnhancedDevice(
+                        ipAddress: updatedDevice.ipAddress,
+                        macAddress: updatedDevice.macAddress,
+                        hostname: updatedDevice.hostname,
+                        manufacturer: updatedDevice.manufacturer,
+                        deviceType: .iot,
+                        openPorts: updatedDevice.openPorts,
+                        isOnline: updatedDevice.isOnline,
+                        firstSeen: updatedDevice.firstSeen,
+                        lastSeen: updatedDevice.lastSeen,
+                        isKnownDevice: updatedDevice.isKnownDevice,
+                        operatingSystem: updatedDevice.operatingSystem,
+                        deviceName: metadata.displayName
+                    )
+                    updatedDevice.homeKitMDNSInfo = HomeKitMDNSInfo(
+                        deviceName: metadata.displayName,
+                        serviceType: services.joined(separator: ", "),
+                        category: metadata.category,
+                        isHomeKitAccessory: true,
+                        discoveredAt: Date()
+                    )
+                    print("📱 processScannedDevice: Enriched \(host) with HomeKit data: \(metadata.displayName) (\(metadata.category))")
+                } else {
+                    // No TXT metadata, but has services
+                    updatedDevice.homeKitMDNSInfo = HomeKitMDNSInfo(
+                        deviceName: host,
+                        serviceType: services.joined(separator: ", "),
+                        category: "HomeKit Device",
+                        isHomeKitAccessory: true,
+                        discoveredAt: Date()
+                    )
+                    print("📱 processScannedDevice: Found HomeKit device \(host) with services: \(services.joined(separator: ", "))")
+                }
+            }
+
+            scannedDevices.append(updatedDevice)
+        }
+    }
+
+    func scanPortsOnDevices() async {
+        print("🔌 scanPortsOnDevices: Starting comprehensive scan on \(devices.count) devices")
+        isScanning = true
+        scanPhase = "Port Scan + HomeKit"
+        progress = 0
+        status = "Scanning \(devices.count) devices..."
+
+        // Phase 1: HomeKit/Bonjour Discovery
+        status = "Discovering HomeKit devices..."
+        let bonjourScanner = BonjourScanner()
+        await bonjourScanner.startScan()
+        let bonjourIPs = bonjourScanner.getDiscoveredIPs()
+        print("📱 scanPortsOnDevices: Bonjour found \(bonjourIPs.count) HomeKit/Apple devices")
+
+        let hostsToScan = devices.map { $0.ipAddress }
+        var scannedDevices: [EnhancedDevice] = []
+        let totalHosts = hostsToScan.count
+        var completedCount = 0
+
+        // Phase 2: PARALLEL port scan with HomeKit enrichment (OPTIMIZED)
+        status = "Scanning \(totalHosts) devices in parallel..."
+        print("🚀 scanPortsOnDevices: Starting PARALLEL scan of \(totalHosts) devices with concurrency limit of 10")
+
+        await withTaskGroup(of: (String, [PortInfo]).self) { group in
+            var activeScans = 0
+            let maxConcurrent = 10 // Limit concurrent scans to avoid overwhelming network
+
+            for host in hostsToScan {
+                // Wait if we've hit the concurrency limit
+                while activeScans >= maxConcurrent {
+                    if let result = await group.next() {
+                        activeScans -= 1
+                        completedCount += 1
+                        progress = Double(completedCount) / Double(totalHosts)
+                        status = "Scanned \(completedCount)/\(totalHosts) devices..."
+
+                        // Process completed scan
+                        let (completedHost, openPorts) = result
+                        await processScannedDevice(completedHost, openPorts: openPorts, bonjourIPs: bonjourIPs, bonjourScanner: bonjourScanner, scannedDevices: &scannedDevices)
+                    }
+                }
+
+                // Start new scan
+                group.addTask {
+                    print("🔌 scanPortsOnDevices: Scanning \(host)...")
+                    let ports = await self.portScanner.scanPorts(host: host, ports: self.portsToScan)
+                    print("🔌 scanPortsOnDevices: Found \(ports.count) open ports on \(host)")
+                    return (host, ports)
+                }
+                activeScans += 1
+            }
+
+            // Process remaining results
+            for await result in group {
+                completedCount += 1
+                progress = Double(completedCount) / Double(totalHosts)
+                status = "Scanned \(completedCount)/\(totalHosts) devices..."
+
+                let (completedHost, openPorts) = result
+                await processScannedDevice(completedHost, openPorts: openPorts, bonjourIPs: bonjourIPs, bonjourScanner: bonjourScanner, scannedDevices: &scannedDevices)
+            }
+        }
+
+        print("🚀 scanPortsOnDevices: Parallel scanning complete - scanned \(completedCount) devices")
+
+        // Update devices array
+        print("🔌 scanPortsOnDevices: Updating devices array with \(scannedDevices.count) scanned devices")
+        devices = scannedDevices.sorted { sortIPAddresses([$0.ipAddress, $1.ipAddress])[0] == $0.ipAddress }
+
+        // Update persistence
+        for device in devices {
+            persistenceManager.addOrUpdateDevice(device)
+        }
+
+        let homeKitCount = devices.filter { $0.homeKitMDNSInfo != nil }.count
+        status = "Scan complete - \(devices.count) devices (\(homeKitCount) HomeKit)"
+        progress = 1.0
+        isScanning = false
+
+        print("🔌 scanPortsOnDevices: Scan complete - \(homeKitCount) HomeKit devices found")
     }
 
     /// Deep scan - comprehensive port scan on current devices
@@ -474,6 +1412,9 @@ class IntegratedScannerV3: ObservableObject {
             }
         }
 
+        // Remove duplicates
+        deduplicateDevices()
+
         // Sort devices by IP address
         devices.sort { sortIPAddresses([$0.ipAddress, $1.ipAddress])[0] == $0.ipAddress }
 
@@ -486,6 +1427,70 @@ class IntegratedScannerV3: ObservableObject {
 
         // Send notification
         NotificationManager.shared.notifyScanComplete(deviceCount: devices.count, threatCount: threatsDetected)
+    }
+
+    /// Scan a single device (or add new one if not in list)
+    func scanSingleDevice(_ ipAddress: String) async {
+        print("🎯 scanSingleDevice: Starting scan of \(ipAddress)")
+
+        isScanning = true
+        scanPhase = "Single Host Scan"
+        progress = 0
+        status = "Scanning \(ipAddress)..."
+
+        // Get MAC address from ARP table
+        let macAddresses = await arpScanner.getMACAddresses(for: [ipAddress])
+        let macAddress = macAddresses[ipAddress]
+
+        progress = 0.3
+
+        // Scan ports
+        // Start a task to monitor port scanner status and update main status
+        let statusTask = Task { @MainActor [weak self] in
+            guard let self = self else { return }
+            while !Task.isCancelled {
+                if !portScanner.status.isEmpty {
+                    self.status = portScanner.status
+                }
+                try? await Task.sleep(nanoseconds: 50_000_000) // Update every 0.05s
+            }
+        }
+
+        let openPorts = await Task.detached {
+            await self.portScanner.scanPorts(host: ipAddress, ports: self.portsToScan)
+        }.value
+
+        statusTask.cancel()
+        progress = 0.8
+
+        // Create or update device
+        let device = createEnhancedDevice(
+            host: ipAddress,
+            openPorts: openPorts,
+            macAddress: macAddress,
+            existingDevice: devices.first(where: { $0.ipAddress == ipAddress })
+        )
+
+        // Update or add to devices list
+        if let index = devices.firstIndex(where: { $0.ipAddress == ipAddress }) {
+            devices[index] = device
+        } else {
+            devices.append(device)
+            devices.sort { sortIPAddresses([$0.ipAddress, $1.ipAddress])[0] == $0.ipAddress }
+        }
+
+        // Update persistence
+        persistenceManager.addOrUpdateDevice(device)
+
+        // Update network history
+        let subnet = detectSubnet()
+        persistenceManager.addOrUpdateNetwork(subnet: subnet, deviceCount: devices.count)
+
+        status = "Scan complete - \(openPorts.count) ports found"
+        progress = 1.0
+        isScanning = false
+
+        print("🎯 scanSingleDevice: Complete - found \(openPorts.count) ports on \(ipAddress)")
     }
 
     // MARK: - Helper Methods
@@ -515,11 +1520,22 @@ class IntegratedScannerV3: ObservableObject {
     }
 
     private func createBasicDevice(host: String, macAddress: String? = nil) -> EnhancedDevice {
-        // Resolve DNS hostname
-        let hostname = resolveHostname(for: host)
+        print("🔧 createBasicDevice: Creating device for \(host)")
+
+        // Use custom DNS resolver if enabled, otherwise skip hostname resolution
+        // (Old resolveHostname() blocks main thread with DispatchSemaphore)
+        print("🔧 createBasicDevice: Attempting hostname resolution via custom DNS")
+        var hostname: String? = nil
+
+        // DNS resolution must be done synchronously here, but we'll do it async later
+        // For now, skip to avoid blocking
+        // TODO: Refactor to async hostname resolution during device creation
+        // hostname = await dnsResolver.resolveHostname(for: host)
 
         // Get manufacturer from MAC address
+        print("🔧 createBasicDevice: Getting manufacturer for MAC \(macAddress ?? "none")...")
         let manufacturer = getManufacturer(from: macAddress)
+        print("🔧 createBasicDevice: Manufacturer: \(manufacturer ?? "none")")
 
         let persistedFirstSeen = persistenceManager.getFirstSeen(for: EnhancedDevice(
             ipAddress: host,
@@ -551,7 +1567,15 @@ class IntegratedScannerV3: ObservableObject {
             deviceName: nil
         ))
 
-        return EnhancedDevice(
+        // Check for cached HomeKit data and apply it
+        let homeKitInfo = getHomeKitInfoForIP(host)
+        let deviceNameToUse = homeKitInfo?.deviceName ?? nil
+
+        if let homeKitInfo = homeKitInfo {
+            print("📱 HomeKit: Applying cached HomeKit data to basic device \(host) - \(homeKitInfo.deviceName)")
+        }
+
+        var device = EnhancedDevice(
             ipAddress: host,
             macAddress: macAddress,
             hostname: hostname,
@@ -563,17 +1587,23 @@ class IntegratedScannerV3: ObservableObject {
             lastSeen: Date(),
             isKnownDevice: isKnown,
             operatingSystem: nil,
-            deviceName: nil
+            deviceName: deviceNameToUse
         )
+
+        // Apply HomeKit info if available
+        device.homeKitMDNSInfo = homeKitInfo
+
+        return device
     }
 
     private func createEnhancedDevice(host: String, openPorts: [PortInfo], macAddress: String? = nil, existingDevice: EnhancedDevice? = nil) -> EnhancedDevice {
-        // Resolve DNS hostname (or use existing if available)
-        let hostname = existingDevice?.hostname ?? resolveHostname(for: host)
+        // SKIP hostname resolution - it blocks the main thread with DispatchSemaphore
+        // Use existing hostname if available, otherwise skip
+        let hostname = existingDevice?.hostname
+        // let hostname = existingDevice?.hostname ?? resolveHostname(for: host)
 
-        // Detect manufacturer from MAC address
-        // ManufacturerDatabase not yet implemented - return nil for now
-        let manufacturer: String? = nil // macAddress != nil ? ManufacturerDatabase.shared.getManufacturer(for: macAddress!) : nil
+        // Get manufacturer from MAC address using our OUI database
+        let manufacturer = existingDevice?.manufacturer ?? getManufacturer(from: macAddress)
 
         let firstSeen = existingDevice?.firstSeen ?? persistenceManager.getFirstSeen(for: EnhancedDevice(
             ipAddress: host,
@@ -595,7 +1625,7 @@ class IntegratedScannerV3: ObservableObject {
             macAddress: macAddress,
             hostname: hostname,
             manufacturer: manufacturer,
-            deviceType: detectDeviceType(openPorts: openPorts),
+            deviceType: detectDeviceType(openPorts: openPorts, manufacturer: manufacturer, hostname: hostname),
             openPorts: openPorts,
             isOnline: true,
             firstSeen: firstSeen,
@@ -607,29 +1637,223 @@ class IntegratedScannerV3: ObservableObject {
 
         let isKnown = persistenceManager.isDeviceKnown(tempDevice)
 
-        return EnhancedDevice(
+        // Check for cached HomeKit data and apply it
+        let homeKitInfo = getHomeKitInfoForIP(host)
+        let deviceNameToUse = homeKitInfo?.deviceName ?? nil
+
+        if let homeKitInfo = homeKitInfo {
+            print("📱 HomeKit: Applying cached HomeKit data to \(host) - \(homeKitInfo.deviceName)")
+        }
+
+        var device = EnhancedDevice(
             ipAddress: host,
             macAddress: macAddress,
             hostname: hostname,
             manufacturer: manufacturer,
-            deviceType: detectDeviceType(openPorts: openPorts),
+            deviceType: detectDeviceType(openPorts: openPorts, manufacturer: manufacturer, hostname: hostname),
             openPorts: openPorts,
             isOnline: true,
             firstSeen: firstSeen,
             lastSeen: Date(),
             isKnownDevice: isKnown,
             operatingSystem: nil,
-            deviceName: nil
+            deviceName: deviceNameToUse
         )
+
+        // Apply HomeKit info if available
+        device.homeKitMDNSInfo = homeKitInfo
+
+        return device
     }
 
-    private func detectDeviceType(openPorts: [PortInfo]) -> EnhancedDevice.DeviceType {
+    private func detectDeviceType(openPorts: [PortInfo], manufacturer: String? = nil, hostname: String? = nil) -> EnhancedDevice.DeviceType {
         let ports = Set(openPorts.map { $0.port })
 
+        // Check port service names for specific device types
+        let serviceNames = openPorts.compactMap { $0.service.lowercased() }
+
+        // Bose devices detected by service name
+        if serviceNames.contains(where: { $0.contains("bose") }) {
+            return .iot
+        }
+
+        // Check manufacturer and hostname patterns for IoT devices first
+        if let mfr = manufacturer?.lowercased() {
+            // Ubiquiti - Context-aware classification
+            if mfr.contains("ubiquiti") {
+                // Check hostname for device type
+                if let host = hostname?.lowercased() {
+                    // UniFi Protect cameras are IoT
+                    if host.contains("camera") || host.contains("protect") || host.contains("g3") ||
+                       host.contains("g4") || host.contains("g5") || host.contains("ai") {
+                        return .iot
+                    }
+                    // Dream Machine, switches, APs are network infrastructure
+                    if host.contains("udm") || host.contains("dream") || host.contains("switch") ||
+                       host.contains("ap") || host.contains("access") || host.contains("gateway") {
+                        return .router
+                    }
+                }
+                // Port-based detection: RTSP (554, 7447) = camera, other networking ports = router
+                if ports.intersection([554, 7447, 7442, 7080]).count > 0 {  // RTSP and UniFi Protect ports
+                    return .iot  // UniFi Protect camera
+                }
+                if ports.intersection([22, 80, 443, 8443]).count >= 2 {  // SSH + Web interface
+                    return .router  // UniFi network device (Dream Machine, Switch, AP)
+                }
+                // Default: if we can't determine, assume network infrastructure
+                return .router
+            }
+
+            // ALWAYS IoT manufacturers (smart home devices)
+            if mfr.contains("philips lighting") || mfr.contains("hue") ||
+               mfr.contains("sengled") || mfr.contains("lifx") ||
+               mfr.contains("ge lighting") || mfr.contains("ikea tradfri") ||
+               mfr.contains("wemo") || mfr.contains("kasa") ||
+               mfr.contains("wyze") || mfr.contains("ring") ||
+               mfr.contains("ecobee") || mfr.contains("nest") ||
+               mfr.contains("smartthings") || mfr.contains("shelly") ||
+               mfr.contains("tuya") || mfr.contains("aqara") ||
+               mfr.contains("lutron") || mfr.contains("sonos") ||
+               mfr.contains("koogeek") || // Koogeek smart home devices
+               mfr.contains("kogeek") || // Kogeek smart home devices
+               mfr.contains("bose") || // Bose smart speakers/audio
+               mfr.contains("onkyo") || // Onkyo receivers/audio
+               mfr.contains("amazon") && !mfr.contains("aws") ||  // Amazon Echo, not AWS servers
+               mfr.contains("google") && !mfr.contains("cloud") || // Google Home, not Google Cloud
+               mfr.contains("xiaomi") ||
+               mfr.contains("espressif") ||  // ESP32/ESP8266 - always IoT
+               mfr.contains("azurewave technology") ||  // WiFi modules for IoT
+               mfr.contains("texas instruments") && ports.intersection([1883, 8883, 8123, 49152, 32498]).count > 0 {  // TI chips in IoT context
+                return .iot
+            }
+
+            // HP devices - printers
+            if mfr.contains("hp") || mfr.contains("hewlett") || mfr.contains("hewlett-packard") {
+                return .printer
+            }
+
+            // Raspberry Pi - check if it's being used as IoT/HomeKit device or as a computer
+            if mfr.contains("raspberry") {
+                // If it has HomeKit/MQTT/IoT ports, classify as IoT
+                if ports.intersection([1883, 8883, 8123, 49152, 32498]).count > 0 {
+                    return .iot
+                }
+                // If it has web server + specific IoT patterns, it's likely Home Assistant, HomeBridge, etc.
+                if (ports.contains(8123) || ports.contains(51826)) { // Home Assistant or HomeBridge
+                    return .iot
+                }
+                // Check hostname for IoT patterns
+                if let host = hostname?.lowercased() {
+                    if host.contains("homebridge") || host.contains("homeassistant") ||
+                       host.contains("pihole") || host.contains("home-") {
+                        return .iot
+                    }
+                }
+                // Otherwise, treat as a computer/server (SSH, general purpose)
+                return .computer
+            }
+
+            // Apple IoT devices (Apple TV, HomePod, etc.)
+            if mfr.contains("apple") {
+                if let host = hostname?.lowercased() {
+                    if host.contains("appletv") || host.contains("apple-tv") {
+                        return .iot
+                    }
+                    if host.contains("homepod") || host.contains("home-pod") {
+                        return .iot
+                    }
+                }
+                // Check for Apple TV / HomePod ports (AirPlay, HomeKit)
+                // HomePods typically have AirPlay (3689, 5000, 7000) and/or HomeKit (49152, 32498) ports
+                if ports.intersection([3689, 5000, 7000, 32498, 49152]).count >= 1 {
+                    // If it has AirPlay or HomeKit ports and is Apple, likely HomePod or Apple TV
+                    return .iot
+                }
+                // Check for AirPlay RAOP port (often used by HomePods)
+                if ports.contains(7000) || ports.contains(49152) {
+                    return .iot
+                }
+            }
+        }
+
+        // Check hostname patterns for common IoT devices
+        if let host = hostname?.lowercased() {
+            // iPhones - mobile category
+            if host.contains("iphone") {
+                return .mobile
+            }
+
+            // mDNS networking devices
+            if host.contains("_mcast") || host.contains(".mcast") || host.contains("mcast.dns") {
+                return .router
+            }
+
+            // Apple IoT
+            if host.contains("appletv") || host.contains("apple-tv") ||
+               host.contains("homepod") || host.contains("home-pod") {
+                return .iot
+            }
+
+            // Bose devices
+            if host.contains("bose") {
+                return .iot
+            }
+
+            // Onkyo devices
+            if host.contains("onkyo") {
+                return .iot
+            }
+
+            // Google Home and Nest devices (more patterns)
+            if host.contains("google-home") || host.contains("googlehome") ||
+               host.contains("google home") || host.contains("nest-") ||
+               host.contains("nest-hub") || host.contains("nesthub") ||
+               host.contains("nest-mini") || host.contains("nestmini") ||
+               host.contains("nest-audio") || host.contains("nestaudio") ||
+               host.contains("nest-wifi") || host.contains("nestwifi") ||
+               host.contains("nest-cam") || host.contains("nestcam") ||
+               host.contains("nest-protect") || host.contains("chromecast") {
+                return .iot
+            }
+
+            // Smart home hubs and controllers
+            if host.contains("hue") || host.contains("philips") ||
+               host.contains("homekit") || host.contains("homebridge") ||
+               host.contains("smartthings") || host.contains("alexa") ||
+               host.contains("nest") ||
+               host.contains("lutron") || host.contains("caseta") ||
+               host.contains("koogeek") || host.contains("kogeek") {
+                return .iot
+            }
+
+            // Smart switches and outlets
+            if host.contains("switch") || host.contains("plug") ||
+               host.contains("outlet") || host.contains("dimmer") ||
+               host.contains("bulb") || host.contains("light") {
+                return .iot
+            }
+        }
+
+        // Network Infrastructure (routers, switches, gateways)
         if ports.intersection([53, 67, 68]).count > 0 { return .router }
+
+        // Servers and NAS
         if ports.intersection([3306, 5432, 1433, 27017]).count > 0 { return .server }
+        if ports.intersection([5000, 5001]).count > 0 && ports.contains(22) { return .server } // Synology NAS
+        if ports.intersection([8080, 8443, 9000]).count > 0 && ports.contains(22) { return .server } // Web/App servers
+
+        // Printers
         if ports.intersection([631, 9100]).count > 0 { return .printer }
-        if ports.intersection([1883, 8883]).count > 0 { return .iot }
+
+        // IoT devices (MQTT, HomeKit, smart home)
+        if ports.intersection([1883, 8883, 1400]).count > 0 { return .iot } // MQTT, Sonos
+        if ports.intersection([49152, 32498]).count > 0 { return .iot } // HomeKit accessory ports (HomePods, etc.)
+
+        // Apple AirPlay devices (HomePods, Apple TVs) - fallback if manufacturer not detected
+        if ports.intersection([3689, 5000, 7000]).count >= 2 { return .iot } // AirPlay ports
+
+        // Computers (file sharing, SMB)
         if ports.intersection([139, 445, 548]).count > 0 { return .computer }
 
         return .unknown
@@ -1378,7 +2602,6 @@ class IntegratedScannerV3: ObservableObject {
             "98:2F:C3": "Samsung",
             "98:52:B1": "Samsung",
             "98:83:89": "Samsung",
-            "98:E0:D9": "Samsung",
             "9C:02:98": "Samsung",
             "9C:3A:AF": "Samsung",
             "9C:3D:CF": "Samsung",
@@ -1399,7 +2622,6 @@ class IntegratedScannerV3: ObservableObject {
             "B0:D5:9D": "Samsung",
             "B4:07:F9": "Samsung",
             "B4:EF:39": "Samsung",
-            "B4:F0:AB": "Samsung",
             "B8:5E:7B": "Samsung",
             "BC:14:85": "Samsung",
             "BC:44:86": "Samsung",
@@ -1480,9 +2702,110 @@ class IntegratedScannerV3: ObservableObject {
             "FC:A1:3E": "Samsung",
             "FC:C7:34": "Samsung",
             "FC:DB:B3": "Samsung",
-            "DC:EB:69": "Raspberry Pi Foundation",
+            "28:CD:C1": "Raspberry Pi Foundation",
+            "2C:CF:67": "Raspberry Pi Foundation",
             "B8:27:EB": "Raspberry Pi Foundation",
-            "E4:5F:01": "Raspberry Pi Foundation"
+            "D8:3A:DD": "Raspberry Pi Foundation",
+            "DC:A6:32": "Raspberry Pi Foundation",
+            "DC:EB:69": "Raspberry Pi Foundation",
+            "E4:5F:01": "Raspberry Pi Foundation",
+
+            // Common IoT Device Manufacturers
+            "40:9F:38": "AzureWave Technology",  // WiFi modules for IoT
+            "B4:BC:7C": "Texas Instruments",     // TI IoT chips (smart switches, sensors)
+            "C4:F7:C1": "Espressif",            // ESP32/ESP8266 WiFi modules (very common in DIY IoT)
+            "24:0A:C4": "Espressif",            // ESP32/ESP8266
+            "A4:CF:12": "Espressif",            // ESP32/ESP8266
+            "3C:71:BF": "Espressif",            // ESP8266
+            "30:AE:A4": "Espressif",            // ESP32
+            "DC:4F:22": "Espressif",            // ESP32
+            "58:D3:49": "Philips Lighting",     // Philips Hue
+            "00:17:88": "Philips Lighting",     // Philips Hue
+            "EC:B5:FA": "Philips Lighting",     // Philips Hue
+            "40:ED:CF": "Sengled",              // Sengled smart bulbs
+            "C0:97:27": "Samsung SmartThings",  // SmartThings IoT hub
+            "D0:52:A8": "Samsung SmartThings",  // SmartThings IoT hub
+            "28:6D:97": "Amazon",               // Echo devices
+            "00:FC:8B": "Amazon",               // Echo/Alexa devices
+            "84:D6:D0": "Amazon",               // Echo/Alexa devices
+            "AC:63:BE": "Amazon",               // Echo/Alexa devices
+            "6C:56:97": "Google",               // Google Home/Nest
+            "F4:F5:D8": "Google",               // Google Home/Nest
+            "48:D6:D5": "Google",               // Google Home/Nest
+            "1C:F2:9A": "Sonos",                // Sonos smart speakers
+            "5C:AA:FD": "Sonos",                // Sonos smart speakers
+            "94:9F:3E": "Sonos",                // Sonos smart speakers
+            "B8:E9:37": "Sonos",                // Sonos smart speakers
+            "00:0E:58": "Sonos",                // Sonos smart speakers
+            "54:2A:1B": "TP-Link Kasa",         // Kasa smart plugs/switches
+            // "50:C7:BF": "TP-Link Kasa" - duplicate entry, already assigned to TP-Link above
+            "B0:95:75": "TP-Link Kasa",         // Kasa smart devices
+            "C0:06:C3": "TP-Link Kasa",         // Kasa smart devices
+            "44:32:C8": "Wyze Labs",            // Wyze cameras, sensors
+            "7C:78:B2": "Wyze Labs",            // Wyze devices
+            "2C:AA:8E": "Wyze Labs",            // Wyze devices
+            "D0:3F:27": "Xiaomi",               // Xiaomi smart home devices
+            "64:90:C1": "Xiaomi",               // Xiaomi IoT
+            "34:CE:00": "Xiaomi",               // Xiaomi IoT
+            "50:EC:50": "Xiaomi",               // Xiaomi IoT
+            "6C:5A:B0": "LIFX",                 // LIFX smart bulbs
+            "D0:73:D5": "LIFX",                 // LIFX smart bulbs
+            "00:22:A9": "Ring",                 // Ring doorbells/cameras
+            "B4:7C:9C": "Ring",                 // Ring devices
+            "1C:53:F9": "GE Lighting",          // C by GE smart bulbs
+            "6C:02:E0": "Belkin Wemo",          // Wemo smart plugs
+            "94:10:3E": "Belkin Wemo",          // Wemo devices
+            "EC:1A:59": "Belkin Wemo",          // Wemo devices
+            "DC:EF:09": "ecobee",               // ecobee smart thermostats
+            "44:61:32": "ecobee",               // ecobee thermostats
+            "00:09:B0": "Lutron",               // Lutron Caseta smart switches
+            // "68:5B:35": "Shelly" - duplicate entry, already assigned to Apple above
+            "C4:5B:BE": "Shelly",               // Shelly IoT devices
+            "80:64:6F": "Tuya",                 // Tuya Smart (white label IoT platform)
+            "84:F3:EB": "Tuya",                 // Tuya Smart devices
+            "68:C6:3A": "Tuya",                 // Tuya Smart devices
+            "1C:90:FF": "Tuya",                 // Tuya Smart devices
+            "D8:1F:12": "Aqara",                // Aqara (Xiaomi) smart home
+            "54:EF:44": "Aqara",                // Aqara sensors/switches
+            "00:15:8D": "IKEA Tradfri",         // IKEA smart lighting
+            "CC:86:EC": "IKEA Tradfri",         // IKEA smart lighting
+
+            // Additional Google/Nest Devices
+            "3C:5A:B4": "Google",               // Google Home/Nest
+            "54:60:09": "Google",               // Google Nest devices
+            "1C:43:09": "Google",               // Google Chromecast/Nest
+            "30:FD:38": "Google",               // Google WiFi/Nest WiFi
+            "CC:D7:86": "Google",               // Google Nest Protect
+            "00:1A:11": "Google",               // Google devices
+            "6C:56:97": "Google",               // Google Home/Nest (already listed above)
+            "F4:F5:D8": "Google",               // Google Home/Nest (already listed above)
+            "48:D6:D5": "Google",               // Google Home/Nest (already listed above)
+            "B4:F0:AB": "Google",               // Google Chromecast
+            "D0:E7:82": "Google",               // Google Home
+            "A4:77:33": "Google",               // Google Nest
+            "18:B4:30": "Google",               // Google devices
+            "F4:60:E2": "Google",               // Google Nest Hub
+
+            // Kogeek Smart Home Devices
+            "78:A5:04": "Kogeek",               // Kogeek smart plugs, switches
+            // "68:C6:3A": "Kogeek" - duplicate entry, already assigned to Tuya above
+            "50:8A:06": "Kogeek",               // Kogeek smart home
+
+            // Ubiquiti Networks (UniFi Protect cameras, Dream Machine, Access Points)
+            "FC:EC:DA": "Ubiquiti",             // UniFi devices (cameras, APs, switches)
+            "74:AC:B9": "Ubiquiti",             // UniFi Dream Machine, Protect cameras
+            "68:D7:9A": "Ubiquiti",             // UniFi Access Points
+            "04:18:D6": "Ubiquiti",             // UniFi devices
+            "80:2A:A8": "Ubiquiti",             // UniFi devices
+            "F0:9F:C2": "Ubiquiti",             // UniFi devices
+            "24:A4:3C": "Ubiquiti",             // UniFi devices
+            "18:E8:29": "Ubiquiti",             // UniFi devices
+            "DC:9F:DB": "Ubiquiti",             // UniFi devices
+            "F4:E2:C6": "Ubiquiti",             // UniFi devices
+            "78:8A:20": "Ubiquiti",             // UniFi devices
+            "44:D9:E7": "Ubiquiti",             // UniFi devices
+            "E0:63:DA": "Ubiquiti",             // UniFi devices
+            "B4:FB:E4": "Ubiquiti"              // UniFi devices
         ]
 
         return ouiDatabase[oui]
@@ -1504,6 +2827,346 @@ struct StatItem: View {
                 .font(.system(size: 18))
                 .foregroundColor(.secondary)
         }
+    }
+}
+
+// MARK: - Device Card - Home App Style
+
+struct DeviceCard: View {
+    let device: EnhancedDevice
+    let onTap: () -> Void
+    let onScan: () -> Void
+
+    var body: some View {
+        Button(action: onTap) {
+            VStack(alignment: .leading, spacing: 12) {
+                // Device Icon and Online Status
+                HStack(spacing: 12) {
+                    ZStack {
+                        Circle()
+                            .fill(deviceColor.opacity(0.15))
+                            .frame(width: 48, height: 48)
+
+                        // Use manufacturer-specific icon if available, otherwise device type icon
+                        let iconManager = ManufacturerIconManager.shared
+                        if let manufacturerIcon = iconManager.getIcon(for: device.manufacturer) {
+                            Image(systemName: manufacturerIcon)
+                                .font(.system(size: 24, weight: .medium))
+                                .foregroundColor(iconManager.getColor(for: device.manufacturer) ?? deviceColor)
+                        } else if let manufacturer = device.manufacturer, let logo = manufacturerLogo(manufacturer) {
+                            Text(logo)
+                                .font(.system(size: 24))
+                        } else {
+                            Image(systemName: deviceIcon)
+                                .font(.system(size: 24, weight: .medium))
+                                .foregroundColor(deviceColor)
+                        }
+                    }
+
+                    VStack(alignment: .leading, spacing: 2) {
+                        // Device Role Badge
+                        if let role = deviceRole {
+                            Text(role)
+                                .font(.system(size: 11, weight: .semibold))
+                                .foregroundColor(.white)
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 3)
+                                .background(roleColor)
+                                .cornerRadius(6)
+                        }
+                    }
+
+                    Spacer()
+
+                    // Online indicator
+                    Circle()
+                        .fill(device.isOnline ? Color.green : Color.gray)
+                        .frame(width: 10, height: 10)
+                }
+
+                // Device Name/IP
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(device.hostname ?? device.ipAddress)
+                        .font(.system(size: 17, weight: .semibold))
+                        .foregroundColor(.primary)
+                        .lineLimit(1)
+
+                    if device.hostname != nil {
+                        Text(device.ipAddress)
+                            .font(.system(size: 13, weight: .regular))
+                            .foregroundColor(.secondary)
+                            .lineLimit(1)
+                    }
+                }
+
+                // Manufacturer with logo
+                if let manufacturer = device.manufacturer {
+                    HStack(spacing: 6) {
+                        if let logo = manufacturerLogo(manufacturer) {
+                            Text(logo)
+                                .font(.system(size: 16))
+                        }
+                        Text(manufacturer)
+                            .font(.system(size: 13, weight: .regular))
+                            .foregroundColor(.secondary)
+                            .lineLimit(1)
+                    }
+                }
+
+                // Open Ports with Names
+                if !device.openPorts.isEmpty {
+                    VStack(alignment: .leading, spacing: 6) {
+                        HStack(spacing: 6) {
+                            Image(systemName: "network")
+                                .font(.system(size: 11, weight: .medium))
+                                .foregroundColor(.green)
+                            Text("\(device.openPorts.count) ports open")
+                                .font(.system(size: 13, weight: .semibold))
+                                .foregroundColor(.green)
+                        }
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 4)
+                        .background(Color.green.opacity(0.1))
+                        .cornerRadius(8)
+
+                        // Show first 3 ports with names
+                        ForEach(device.openPorts.prefix(3)) { portInfo in
+                            HStack(spacing: 6) {
+                                Text("\(portInfo.port)")
+                                    .font(.system(size: 12, weight: .medium, design: .monospaced))
+                                    .foregroundColor(.blue)
+                                Text("•")
+                                    .font(.system(size: 10))
+                                    .foregroundColor(.secondary)
+                                Text(portInfo.service)
+                                    .font(.system(size: 12, weight: .regular))
+                                    .foregroundColor(.secondary)
+                                    .lineLimit(1)
+                            }
+                        }
+
+                        if device.openPorts.count > 3 {
+                            Text("+ \(device.openPorts.count - 3) more")
+                                .font(.system(size: 11, weight: .regular))
+                                .foregroundColor(.secondary)
+                        }
+                    }
+                }
+
+                // Scan button at bottom of card
+                Button(action: onScan) {
+                    HStack(spacing: 6) {
+                        Image(systemName: "arrow.clockwise")
+                            .font(.system(size: 12, weight: .semibold))
+                        Text("Rescan")
+                            .font(.system(size: 13, weight: .semibold))
+                    }
+                    .foregroundColor(.blue)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 6)
+                    .background(Color.blue.opacity(0.1))
+                    .cornerRadius(8)
+                }
+                .buttonStyle(.plain)
+            }
+            .padding(16)
+            .background(
+                RoundedRectangle(cornerRadius: 14)
+                    .fill(Color(NSColor.controlBackgroundColor))
+                    .shadow(color: Color.black.opacity(0.06), radius: 8, x: 0, y: 2)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 14)
+                    .stroke(Color.gray.opacity(0.1), lineWidth: 1)
+            )
+        }
+        .buttonStyle(.plain)
+    }
+
+    // Determine device role based on open ports and type
+    private var deviceRole: String? {
+        let ports = Set(device.openPorts.map { $0.port })
+
+        // Gateway/Router detection
+        if ports.contains(53) || ports.contains(67) || ports.contains(68) {
+            return "GATEWAY"
+        }
+
+        // Web Server detection
+        if ports.contains(80) || ports.contains(443) || ports.contains(8080) {
+            return "WEB SERVER"
+        }
+
+        // Database Server detection
+        if ports.intersection([3306, 5432, 1433, 27017, 6379]).count > 0 {
+            return "DATABASE"
+        }
+
+        // File Server detection
+        if ports.intersection([445, 139, 548, 2049]).count > 0 {
+            return "FILE SERVER"
+        }
+
+        // Print Server detection
+        if ports.intersection([631, 9100]).count > 0 {
+            return "PRINTER"
+        }
+
+        // Mail Server detection
+        if ports.intersection([25, 465, 587, 143, 993, 110, 995]).count > 0 {
+            return "MAIL SERVER"
+        }
+
+        // SSH/Remote Access detection
+        if ports.contains(22) || ports.contains(3389) || ports.contains(5900) {
+            return "REMOTE ACCESS"
+        }
+
+        // IoT/Smart Home detection
+        if ports.intersection([1883, 8883, 8123, 1400]).count > 0 {
+            return "SMART HOME"
+        }
+
+        // Media Server detection
+        if ports.intersection([32400, 8096, 8920, 9091]).count > 0 {
+            return "MEDIA SERVER"
+        }
+
+        // NAS detection
+        if ports.intersection([5000, 5001]).count > 0 {
+            return "NAS"
+        }
+
+        return nil
+    }
+
+    private var roleColor: Color {
+        guard let role = deviceRole else { return .gray }
+
+        switch role {
+        case "GATEWAY": return .blue
+        case "WEB SERVER": return .green
+        case "DATABASE": return .purple
+        case "FILE SERVER": return .orange
+        case "PRINTER": return .pink
+        case "MAIL SERVER": return .cyan
+        case "REMOTE ACCESS": return .red
+        case "SMART HOME": return .mint
+        case "MEDIA SERVER": return .indigo
+        case "NAS": return .teal
+        default: return .gray
+        }
+    }
+
+    private var deviceIcon: String {
+        switch device.deviceType {
+        case .router: return "wifi.router"
+        case .server: return "server.rack"
+        case .computer: return "desktopcomputer"
+        case .mobile: return "iphone"
+        case .iot: return "sensor.fill"
+        case .printer: return "printer"
+        case .unknown: return "questionmark.circle"
+        }
+    }
+
+    private var deviceColor: Color {
+        switch device.deviceType {
+        case .router: return .blue
+        case .server: return .purple
+        case .computer: return .orange
+        case .mobile: return .green
+        case .iot: return .cyan
+        case .printer: return .pink
+        case .unknown: return .gray
+        }
+    }
+
+    // Manufacturer logo/emoji mapping
+    private func manufacturerLogo(_ manufacturer: String) -> String? {
+        let logos: [String: String] = [
+            "Apple": "🍎",
+            "Microsoft": "🪟",
+            "Dell": "💻",
+            "HP": "🖨️",
+            "Samsung": "📱",
+            "Intel": "⚡️",
+            "Cisco": "🌐",
+            "Netgear": "📡",
+            "Linksys": "📶",
+            "TP-Link": "🔗",
+            "D-Link": "🔌",
+            "Broadcom": "📟",
+            "VMware": "☁️",
+            "Oracle VirtualBox": "📦",
+            "QEMU/KVM": "🖥️",
+            "Raspberry Pi Foundation": "🥧"
+        ]
+
+        return logos[manufacturer]
+    }
+}
+
+// MARK: - Manual Scan View
+
+struct ManualScanView: View {
+    @Binding var ipAddress: String
+    let onScan: () -> Void
+    let onCancel: () -> Void
+
+    var body: some View {
+        VStack(spacing: 24) {
+            Text("Scan Single Host")
+                .font(.system(size: 28, weight: .bold))
+                .foregroundColor(.primary)
+
+            Text("Enter an IP address to scan")
+                .font(.system(size: 15))
+                .foregroundColor(.secondary)
+
+            TextField("192.168.1.100", text: $ipAddress)
+                .font(.system(size: 17, design: .monospaced))
+                .textFieldStyle(.roundedBorder)
+                .padding(.horizontal, 40)
+
+            HStack(spacing: 16) {
+                Button(action: onCancel) {
+                    Text("Cancel")
+                        .font(.system(size: 17, weight: .semibold))
+                        .foregroundColor(.primary)
+                        .padding(.horizontal, 32)
+                        .padding(.vertical, 12)
+                        .background(Color(NSColor.controlBackgroundColor))
+                        .cornerRadius(10)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 10)
+                                .stroke(Color.gray.opacity(0.2), lineWidth: 1)
+                        )
+                }
+                .buttonStyle(.plain)
+
+                Button(action: onScan) {
+                    Text("Scan")
+                        .font(.system(size: 17, weight: .semibold))
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 32)
+                        .padding(.vertical, 12)
+                        .background(
+                            LinearGradient(
+                                colors: [Color.blue, Color.blue.opacity(0.8)],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
+                        .cornerRadius(10)
+                        .shadow(color: Color.black.opacity(0.1), radius: 8, x: 0, y: 4)
+                }
+                .buttonStyle(.plain)
+                .disabled(ipAddress.isEmpty)
+            }
+        }
+        .padding(40)
+        .frame(width: 500, height: 300)
     }
 }
 

@@ -1,0 +1,1044 @@
+//
+//  AdvancedSecurityVisualizations.swift
+//  NMAPScanner - Advanced Security & Traffic Visualizations
+//
+//  Created by Jordan Koch & Claude Code on 2025-11-27.
+//
+
+import SwiftUI
+import Charts
+import MapKit
+
+// MARK: - 1. Real-Time Packet Flow Animation
+
+struct PacketFlowAnimationView: View {
+    let devices: [EnhancedDevice]
+    @StateObject private var trafficAnalyzer = NetworkTrafficAnalyzer.shared
+    @State private var animationPhase: Double = 0
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Text("LIVE PACKET FLOW")
+                .font(.system(size: 24, weight: .bold, design: .monospaced))
+                .foregroundColor(LCARSColors.orange)
+                .padding(.horizontal, 20)
+
+            ZStack {
+                // Background
+                Rectangle()
+                    .fill(Color.black.opacity(0.95))
+                    .cornerRadius(20)
+
+                // Device nodes
+                ForEach(Array(devices.prefix(20).enumerated()), id: \.element.id) { index, device in
+                    DeviceNode(
+                        device: device,
+                        position: nodePosition(for: index, total: min(devices.count, 20))
+                    )
+                }
+
+                // Connection lines with animation
+                ForEach(trafficAnalyzer.activeConnections.prefix(50)) { connection in
+                    ConnectionLineIfValid(
+                        connection: connection,
+                        devices: devices,
+                        animationPhase: animationPhase,
+                        nodePosition: nodePosition
+                    )
+                }
+            }
+            .frame(height: 500)
+            .onAppear {
+                withAnimation(.linear(duration: 2.0).repeatForever(autoreverses: false)) {
+                    animationPhase = 1.0
+                }
+            }
+        }
+        .padding(24)
+        .background(LCARSColors.panelBackground)
+        .cornerRadius(20)
+    }
+
+    private func nodePosition(for index: Int, total: Int) -> CGPoint {
+        let angle = (Double(index) / Double(total)) * 2 * .pi
+        let radius = 200.0
+        return CGPoint(
+            x: 300 + radius * cos(angle),
+            y: 250 + radius * sin(angle)
+        )
+    }
+}
+
+struct ConnectionLineIfValid: View {
+    let connection: NetworkConnection
+    let devices: [EnhancedDevice]
+    let animationPhase: Double
+    let nodePosition: (Int, Int) -> CGPoint
+
+    var body: some View {
+        if let sourceIndex = devices.firstIndex(where: { $0.ipAddress == connection.localEndpoint }),
+           let destIndex = devices.firstIndex(where: { $0.ipAddress == connection.remoteEndpoint }) {
+            AnimatedConnectionLine(
+                from: nodePosition(sourceIndex, min(devices.count, 20)),
+                to: nodePosition(destIndex, min(devices.count, 20)),
+                bandwidth: Int(connection.bytesOut + connection.bytesIn),
+                protocolType: connection.protocolType,
+                animationPhase: animationPhase
+            )
+        } else {
+            EmptyView()
+        }
+    }
+}
+
+struct DeviceNode: View {
+    let device: EnhancedDevice
+    let position: CGPoint
+
+    var body: some View {
+        ZStack {
+            Circle()
+                .fill(device.isOnline ? Color.green : Color.gray)
+                .frame(width: 30, height: 30)
+                .shadow(color: device.isOnline ? .green : .gray, radius: 8)
+
+            if device.openPorts.count > 5 {
+                Circle()
+                    .stroke(Color.red, lineWidth: 3)
+                    .frame(width: 36, height: 36)
+            }
+        }
+        .position(position)
+    }
+}
+
+struct AnimatedConnectionLine: View {
+    let from: CGPoint
+    let to: CGPoint
+    let bandwidth: Int
+    let protocolType: String
+    let animationPhase: Double
+
+    var lineColor: Color {
+        switch protocolType.uppercased() {
+        case "HTTP": return .green
+        case "HTTPS": return .blue
+        case "SSH": return .orange
+        case "FTP": return .yellow
+        case "DNS": return .purple
+        default: return .white
+        }
+    }
+
+    var body: some View {
+        Path { path in
+            path.move(to: from)
+            path.addLine(to: to)
+        }
+        .stroke(
+            lineColor.opacity(0.6),
+            style: StrokeStyle(
+                lineWidth: max(2, min(10, Double(bandwidth) / 100000)),
+                lineCap: .round,
+                dash: [10, 5],
+                dashPhase: animationPhase * 15
+            )
+        )
+        .shadow(color: lineColor.opacity(0.4), radius: 4)
+    }
+}
+
+// MARK: - 2. Attack Kill Chain Timeline
+
+struct AttackKillChainTimeline: View {
+    @StateObject private var vulnerabilityScanner = VulnerabilityScanner()
+    @StateObject private var anomalyManager = AnomalyDetectionManager.shared
+
+    var killChainStages: [(stage: String, status: KillChainStatus, icon: String)] {
+        [
+            ("Reconnaissance", detectReconnaissance(), "magnifyingglass"),
+            ("Weaponization", .notDetected, "hammer.fill"),
+            ("Delivery", .notDetected, "paperplane.fill"),
+            ("Exploitation", detectExploitation(), "bolt.fill"),
+            ("Installation", .notDetected, "arrow.down.circle.fill"),
+            ("Command & Control", detectC2(), "antenna.radiowaves.left.and.right"),
+            ("Actions on Objectives", .notDetected, "target")
+        ]
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Text("MITRE ATT&CK KILL CHAIN")
+                .font(.system(size: 24, weight: .bold, design: .monospaced))
+                .foregroundColor(LCARSColors.orange)
+                .padding(.horizontal, 20)
+
+            HStack(spacing: 8) {
+                ForEach(Array(killChainStages.enumerated()), id: \.offset) { index, stage in
+                    VStack(spacing: 8) {
+                        // Stage indicator
+                        ZStack {
+                            Circle()
+                                .fill(stage.status.color)
+                                .frame(width: 60, height: 60)
+                                .shadow(color: stage.status.color.opacity(0.6), radius: 8)
+
+                            Image(systemName: stage.icon)
+                                .font(.system(size: 24))
+                                .foregroundColor(.white)
+                        }
+
+                        // Stage name
+                        Text(stage.stage)
+                            .font(.system(size: 11, weight: .medium, design: .monospaced))
+                            .foregroundColor(LCARSColors.paleOrange)
+                            .multilineTextAlignment(.center)
+                            .frame(width: 100)
+                    }
+
+                    if index < killChainStages.count - 1 {
+                        // Connector arrow
+                        Image(systemName: "arrow.right")
+                            .font(.system(size: 20))
+                            .foregroundColor(LCARSColors.blue)
+                            .padding(.horizontal, 4)
+                    }
+                }
+            }
+            .padding(20)
+        }
+        .padding(24)
+        .background(LCARSColors.panelBackground)
+        .cornerRadius(20)
+    }
+
+    private func detectReconnaissance() -> KillChainStatus {
+        let portScans = anomalyManager.anomalies.filter { $0.type == .newOpenPorts }
+        return portScans.count > 5 ? .detected : .notDetected
+    }
+
+    private func detectExploitation() -> KillChainStatus {
+        let criticalVulns = vulnerabilityScanner.vulnerabilities.filter { $0.severity == .critical }
+        return !criticalVulns.isEmpty ? .detected : .notDetected
+    }
+
+    private func detectC2() -> KillChainStatus {
+        // Placeholder - would check for beaconing patterns
+        return .notDetected
+    }
+}
+
+enum KillChainStatus {
+    case notDetected, detected, inProgress
+
+    var color: Color {
+        switch self {
+        case .notDetected: return LCARSColors.blue
+        case .detected: return LCARSColors.red
+        case .inProgress: return LCARSColors.yellow
+        }
+    }
+}
+
+// MARK: - 3. Geographic Connection Map
+
+struct GeographicConnectionMap: View {
+    @StateObject private var geoLocator = GeoLocationManager.shared
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Text("EXTERNAL CONNECTIONS MAP")
+                .font(.system(size: 24, weight: .bold, design: .monospaced))
+                .foregroundColor(LCARSColors.orange)
+                .padding(.horizontal, 20)
+
+            ZStack {
+                // World map background
+                Image(systemName: "map.fill")
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .foregroundColor(LCARSColors.blue.opacity(0.3))
+                    .frame(height: 400)
+
+                // Connection arcs
+                ForEach(geoLocator.externalConnections) { connection in
+                    ConnectionArc(
+                        from: CGPoint(x: 300, y: 200), // Local network position
+                        to: connection.position,
+                        threatLevel: connection.threatLevel
+                    )
+                }
+
+                // Destination markers
+                ForEach(geoLocator.externalConnections) { connection in
+                    Circle()
+                        .fill(connection.threatLevel.color)
+                        .frame(width: 12, height: 12)
+                        .position(connection.position)
+                        .shadow(color: connection.threatLevel.color, radius: 8)
+                }
+            }
+            .frame(height: 400)
+
+            // Legend
+            HStack(spacing: 20) {
+                LegendItem(color: .green, label: "TRUSTED")
+                LegendItem(color: .yellow, label: "UNKNOWN")
+                LegendItem(color: .red, label: "MALICIOUS")
+            }
+            .padding(.horizontal, 20)
+        }
+        .padding(24)
+        .background(LCARSColors.panelBackground)
+        .cornerRadius(20)
+    }
+}
+
+struct ConnectionArc: View {
+    let from: CGPoint
+    let to: CGPoint
+    let threatLevel: ThreatLevel
+
+    var body: some View {
+        Path { path in
+            let controlPoint = CGPoint(
+                x: (from.x + to.x) / 2,
+                y: min(from.y, to.y) - 50
+            )
+            path.move(to: from)
+            path.addQuadCurve(to: to, control: controlPoint)
+        }
+        .stroke(threatLevel.color.opacity(0.6), lineWidth: 2)
+        .shadow(color: threatLevel.color.opacity(0.4), radius: 4)
+    }
+}
+
+// MARK: - 4. Port Activity Heatmap (Time-based)
+
+struct PortActivityHeatmap: View {
+    @StateObject private var portMonitor = PortActivityMonitor.shared
+
+    let hours = Array(0..<24)
+    let commonPorts = [20, 21, 22, 23, 25, 53, 80, 110, 143, 443, 445, 3306, 3389, 5432, 8080]
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Text("PORT ACTIVITY HEATMAP (24 HOURS)")
+                .font(.system(size: 24, weight: .bold, design: .monospaced))
+                .foregroundColor(LCARSColors.orange)
+                .padding(.horizontal, 20)
+
+            // Heatmap grid
+            VStack(spacing: 2) {
+                // Hour labels
+                HStack(spacing: 2) {
+                    Text("Port")
+                        .font(.system(size: 10, design: .monospaced))
+                        .frame(width: 50)
+
+                    ForEach(hours, id: \.self) { hour in
+                        Text("\(hour)")
+                            .font(.system(size: 10, design: .monospaced))
+                            .frame(width: 30)
+                    }
+                }
+                .foregroundColor(LCARSColors.blue)
+
+                // Port rows
+                ForEach(commonPorts, id: \.self) { port in
+                    HStack(spacing: 2) {
+                        Text("\(port)")
+                            .font(.system(size: 10, weight: .medium, design: .monospaced))
+                            .frame(width: 50, alignment: .leading)
+                            .foregroundColor(LCARSColors.paleOrange)
+
+                        ForEach(hours, id: \.self) { hour in
+                            let activity = portMonitor.getActivity(port: port, hour: hour)
+                            Rectangle()
+                                .fill(activityColor(activity))
+                                .frame(width: 30, height: 20)
+                                .cornerRadius(2)
+                        }
+                    }
+                }
+            }
+            .padding(20)
+
+            // Legend
+            HStack(spacing: 16) {
+                Text("Activity:")
+                    .font(.system(size: 12, design: .monospaced))
+                    .foregroundColor(LCARSColors.blue)
+
+                ForEach([("None", 0), ("Low", 1), ("Medium", 50), ("High", 100)], id: \.0) { label, value in
+                    HStack(spacing: 4) {
+                        Rectangle()
+                            .fill(activityColor(value))
+                            .frame(width: 20, height: 20)
+                            .cornerRadius(4)
+                        Text(label)
+                            .font(.system(size: 11, design: .monospaced))
+                            .foregroundColor(LCARSColors.paleOrange)
+                    }
+                }
+            }
+            .padding(.horizontal, 20)
+        }
+        .padding(24)
+        .background(LCARSColors.panelBackground)
+        .cornerRadius(20)
+    }
+
+    private func activityColor(_ activity: Int) -> Color {
+        switch activity {
+        case 0: return Color.gray.opacity(0.2)
+        case 1..<25: return LCARSColors.blue.opacity(0.4)
+        case 25..<75: return LCARSColors.yellow.opacity(0.6)
+        default: return LCARSColors.red.opacity(0.8)
+        }
+    }
+}
+
+// MARK: - 5. SSL/TLS Certificate Dashboard
+
+struct SSLCertificateDashboard: View {
+    @StateObject private var sslAnalyzer = SSLCertificateAnalyzer.shared
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Text("SSL/TLS CERTIFICATE STATUS")
+                .font(.system(size: 24, weight: .bold, design: .monospaced))
+                .foregroundColor(LCARSColors.orange)
+                .padding(.horizontal, 20)
+
+            LazyVGrid(columns: [
+                GridItem(.flexible()),
+                GridItem(.flexible()),
+                GridItem(.flexible()),
+                GridItem(.flexible())
+            ], spacing: 16) {
+                ForEach(sslAnalyzer.certificates.prefix(8)) { cert in
+                    CertificateCard(certificate: cert)
+                }
+            }
+            .padding(20)
+        }
+        .padding(24)
+        .background(LCARSColors.panelBackground)
+        .cornerRadius(20)
+    }
+}
+
+struct CertificateCard: View {
+    let certificate: CertificateInfo
+
+    var daysUntilExpiry: Int {
+        Calendar.current.dateComponents([.day], from: Date(), to: certificate.expirationDate).day ?? 0
+    }
+
+    var statusColor: Color {
+        if certificate.isSelfSigned { return LCARSColors.red }
+        if daysUntilExpiry < 30 { return LCARSColors.red }
+        if daysUntilExpiry < 90 { return LCARSColors.yellow }
+        return LCARSColors.blue
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                Image(systemName: certificate.isSelfSigned ? "exclamationmark.shield.fill" : "lock.shield.fill")
+                    .font(.system(size: 24))
+                    .foregroundColor(statusColor)
+
+                Spacer()
+
+                Text("\(daysUntilExpiry)d")
+                    .font(.system(size: 16, weight: .bold, design: .monospaced))
+                    .foregroundColor(statusColor)
+            }
+
+            Text(certificate.host)
+                .font(.system(size: 14, weight: .semibold, design: .monospaced))
+                .foregroundColor(LCARSColors.paleOrange)
+                .lineLimit(1)
+
+            Text(certificate.commonName ?? "Unknown")
+                .font(.system(size: 11, design: .monospaced))
+                .foregroundColor(LCARSColors.blue)
+                .lineLimit(2)
+
+            if certificate.isSelfSigned {
+                Text("SELF-SIGNED")
+                    .font(.system(size: 10, weight: .bold, design: .monospaced))
+                    .foregroundColor(.white)
+                    .padding(.horizontal, 6)
+                    .padding(.vertical, 2)
+                    .background(LCARSColors.red)
+                    .cornerRadius(4)
+            }
+        }
+        .padding(12)
+        .background(statusColor.opacity(0.1))
+        .cornerRadius(12)
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(statusColor, lineWidth: 2)
+        )
+    }
+}
+
+// MARK: - 6. Bandwidth Usage Timeline with Sparklines
+
+struct BandwidthSparklinePanel: View {
+    @StateObject private var trafficAnalyzer = NetworkTrafficAnalyzer.shared
+    let devices: [EnhancedDevice]
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Text("BANDWIDTH HISTORY (LAST HOUR)")
+                .font(.system(size: 24, weight: .bold, design: .monospaced))
+                .foregroundColor(LCARSColors.orange)
+                .padding(.horizontal, 20)
+
+            VStack(spacing: 8) {
+                ForEach(devices.prefix(10)) { device in
+                    if let stats = trafficAnalyzer.topTalkers.first(where: { $0.device.ipAddress == device.ipAddress }) {
+                        BandwidthSparklineRow(device: device, stats: stats)
+                    }
+                }
+            }
+            .padding(20)
+        }
+        .padding(24)
+        .background(LCARSColors.panelBackground)
+        .cornerRadius(20)
+    }
+}
+
+struct BandwidthSparklineRow: View {
+    let device: EnhancedDevice
+    let stats: DeviceTrafficStats
+
+    var body: some View {
+        HStack(spacing: 12) {
+            // Device info
+            VStack(alignment: .leading, spacing: 2) {
+                Text(device.hostname ?? device.ipAddress)
+                    .font(.system(size: 14, weight: .semibold, design: .monospaced))
+                    .foregroundColor(LCARSColors.paleOrange)
+                    .lineLimit(1)
+                    .frame(width: 150, alignment: .leading)
+
+                Text(NetworkTrafficAnalyzer.formatBandwidth(stats.totalBytes))
+                    .font(.system(size: 11, design: .monospaced))
+                    .foregroundColor(LCARSColors.blue)
+            }
+
+            // Sparkline chart
+            SparklineChart(data: stats.bandwidthHistory)
+                .frame(height: 30)
+
+            // Current rate
+            Text(NetworkTrafficAnalyzer.formatBandwidth(stats.currentRate))
+                .font(.system(size: 12, weight: .medium, design: .monospaced))
+                .foregroundColor(LCARSColors.orange)
+                .frame(width: 100, alignment: .trailing)
+        }
+        .padding(.vertical, 8)
+        .padding(.horizontal, 12)
+        .background(LCARSColors.panelBackground.opacity(0.5))
+        .cornerRadius(8)
+    }
+}
+
+struct SparklineChart: View {
+    let data: [Int]
+
+    var body: some View {
+        GeometryReader { geometry in
+            let maxValue = data.max() ?? 1
+            let step = geometry.size.width / CGFloat(max(data.count - 1, 1))
+
+            Path { path in
+                for (index, value) in data.enumerated() {
+                    let x = CGFloat(index) * step
+                    let y = geometry.size.height * (1 - CGFloat(value) / CGFloat(maxValue))
+
+                    if index == 0 {
+                        path.move(to: CGPoint(x: x, y: y))
+                    } else {
+                        path.addLine(to: CGPoint(x: x, y: y))
+                    }
+                }
+            }
+            .stroke(LCARSColors.blue, lineWidth: 2)
+
+            // Fill area under curve
+            Path { path in
+                path.move(to: CGPoint(x: 0, y: geometry.size.height))
+                for (index, value) in data.enumerated() {
+                    let x = CGFloat(index) * step
+                    let y = geometry.size.height * (1 - CGFloat(value) / CGFloat(maxValue))
+                    path.addLine(to: CGPoint(x: x, y: y))
+                }
+                path.addLine(to: CGPoint(x: geometry.size.width, y: geometry.size.height))
+                path.closeSubpath()
+            }
+            .fill(LCARSColors.blue.opacity(0.2))
+        }
+    }
+}
+
+// MARK: - 7. Protocol Conversation Matrix
+
+struct ProtocolConversationMatrix: View {
+    let devices: [EnhancedDevice]
+    @StateObject private var trafficAnalyzer = NetworkTrafficAnalyzer.shared
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Text("DEVICE CONVERSATION MATRIX")
+                .font(.system(size: 24, weight: .bold, design: .monospaced))
+                .foregroundColor(LCARSColors.orange)
+                .padding(.horizontal, 20)
+
+            ScrollView([.horizontal, .vertical]) {
+                VStack(spacing: 2) {
+                    // Column headers
+                    HStack(spacing: 2) {
+                        Text("From \\ To")
+                            .font(.system(size: 10, design: .monospaced))
+                            .frame(width: 100)
+
+                        ForEach(devices.prefix(10)) { device in
+                            Text(device.ipAddress.split(separator: ".").last.map(String.init) ?? "")
+                                .font(.system(size: 10, design: .monospaced))
+                                .frame(width: 40)
+                        }
+                    }
+                    .foregroundColor(LCARSColors.blue)
+
+                    // Matrix rows
+                    ForEach(devices.prefix(10)) { sourceDevice in
+                        HStack(spacing: 2) {
+                            Text(sourceDevice.ipAddress)
+                                .font(.system(size: 10, design: .monospaced))
+                                .frame(width: 100, alignment: .leading)
+                                .foregroundColor(LCARSColors.paleOrange)
+
+                            ForEach(devices.prefix(10)) { destDevice in
+                                let trafficVolume = trafficAnalyzer.getTrafficVolume(
+                                    from: sourceDevice.ipAddress,
+                                    to: destDevice.ipAddress
+                                )
+
+                                Rectangle()
+                                    .fill(trafficColor(trafficVolume))
+                                    .frame(width: 40, height: 30)
+                                    .cornerRadius(2)
+                            }
+                        }
+                    }
+                }
+                .padding(20)
+            }
+            .frame(height: 400)
+        }
+        .padding(24)
+        .background(LCARSColors.panelBackground)
+        .cornerRadius(20)
+    }
+
+    private func trafficColor(_ volume: Int) -> Color {
+        switch volume {
+        case 0: return Color.gray.opacity(0.2)
+        case 1..<1000: return LCARSColors.blue.opacity(0.4)
+        case 1000..<10000: return LCARSColors.yellow.opacity(0.6)
+        default: return LCARSColors.red.opacity(0.8)
+        }
+    }
+}
+
+// MARK: - 8. Threat Intelligence Feed
+
+struct ThreatIntelligenceFeed: View {
+    @StateObject private var threatFeed = ThreatIntelManager.shared
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            HStack {
+                Text("LIVE THREAT INTELLIGENCE")
+                    .font(.system(size: 24, weight: .bold, design: .monospaced))
+                    .foregroundColor(LCARSColors.orange)
+
+                Spacer()
+
+                Circle()
+                    .fill(LCARSColors.red)
+                    .frame(width: 12, height: 12)
+                    .shadow(color: LCARSColors.red, radius: 4)
+            }
+            .padding(.horizontal, 20)
+
+            ScrollView {
+                VStack(spacing: 8) {
+                    ForEach(threatFeed.recentThreats.prefix(10)) { threat in
+                        ThreatFeedRow(threat: threat)
+                    }
+                }
+                .padding(20)
+            }
+            .frame(height: 300)
+        }
+        .padding(24)
+        .background(LCARSColors.panelBackground)
+        .cornerRadius(20)
+    }
+}
+
+struct ThreatFeedRow: View {
+    let threat: ThreatIntelItem
+
+    var body: some View {
+        HStack(spacing: 12) {
+            Image(systemName: threat.icon)
+                .font(.system(size: 20))
+                .foregroundColor(threat.severity.color)
+                .frame(width: 30)
+
+            VStack(alignment: .leading, spacing: 4) {
+                Text(threat.title)
+                    .font(.system(size: 13, weight: .semibold, design: .monospaced))
+                    .foregroundColor(LCARSColors.paleOrange)
+
+                Text(threat.description)
+                    .font(.system(size: 11, design: .monospaced))
+                    .foregroundColor(LCARSColors.blue)
+                    .lineLimit(2)
+            }
+
+            Spacer()
+
+            Text(formatTime(threat.timestamp))
+                .font(.system(size: 10, design: .monospaced))
+                .foregroundColor(LCARSColors.orange)
+        }
+        .padding(12)
+        .background(threat.severity.color.opacity(0.1))
+        .cornerRadius(8)
+        .overlay(
+            RoundedRectangle(cornerRadius: 8)
+                .stroke(threat.severity.color, lineWidth: 1)
+        )
+    }
+
+    private func formatTime(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "HH:mm:ss"
+        return formatter.string(from: date)
+    }
+}
+
+// MARK: - Supporting Data Structures
+
+@MainActor
+class GeoLocationManager: ObservableObject {
+    static let shared = GeoLocationManager()
+    @Published var externalConnections: [ExternalConnection] = []
+
+    private init() {
+        generateMockData()
+    }
+
+    private func generateMockData() {
+        externalConnections = [
+            ExternalConnection(ip: "8.8.8.8", country: "US", position: CGPoint(x: 200, y: 150), threatLevel: .secure),
+            ExternalConnection(ip: "1.1.1.1", country: "US", position: CGPoint(x: 220, y: 170), threatLevel: .secure),
+            ExternalConnection(ip: "185.220.101.1", country: "Unknown", position: CGPoint(x: 450, y: 120), threatLevel: .high)
+        ]
+    }
+}
+
+struct ExternalConnection: Identifiable {
+    let id = UUID()
+    let ip: String
+    let country: String
+    let position: CGPoint
+    let threatLevel: ThreatLevel
+}
+
+@MainActor
+class PortActivityMonitor: ObservableObject {
+    static let shared = PortActivityMonitor()
+    @Published var activityData: [Int: [Int: Int]] = [:] // [port: [hour: activity]]
+
+    private init() {
+        generateMockData()
+    }
+
+    func getActivity(port: Int, hour: Int) -> Int {
+        activityData[port]?[hour] ?? 0
+    }
+
+    private func generateMockData() {
+        let ports = [20, 21, 22, 23, 25, 53, 80, 110, 143, 443, 445, 3306, 3389, 5432, 8080]
+        for port in ports {
+            activityData[port] = [:]
+            for hour in 0..<24 {
+                activityData[port]![hour] = Int.random(in: 0...100)
+            }
+        }
+    }
+}
+
+@MainActor
+class ThreatIntelManager: ObservableObject {
+    static let shared = ThreatIntelManager()
+    @Published var recentThreats: [ThreatIntelItem] = []
+
+    private init() {
+        generateMockData()
+    }
+
+    private func generateMockData() {
+        recentThreats = [
+            ThreatIntelItem(
+                title: "CVE-2024-1234 Apache Vulnerability",
+                description: "Critical RCE vulnerability affecting Apache 2.4.49-2.4.50",
+                severity: .critical,
+                icon: "exclamationmark.shield.fill",
+                timestamp: Date().addingTimeInterval(-300)
+            ),
+            ThreatIntelItem(
+                title: "Malicious IP Detected: 185.220.101.1",
+                description: "Known botnet C2 server contacted from network",
+                severity: .high,
+                icon: "network.badge.shield.half.filled",
+                timestamp: Date().addingTimeInterval(-600)
+            ),
+            ThreatIntelItem(
+                title: "Port Scan Activity",
+                description: "Reconnaissance detected from 192.168.1.45",
+                severity: .medium,
+                icon: "magnifyingglass",
+                timestamp: Date().addingTimeInterval(-900)
+            )
+        ]
+    }
+}
+
+struct ThreatIntelItem: Identifiable {
+    let id = UUID()
+    let title: String
+    let description: String
+    let severity: ThreatLevel
+    let icon: String
+    let timestamp: Date
+}
+
+// MARK: - 9. Network Segmentation Visualizer
+
+struct NetworkSegmentationVisualizer: View {
+    @StateObject private var segmentationManager = NetworkSegmentationAnalyzer.shared
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Text("NETWORK SEGMENTATION")
+                .font(.system(size: 24, weight: .bold, design: .monospaced))
+                .foregroundColor(LCARSColors.orange)
+                .padding(.horizontal, 20)
+
+            HStack(spacing: 16) {
+                ForEach(segmentationManager.segments) { segment in
+                    SegmentCard(segment: segment)
+                }
+            }
+            .padding(20)
+
+            // Violations
+            if !segmentationManager.violations.isEmpty {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("⚠️ SEGMENTATION VIOLATIONS")
+                        .font(.system(size: 16, weight: .bold, design: .monospaced))
+                        .foregroundColor(LCARSColors.red)
+
+                    ForEach(segmentationManager.violations.prefix(5)) { violation in
+                        Text("• \(violation.description)")
+                            .font(.system(size: 12, design: .monospaced))
+                            .foregroundColor(LCARSColors.paleOrange)
+                    }
+                }
+                .padding(20)
+            }
+        }
+        .padding(24)
+        .background(LCARSColors.panelBackground)
+        .cornerRadius(20)
+    }
+}
+
+struct SegmentCard: View {
+    let segment: NetworkSegment
+
+    var segmentColor: Color {
+        switch segment.securityLevel {
+        case .high: return LCARSColors.blue
+        case .medium: return LCARSColors.yellow
+        case .low: return LCARSColors.orange
+        case .dmz: return LCARSColors.purple
+        case .iot: return LCARSColors.red
+        }
+    }
+
+    var segmentIcon: String {
+        switch segment.securityLevel {
+        case .high: return "shield.fill"
+        case .medium: return "shield.lefthalf.filled"
+        case .low: return "shield.slash.fill"
+        case .dmz: return "network"
+        case .iot: return "sensor.fill"
+        }
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                Image(systemName: segmentIcon)
+                    .font(.system(size: 24))
+                    .foregroundColor(segmentColor)
+
+                Spacer()
+
+                Text(segment.securityLevel.rawValue)
+                    .font(.system(size: 11, weight: .bold, design: .monospaced))
+                    .foregroundColor(.white)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(segmentColor)
+                    .cornerRadius(6)
+            }
+
+            Text(segment.name)
+                .font(.system(size: 14, weight: .semibold, design: .monospaced))
+                .foregroundColor(LCARSColors.paleOrange)
+
+            Text(segment.cidr)
+                .font(.system(size: 11, design: .monospaced))
+                .foregroundColor(LCARSColors.blue)
+
+            Text(segment.purpose)
+                .font(.system(size: 10, design: .monospaced))
+                .foregroundColor(LCARSColors.paleOrange)
+                .lineLimit(2)
+        }
+        .padding(16)
+        .frame(maxWidth: .infinity)
+        .background(segmentColor.opacity(0.1))
+        .cornerRadius(12)
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(segmentColor, lineWidth: 2)
+        )
+    }
+}
+
+// MARK: - 10. Compliance Status Dashboard
+
+struct ComplianceStatusDashboard: View {
+    @StateObject private var complianceChecker = ComplianceChecker.shared
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Text("COMPLIANCE STATUS")
+                .font(.system(size: 24, weight: .bold, design: .monospaced))
+                .foregroundColor(LCARSColors.orange)
+                .padding(.horizontal, 20)
+
+            HStack(spacing: 20) {
+                ComplianceGauge(
+                    framework: "CIS",
+                    score: complianceChecker.cisScore,
+                    passed: complianceChecker.cisPassed,
+                    total: complianceChecker.cisTotal
+                )
+
+                ComplianceGauge(
+                    framework: "NIST",
+                    score: complianceChecker.nistScore,
+                    passed: complianceChecker.nistPassed,
+                    total: complianceChecker.nistTotal
+                )
+
+                ComplianceGauge(
+                    framework: "PCI-DSS",
+                    score: complianceChecker.pciScore,
+                    passed: complianceChecker.pciPassed,
+                    total: complianceChecker.pciTotal
+                )
+            }
+            .padding(20)
+        }
+        .padding(24)
+        .background(LCARSColors.panelBackground)
+        .cornerRadius(20)
+    }
+}
+
+struct ComplianceGauge: View {
+    let framework: String
+    let score: Int
+    let passed: Int
+    let total: Int
+
+    @State private var animatedScore: Double = 0
+
+    var gaugeColor: Color {
+        switch score {
+        case 90...100: return LCARSColors.blue
+        case 70..<90: return LCARSColors.yellow
+        default: return LCARSColors.red
+        }
+    }
+
+    var body: some View {
+        VStack(spacing: 12) {
+            ZStack {
+                Circle()
+                    .stroke(LCARSColors.panelBackground, lineWidth: 15)
+                    .frame(width: 150, height: 150)
+
+                Circle()
+                    .trim(from: 0, to: animatedScore / 100)
+                    .stroke(gaugeColor, style: StrokeStyle(lineWidth: 15, lineCap: .round))
+                    .frame(width: 150, height: 150)
+                    .rotationEffect(.degrees(-90))
+                    .shadow(color: gaugeColor.opacity(0.6), radius: 8)
+
+                VStack(spacing: 4) {
+                    Text("\(Int(animatedScore))%")
+                        .font(.system(size: 32, weight: .bold, design: .monospaced))
+                        .foregroundColor(gaugeColor)
+
+                    Text("\(passed)/\(total)")
+                        .font(.system(size: 14, design: .monospaced))
+                        .foregroundColor(LCARSColors.blue)
+                }
+            }
+
+            Text(framework)
+                .font(.system(size: 18, weight: .bold, design: .monospaced))
+                .foregroundColor(LCARSColors.paleOrange)
+        }
+        .onAppear {
+            withAnimation(.easeInOut(duration: 1.5)) {
+                animatedScore = Double(score)
+            }
+        }
+    }
+}
+
+// MARK: - Supporting Models Continued
+
+// NetworkSegment is defined in NetworkSegmentationAnalyzer.swift
+// SegmentationViolation is defined in NetworkSegmentationAnalyzer.swift
+// Using those existing types

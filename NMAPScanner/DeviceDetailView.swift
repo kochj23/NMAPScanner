@@ -37,7 +37,7 @@ struct DeviceDetailView: View {
 
                 // Open ports
                 if !device.openPorts.isEmpty {
-                    OpenPortsCard(ports: device.openPorts)
+                    OpenPortsCard(ports: device.openPorts.map { $0.port })
                 }
 
                 // Security status
@@ -126,7 +126,7 @@ struct DeviceHeaderCard: View {
 
     private var deviceColor: Color {
         if !device.isOnline { return .gray }
-        if device.vulnerabilities > 0 { return .red }
+        if !device.vulnerabilities.isEmpty { return .red }
         if device.openPorts.count > 5 { return .orange }
         return .green
     }
@@ -306,7 +306,7 @@ struct SecurityStatusCard: View {
                         .font(.system(size: 24))
                         .foregroundColor(.secondary)
 
-                    if device.vulnerabilities > 0 {
+                    if !device.vulnerabilities.isEmpty {
                         Button(action: {
                             // Navigate to vulnerability details
                         }) {
@@ -330,25 +330,25 @@ struct SecurityStatusCard: View {
     }
 
     private var vulnerabilityColor: Color {
-        if device.vulnerabilities == 0 { return .green }
-        if device.vulnerabilities < 3 { return .orange }
+        if device.vulnerabilities.isEmpty { return .green }
+        if device.vulnerabilities.count < 3 { return .orange }
         return .red
     }
 
     private var vulnerabilityIcon: String {
-        if device.vulnerabilities == 0 { return "checkmark.shield.fill" }
+        if device.vulnerabilities.isEmpty { return "checkmark.shield.fill" }
         return "exclamationmark.shield.fill"
     }
 
     private var securityRating: String {
-        if device.vulnerabilities == 0 { return "Secure" }
-        if device.vulnerabilities < 3 { return "Warning" }
+        if device.vulnerabilities.isEmpty { return "Secure" }
+        if device.vulnerabilities.count < 3 { return "Warning" }
         return "Critical"
     }
 
     private var securityMessage: String {
-        if device.vulnerabilities == 0 { return "No security issues detected" }
-        if device.vulnerabilities < 3 { return "Some security concerns found" }
+        if device.vulnerabilities.isEmpty { return "No security issues detected" }
+        if device.vulnerabilities.count < 3 { return "Some security concerns found" }
         return "Immediate attention required"
     }
 }

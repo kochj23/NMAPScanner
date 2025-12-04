@@ -298,22 +298,25 @@ struct PresetSelectionView: View {
         NavigationView {
             ScrollView {
                 VStack(alignment: .leading, spacing: 30) {
-                    Text("Scan Presets")
-                        .font(.system(size: 42, weight: .bold))
-                        .padding(.horizontal, 40)
+                    // Header
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text("Scan Presets")
+                            .font(.system(size: 42, weight: .bold))
 
-                    Text("Choose a preconfigured scan or create your own")
-                        .font(.system(size: 24))
-                        .foregroundColor(.secondary)
-                        .padding(.horizontal, 40)
+                        Text("Choose a preconfigured scan or create your own")
+                            .font(.system(size: 20))
+                            .foregroundColor(.secondary)
+                    }
+                    .padding(.horizontal, 30)
+                    .padding(.top, 20)
 
                     // Built-in presets
                     VStack(alignment: .leading, spacing: 20) {
                         Text("Built-in Presets")
-                            .font(.system(size: 32, weight: .semibold))
-                            .padding(.horizontal, 40)
+                            .font(.system(size: 28, weight: .semibold))
+                            .padding(.horizontal, 30)
 
-                        LazyVGrid(columns: [GridItem(.adaptive(minimum: 300), spacing: 20)], spacing: 20) {
+                        LazyVGrid(columns: [GridItem(.adaptive(minimum: 350), spacing: 24)], spacing: 24) {
                             ForEach(ScanPreset.builtInPresets) { preset in
                                 PresetCard(preset: preset) {
                                     selectedPreset = preset
@@ -321,17 +324,17 @@ struct PresetSelectionView: View {
                                 }
                             }
                         }
-                        .padding(.horizontal, 40)
+                        .padding(.horizontal, 30)
                     }
 
                     // Custom presets
                     if !presetManager.customPresets.isEmpty {
                         VStack(alignment: .leading, spacing: 20) {
                             Text("Custom Presets")
-                                .font(.system(size: 32, weight: .semibold))
-                                .padding(.horizontal, 40)
+                                .font(.system(size: 28, weight: .semibold))
+                                .padding(.horizontal, 30)
 
-                            LazyVGrid(columns: [GridItem(.adaptive(minimum: 300), spacing: 20)], spacing: 20) {
+                            LazyVGrid(columns: [GridItem(.adaptive(minimum: 350), spacing: 24)], spacing: 24) {
                                 ForEach(presetManager.customPresets) { preset in
                                     PresetCard(preset: preset) {
                                         selectedPreset = preset
@@ -339,7 +342,7 @@ struct PresetSelectionView: View {
                                     }
                                 }
                             }
-                            .padding(.horizontal, 40)
+                            .padding(.horizontal, 30)
                         }
                     }
 
@@ -347,27 +350,29 @@ struct PresetSelectionView: View {
                     Button(action: {
                         showingAddPreset = true
                     }) {
-                        HStack {
+                        HStack(spacing: 12) {
                             Image(systemName: "plus.circle.fill")
-                                .font(.system(size: 32))
+                                .font(.system(size: 24))
                             Text("Create Custom Preset")
-                                .font(.system(size: 28, weight: .semibold))
+                                .font(.system(size: 20, weight: .semibold))
                         }
                         .frame(maxWidth: .infinity)
-                        .padding(.vertical, 24)
+                        .padding(.vertical, 18)
                         .background(Color.blue.opacity(0.2))
                         .foregroundColor(.blue)
                         .cornerRadius(16)
                     }
                     .buttonStyle(.plain)
-                    .padding(.horizontal, 40)
+                    .padding(.horizontal, 30)
+                    .padding(.bottom, 30)
                 }
-                .padding(.vertical, 40)
+                .padding(.vertical, 20)
             }
             .sheet(isPresented: $showingAddPreset) {
                 AddPresetView()
             }
         }
+        .frame(minWidth: 1200, minHeight: 800)
     }
 }
 
@@ -398,7 +403,7 @@ struct PresetCard: View {
             VStack(alignment: .leading, spacing: 16) {
                 HStack {
                     Image(systemName: preset.icon)
-                        .font(.system(size: 40))
+                        .font(.system(size: 32))
                         .foregroundColor(cardColor)
                         .frame(width: 60, height: 60)
                         .background(cardColor.opacity(0.2))
@@ -408,26 +413,27 @@ struct PresetCard: View {
 
                     VStack(alignment: .trailing, spacing: 4) {
                         Text("\(preset.ports.count)")
-                            .font(.system(size: 32, weight: .bold))
+                            .font(.system(size: 28, weight: .bold))
                             .foregroundColor(cardColor)
                         Text("ports")
-                            .font(.system(size: 18))
+                            .font(.system(size: 15))
                             .foregroundColor(.secondary)
                     }
                 }
 
                 Text(preset.name)
-                    .font(.system(size: 28, weight: .bold))
+                    .font(.system(size: 22, weight: .bold))
                     .foregroundColor(.primary)
 
                 Text(preset.description)
-                    .font(.system(size: 20))
+                    .font(.system(size: 16))
                     .foregroundColor(.secondary)
-                    .lineLimit(2)
+                    .lineLimit(3)
+                    .fixedSize(horizontal: false, vertical: true)
 
                 Divider()
 
-                HStack(spacing: 20) {
+                HStack(spacing: 16) {
                     StatBadge(icon: "clock", value: statistics.formattedTimePerHost)
                     StatBadge(icon: "network", value: preset.scanType.rawValue)
                     if preset.isBuiltIn {
@@ -437,10 +443,10 @@ struct PresetCard: View {
             }
             .padding(24)
             .background(Color.gray.opacity(0.05))
-            .cornerRadius(20)
+            .cornerRadius(16)
             .shadow(color: Color.black.opacity(0.1), radius: 10, x: 0, y: 5)
             .overlay(
-                RoundedRectangle(cornerRadius: 20)
+                RoundedRectangle(cornerRadius: 16)
                     .stroke(cardColor.opacity(0.3), lineWidth: 2)
             )
         }
@@ -457,7 +463,7 @@ struct StatBadge: View {
             Image(systemName: icon)
                 .font(.system(size: 14))
             Text(value)
-                .font(.system(size: 16))
+                .font(.system(size: 15))
         }
         .foregroundColor(.secondary)
     }

@@ -206,11 +206,13 @@ struct CriticalAlertsCard: View {
                         }) {
                             HStack {
                                 VStack(alignment: .leading, spacing: 6) {
-                                    Text(device.displayName)
+                                    Text(device.hostname ?? device.ipAddress)
                                         .font(.system(size: 24, weight: .semibold))
-                                    Text(device.ipAddress)
-                                        .font(.system(size: 20, design: .monospaced))
-                                        .foregroundColor(.secondary)
+                                    if device.hostname != nil {
+                                        Text(device.ipAddress)
+                                            .font(.system(size: 20, design: .monospaced))
+                                            .foregroundColor(.secondary)
+                                    }
                                     if let mac = device.macAddress {
                                         Text("MAC: \(mac)")
                                             .font(.system(size: 18))
@@ -242,11 +244,13 @@ struct CriticalAlertsCard: View {
                         }) {
                             HStack {
                                 VStack(alignment: .leading, spacing: 6) {
-                                    Text(device.displayName)
+                                    Text(device.hostname ?? device.ipAddress)
                                         .font(.system(size: 24, weight: .semibold))
-                                    Text(device.ipAddress)
-                                        .font(.system(size: 20, design: .monospaced))
-                                        .foregroundColor(.secondary)
+                                    if device.hostname != nil {
+                                        Text(device.ipAddress)
+                                            .font(.system(size: 20, design: .monospaced))
+                                            .foregroundColor(.secondary)
+                                    }
                                     Text("Backdoor ports: \(device.openPorts.filter { $0.isBackdoorPort }.map { String($0.port) }.joined(separator: ", "))")
                                         .font(.system(size: 18))
                                         .foregroundColor(.red)
@@ -273,7 +277,7 @@ struct CriticalAlertsCard: View {
                 .stroke(Color.red, lineWidth: 3)
         )
         .sheet(item: $selectedDevice) { device in
-            EnhancedDeviceDetailView(device: device, rogueThreat: selectedThreat)
+            ThreatDeviceDetailView(device: device, rogueThreat: selectedThreat)
         }
     }
 }
@@ -800,9 +804,9 @@ struct FilterButton: View {
     }
 }
 
-// MARK: - Enhanced Device Detail View
+// MARK: - Threat Device Detail View
 
-struct EnhancedDeviceDetailView: View {
+struct ThreatDeviceDetailView: View {
     let device: EnhancedDevice
     let rogueThreat: ThreatFinding? // Optional threat finding for rogue devices
     @Environment(\.dismiss) var dismiss
@@ -841,7 +845,7 @@ struct EnhancedDeviceDetailView: View {
                         }
 
                         VStack(alignment: .leading, spacing: 8) {
-                            Text(device.displayName)
+                            Text(device.hostname ?? device.ipAddress)
                                 .font(.system(size: 36, weight: .bold))
 
                             if device.isRogue {
@@ -853,9 +857,11 @@ struct EnhancedDeviceDetailView: View {
                                 .foregroundColor(.red)
                             }
 
-                            Text(device.ipAddress)
-                                .font(.system(size: 24, design: .monospaced))
-                                .foregroundColor(.secondary)
+                            if device.hostname != nil {
+                                Text(device.ipAddress)
+                                    .font(.system(size: 24, design: .monospaced))
+                                    .foregroundColor(.secondary)
+                            }
 
                             if let hostname = device.hostname {
                                 HStack(spacing: 8) {
@@ -1102,4 +1108,24 @@ struct PortInfoCard: View {
 
 extension ThreatSeverity: Identifiable {
     var id: String { rawValue }
+
+    var color: Color {
+        switch self {
+        case .critical: return .red
+        case .high: return .orange
+        case .medium: return .yellow
+        case .low: return .blue
+        case .info: return .gray
+        }
+    }
+
+    var icon: String {
+        switch self {
+        case .critical: return "exclamationmark.triangle.fill"
+        case .high: return "exclamationmark.circle.fill"
+        case .medium: return "info.circle.fill"
+        case .low: return "checkmark.circle.fill"
+        case .info: return "info.circle"
+        }
+    }
 }
