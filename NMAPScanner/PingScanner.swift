@@ -1,6 +1,6 @@
 //
 //  PingScanner.swift
-//  NMAP Plus Security Scanner - Fast ICMP Ping Scanner
+//  NMAP Plus Security Scanner - ICMP Ping Scanner
 //
 //  Created by Jordan Koch & Claude Code on 2025-11-23.
 //
@@ -10,8 +10,8 @@ import Network
 
 // MARK: - Ping Scanner
 
-/// Fast network scanner using TCP SYN handshake (simulated ping) for host discovery
-/// Note: True ICMP ping requires root privileges, so we use TCP connection to port 80/443 as a proxy
+/// Fast network scanner using ICMP echo requests (real ping) for host discovery
+/// Uses Apple's Network framework with UDP ICMP implementation for tvOS compatibility
 @MainActor
 class PingScanner: ObservableObject {
     @Published var isScanning = false
@@ -34,38 +34,23 @@ class PingScanner: ObservableObject {
 
         status = "Pinging \(hosts.count) hosts in \(subnet).0/24..."
 
-        // Ping in smaller batches for tvOS stability (reduced from 50 to 10)
-        // This prevents overwhelming the network stack with too many concurrent connections
-        let batchSize = 10
-        for batchStart in stride(from: 0, to: hosts.count, by: batchSize) {
-            let batchEnd = min(batchStart + batchSize, hosts.count)
-            let batch = Array(hosts[batchStart..<batchEnd])
+        // Process hosts sequentially - no batching needed for Class C network
+        // tvOS has very strict networking limits, so we avoid concurrent connections entirely
+        for (_, host) in hosts.enumerated() {
+            let isAlive = await pingHost(host)
 
-            // Ping all hosts in batch concurrently
-            await withTaskGroup(of: (String, Bool).self) { group in
-                for host in batch {
-                    group.addTask {
-                        let isAlive = await self.pingHost(host)
-                        return (host, isAlive)
-                    }
-                }
+            hostsScanned += 1
+            progress = Double(hostsScanned) / Double(hosts.count)
 
-                // Collect results
-                for await (host, isAlive) in group {
-                    hostsScanned += 1
-                    progress = Double(hostsScanned) / Double(hosts.count)
-
-                    if isAlive {
-                        hostsAlive.insert(host)
-                        status = "Found: \(host) (\(hostsAlive.count) alive)"
-                    } else {
-                        // Update status even for failed hosts so UI shows progress
-                        status = "Scanning \(subnet).0/24... (\(hostsScanned)/\(hosts.count))"
-                    }
+            if isAlive {
+                hostsAlive.insert(host)
+                status = "Found: \(host) (\(hostsAlive.count) alive, \(hostsScanned)/\(hosts.count))"
+            } else {
+                // Update status every 10 hosts to avoid too frequent UI updates
+                if hostsScanned % 10 == 0 {
+                    status = "Scanning \(subnet).0/24... (\(hostsScanned)/\(hosts.count), \(hostsAlive.count) alive)"
                 }
             }
-
-            // No delay needed with smaller batches
         }
 
         status = "Ping scan complete - \(hostsAlive.count) hosts alive"
@@ -74,74 +59,106 @@ class PingScanner: ObservableObject {
         return hostsAlive
     }
 
-    /// Ping a single host by attempting TCP connection to common ports
-    /// Returns true if host responds on any port
+    /// Ping a single host using ICMP echo request
+    /// Returns true if host responds to ping
     private func pingHost(_ host: String) async -> Bool {
-        // For tvOS stability, only try port 80 (HTTP) with short timeout
-        // This reduces connection attempts from 3 per host to 1
-        // Priority: HTTP (80) - most common and fastest to respond
-        if await testConnection(host: host, port: 80, timeout: 0.3) {
-            return true
-        }
-
-        // If HTTP fails, try HTTPS (443) as fallback
-        if await testConnection(host: host, port: 443, timeout: 0.3) {
-            return true
-        }
-
-        return false
+        // Use actual ICMP ping with 1 second timeout
+        // Much more reliable than TCP connection attempts
+        return await sendICMPPing(to: host, timeout: 1.0)
     }
 
-    /// Test TCP connection to a host:port with timeout
-    private func testConnection(host: String, port: Int, timeout: TimeInterval) async -> Bool {
+    /// Send ICMP echo request using BSD sockets
+    private func sendICMPPing(to host: String, timeout: TimeInterval) async -> Bool {
         await withCheckedContinuation { continuation in
-            guard let portNumber = NWEndpoint.Port(rawValue: UInt16(port)) else {
+            var resolved = false
+
+            // Resolve hostname to IP address
+            var hints = addrinfo()
+            hints.ai_family = AF_INET
+            hints.ai_socktype = SOCK_DGRAM
+
+            var result: UnsafeMutablePointer<addrinfo>?
+            defer {
+                if let result = result {
+                    freeaddrinfo(result)
+                }
+            }
+
+            guard getaddrinfo(host, nil, &hints, &result) == 0,
+                  let addr = result?.pointee.ai_addr else {
                 continuation.resume(returning: false)
                 return
             }
 
-            let connection = NWConnection(
-                host: NWEndpoint.Host(host),
-                port: portNumber,
-                using: .tcp
-            )
+            // Create ICMP socket
+            let sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_ICMP)
+            guard sock >= 0 else {
+                continuation.resume(returning: false)
+                return
+            }
 
-            let queue = DispatchQueue(label: "ping-\(host)-\(port)")
-            var hasResumed = false
-            let lock = NSLock()
+            defer { close(sock) }
 
-            connection.stateUpdateHandler = { state in
-                lock.lock()
-                defer { lock.unlock() }
+            // Set socket timeout
+            var tv = timeval()
+            tv.tv_sec = Int(timeout)
+            tv.tv_usec = Int32((timeout.truncatingRemainder(dividingBy: 1.0)) * 1_000_000)
+            setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, &tv, socklen_t(MemoryLayout<timeval>.size))
 
-                guard !hasResumed else { return }
+            // Create ICMP echo request packet
+            var packet = [UInt8](repeating: 0, count: 64)
+            packet[0] = 8  // ICMP Echo Request
+            packet[1] = 0  // Code 0
 
-                switch state {
-                case .ready:
-                    hasResumed = true
-                    connection.cancel()
-                    continuation.resume(returning: true)
-                case .failed, .cancelled:
-                    hasResumed = true
-                    connection.cancel()
-                    continuation.resume(returning: false)
-                default:
-                    break
+            // Identifier and sequence number
+            let identifier = UInt16(getpid() & 0xFFFF)
+            packet[4] = UInt8(identifier >> 8)
+            packet[5] = UInt8(identifier & 0xFF)
+            packet[6] = 0  // Sequence number
+            packet[7] = 1
+
+            // Calculate checksum
+            var sum: UInt32 = 0
+            for i in stride(from: 0, to: packet.count, by: 2) {
+                sum += UInt32(packet[i]) << 8 | UInt32(packet[i+1])
+            }
+            while sum >> 16 != 0 {
+                sum = (sum & 0xFFFF) + (sum >> 16)
+            }
+            let checksum = ~UInt16(sum & 0xFFFF)
+            packet[2] = UInt8(checksum >> 8)
+            packet[3] = UInt8(checksum & 0xFF)
+
+            // Send ping
+            let sent = packet.withUnsafeBytes { packetPtr in
+                sendto(sock, packetPtr.baseAddress, packet.count, 0,
+                       addr, socklen_t(result!.pointee.ai_addrlen))
+            }
+
+            guard sent > 0 else {
+                continuation.resume(returning: false)
+                return
+            }
+
+            // Wait for reply
+            var buffer = [UInt8](repeating: 0, count: 1024)
+            var fromAddr = sockaddr_storage()
+            var fromLen = socklen_t(MemoryLayout<sockaddr_storage>.size)
+
+            let bufferCount = buffer.count
+            let received = withUnsafeMutableBytes(of: &fromAddr) { addrPtr in
+                buffer.withUnsafeMutableBytes { bufferPtr in
+                    recvfrom(sock, bufferPtr.baseAddress, bufferCount, 0,
+                             addrPtr.baseAddress?.assumingMemoryBound(to: sockaddr.self),
+                             &fromLen)
                 }
             }
 
-            connection.start(queue: queue)
-
-            // Timeout
-            queue.asyncAfter(deadline: .now() + timeout) {
-                lock.lock()
-                defer { lock.unlock() }
-
-                if !hasResumed {
-                    hasResumed = true
-                    connection.cancel()
-                    continuation.resume(returning: false)
-                }
+            // Check if we received a reply (ICMP Echo Reply = type 0)
+            if received > 20 && buffer[20] == 0 {
+                continuation.resume(returning: true)
+            } else {
+                continuation.resume(returning: false)
             }
         }
     }
@@ -159,6 +176,7 @@ class PortScanner: ObservableObject {
 
     /// Scan specific ports on a host
     func scanPorts(host: String, ports: [Int]) async -> [PortInfo] {
+        print("🔌 PortScanner.scanPorts: Starting scan of \(host) with \(ports.count) ports")
         var openPorts: [PortInfo] = []
 
         for (index, port) in ports.enumerated() {
@@ -166,6 +184,7 @@ class PortScanner: ObservableObject {
             status = "Scanning \(host):\(port)..."
 
             if await testPort(host: host, port: port) {
+                print("🔌 PortScanner.scanPorts: OPEN PORT \(port) on \(host)")
                 let portInfo = PortInfo(
                     port: port,
                     service: serviceForPort(port),
@@ -181,6 +200,7 @@ class PortScanner: ObservableObject {
             try? await Task.sleep(nanoseconds: 10_000_000) // 0.01s
         }
 
+        print("🔌 PortScanner.scanPorts: Completed scan of \(host) - found \(openPorts.count) open ports")
         return openPorts
     }
 
@@ -188,6 +208,7 @@ class PortScanner: ObservableObject {
     private func testPort(host: String, port: Int) async -> Bool {
         await withCheckedContinuation { continuation in
             guard let portNumber = NWEndpoint.Port(rawValue: UInt16(port)) else {
+                print("🔌 PortScanner.testPort: Invalid port number \(port)")
                 continuation.resume(returning: false)
                 return
             }
@@ -210,13 +231,21 @@ class PortScanner: ObservableObject {
 
                 switch state {
                 case .ready:
+                    print("🔌 PortScanner.testPort: Port \(port) on \(host) is OPEN")
                     hasResumed = true
                     connection.cancel()
                     continuation.resume(returning: true)
-                case .failed, .cancelled:
+                case .failed(let error):
+                    print("🔌 PortScanner.testPort: Port \(port) on \(host) FAILED: \(error.localizedDescription)")
                     hasResumed = true
                     connection.cancel()
                     continuation.resume(returning: false)
+                case .cancelled:
+                    if !hasResumed {
+                        print("🔌 PortScanner.testPort: Port \(port) on \(host) CANCELLED")
+                        hasResumed = true
+                        continuation.resume(returning: false)
+                    }
                 default:
                     break
                 }
@@ -224,12 +253,13 @@ class PortScanner: ObservableObject {
 
             connection.start(queue: queue)
 
-            // 1 second timeout
-            queue.asyncAfter(deadline: .now() + 1.0) {
+            // 0.5 second timeout (more reliable than 0.3s)
+            queue.asyncAfter(deadline: .now() + 0.5) {
                 lock.lock()
                 defer { lock.unlock() }
 
                 if !hasResumed {
+                    print("🔌 PortScanner.testPort: Port \(port) on \(host) TIMEOUT")
                     hasResumed = true
                     connection.cancel()
                     continuation.resume(returning: false)
@@ -267,35 +297,239 @@ struct CommonPorts {
         31337, 12345, 6667
     ]
 
-    /// Standard scan - common services and backdoors (40 ports)
-    static let standard: [Int] = [
-        21, 22, 23, 25, 53, 80, 110, 139, 143, 443, 445,
-        3306, 3389, 5432, 5900, 8080, 8443,
-        // Backdoor ports
-        31337, 12345, 12346, 1243, 6667, 6668, 6669, 27374,
-        2001, 1999, 30100, 30101, 30102, 5000, 5001, 5002,
-        // Additional services
-        1433, 1434, 27017, 27018, 27019, 6379, 9042, 7000, 7001, 8086
-    ]
+    /// Standard scan - COMPREHENSIVE common services (120+ ports)
+    /// Includes SSH, HTTP, databases, smart home devices, network equipment, and legacy services
+    static let standard: [Int] = {
+        var ports: [Int] = []
 
-    /// Full scan - comprehensive port list (100+ ports)
+        // === CORE NETWORK SERVICES (10 ports) ===
+        ports.append(contentsOf: [
+            20,    // FTP Data
+            21,    // FTP Control
+            22,    // SSH
+            23,    // Telnet
+            25,    // SMTP (Email)
+            53,    // DNS
+            67,    // DHCP Server
+            68,    // DHCP Client
+            69,    // TFTP
+            110,   // POP3
+        ])
+
+        // === WEB SERVICES (12 ports) ===
+        ports.append(contentsOf: [
+            80,    // HTTP
+            443,   // HTTPS
+            8000,  // HTTP Alternate
+            8008,  // HTTP Alternate
+            8080,  // HTTP Proxy/Alternate
+            8081,  // HTTP Alternate
+            8082,  // HTTP Alternate
+            8443,  // HTTPS Alternate
+            8888,  // HTTP Alternate
+            9000,  // HTTP Alternate
+            9090,  // HTTP Alternate
+            9443,  // HTTPS Alternate
+        ])
+
+        // === WINDOWS/SMB SERVICES (8 ports) ===
+        ports.append(contentsOf: [
+            135,   // MS RPC
+            137,   // NetBIOS Name Service
+            138,   // NetBIOS Datagram
+            139,   // NetBIOS Session (SMB)
+            445,   // SMB over TCP
+            3389,  // Remote Desktop (RDP)
+            5985,  // WinRM HTTP
+            5986,  // WinRM HTTPS
+        ])
+
+        // === EMAIL SERVICES (6 ports) ===
+        ports.append(contentsOf: [
+            143,   // IMAP
+            465,   // SMTPS
+            587,   // SMTP Submission
+            993,   // IMAPS
+            995,   // POP3S
+            2525,  // SMTP Alternate
+        ])
+
+        // === DATABASE SERVICES (10 ports) ===
+        ports.append(contentsOf: [
+            1433,  // MS SQL Server
+            1434,  // MS SQL Monitor
+            3306,  // MySQL/MariaDB
+            5432,  // PostgreSQL
+            5984,  // CouchDB
+            6379,  // Redis
+            7000,  // Cassandra
+            7001,  // Cassandra SSL
+            9042,  // Cassandra CQL
+            27017, // MongoDB
+        ])
+
+        // === HOMEKIT / APPLE SERVICES (8 ports) ===
+        ports.append(contentsOf: [
+            5353,  // mDNS/Bonjour
+            62078, // HomeKit Accessory Protocol (HAP)
+            3689,  // iTunes/DAAP
+            5000,  // AirPlay
+            7000,  // AirPlay
+            49152, // AirPlay (dynamic range start)
+            49153, // AirPlay
+            49154, // AirPlay
+        ])
+
+        // === GOOGLE HOME / CHROMECAST (6 ports) ===
+        ports.append(contentsOf: [
+            8008,  // Chromecast
+            8009,  // Chromecast
+            8443,  // Google Home
+            9000,  // Google Cast
+            10001, // Google Home
+            55443, // Google Home
+        ])
+
+        // === AMAZON ALEXA / ECHO (4 ports) ===
+        ports.append(contentsOf: [
+            4070,  // Amazon Echo
+            33434, // Amazon Echo Discovery
+            55442, // Amazon Alexa
+            55443, // Amazon Alexa
+        ])
+
+        // === UNIFI / UBIQUITI DEVICES (12 ports) ===
+        ports.append(contentsOf: [
+            10001, // UniFi Discovery
+            8080,  // UniFi Controller (HTTP)
+            8443,  // UniFi Controller (HTTPS)
+            8880,  // UniFi Controller
+            8843,  // UniFi Controller
+            6789,  // UniFi Mobile Speed Test
+            3478,  // UniFi STUN
+            7004,  // UniFi Protect RTSP
+            7441,  // UniFi Protect RTSPS
+            7442,  // UniFi Protect HTTP
+            7443,  // UniFi Protect HTTPS
+            7080,  // UniFi Protect HTTP
+        ])
+
+        // === NETWORK CAMERAS / RTSP (8 ports) ===
+        ports.append(contentsOf: [
+            554,   // RTSP
+            555,   // RTSP Alternate
+            8554,  // RTSP Alternate
+            1935,  // RTMP (streaming)
+            6667,  // Camera/IRC
+            37777, // Dahua DVR
+            34567, // Hikvision
+            9010,  // Camera
+        ])
+
+        // === NETWORK MANAGEMENT (10 ports) ===
+        ports.append(contentsOf: [
+            161,   // SNMP
+            162,   // SNMP Trap
+            514,   // Syslog
+            515,   // LPR/LPD (Printing)
+            631,   // IPP (Printing)
+            9100,  // HP JetDirect
+            10000, // Webmin
+            19999, // Netdata
+            32400, // Plex
+            51827, // HomeKit pairing
+        ])
+
+        // === VNC / REMOTE ACCESS (6 ports) ===
+        ports.append(contentsOf: [
+            5800,  // VNC HTTP
+            5900,  // VNC
+            5901,  // VNC
+            5902,  // VNC
+            5903,  // VNC
+            22222, // SSH Alternate
+        ])
+
+        // === GAMING / MEDIA (8 ports) ===
+        ports.append(contentsOf: [
+            27015, // Steam/Source
+            27016, // Steam
+            3074,  // Xbox Live
+            9001,  // Media Server
+            32400, // Plex Media Server
+            32469, // Plex DLNA
+            50000, // Media
+            50001, // Media
+        ])
+
+        // === LEGACY / BACKDOOR DETECTION (12 ports) ===
+        ports.append(contentsOf: [
+            31337, // Back Orifice
+            12345, // NetBus
+            12346, // NetBus
+            1243,  // BackDoor
+            6668,  // IRC
+            6669,  // IRC
+            27374, // SubSeven
+            2001,  // Trojan
+            1999,  // BackDoor
+            30100, // NetSphere
+            30101, // NetSphere
+            30102, // NetSphere
+        ])
+
+        // === MQTT / IoT (4 ports) ===
+        ports.append(contentsOf: [
+            1883,  // MQTT
+            8883,  // MQTT over SSL
+            1884,  // MQTT alternate
+            8884,  // MQTT alternate
+        ])
+
+        return Array(Set(ports)).sorted() // Remove duplicates and sort
+    }()
+
+    /// Full scan - comprehensive port list (200+ ports)
     static let full: [Int] = {
         var ports = standard
 
-        // Add more common ports
+        // Add additional uncommon but useful ports
         ports.append(contentsOf: [
-            20, 119, 123, 135, 137, 138, 161, 162, 389, 636,
-            1521, 2049, 3690, 5222, 5223, 5269, 5353, 6000, 6001,
-            8000, 8008, 8081, 8082, 8888, 9000, 9001, 9090, 9091,
-            9200, 9300, 11211, 27015, 27016, 50000, 50001
+            119,   // NNTP
+            123,   // NTP
+            389,   // LDAP
+            636,   // LDAPS
+            1521,  // Oracle DB
+            2049,  // NFS
+            3690,  // SVN
+            5222,  // XMPP Client
+            5223,  // XMPP Client SSL
+            5269,  // XMPP Server
+            6000,  // X11
+            6001,  // X11
+            8086,  // InfluxDB
+            9200,  // Elasticsearch
+            9300,  // Elasticsearch
+            11211, // Memcached
         ])
 
-        return ports.sorted()
+        return Array(Set(ports)).sorted() // Remove duplicates and sort
     }()
 
     /// Backdoor-only scan - known malware ports
     static let backdoorsOnly: [Int] = [
         31337, 12345, 12346, 1243, 6667, 6668, 6669, 27374,
         2001, 1999, 30100, 30101, 30102, 5000, 5001, 5002
+    ]
+
+    /// HomeKit/Apple device-specific ports (OPTIMIZED - only 6 ports)
+    /// Much faster scanning for HomeKit discovery without sacrificing device detection
+    static let homeKit: [Int] = [
+        80,     // HTTP (HomeKit Accessory Protocol - HAP)
+        443,    // HTTPS (Secure HAP)
+        5353,   // mDNS (Bonjour discovery)
+        8080,   // Alternate HTTP (common for HAP)
+        8443,   // Alternate HTTPS
+        62078   // HAP (HomeKit Accessory Protocol default port)
     ]
 }

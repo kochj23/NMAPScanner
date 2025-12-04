@@ -95,11 +95,16 @@ struct IntegratedDashboardView: View {
             )
         }
         .sheet(item: $selectedDevice) { device in
-            // Find the rogue device threat if this is a rogue device
-            let rogueThreat = device.isRogue ? threatAnalyzer.allThreats.first {
-                $0.isRogueDevice && $0.affectedHost == device.ipAddress
-            } : nil
-            EnhancedDeviceDetailView(device: device, rogueThreat: rogueThreat)
+            // Convert EnhancedDevice to HomeKitDevice for the detail view
+            let homeKitDevice = HomeKitDevice(
+                displayName: device.hostname ?? device.ipAddress,
+                serviceType: device.serviceType ?? "",
+                category: device.deviceType.rawValue,
+                isHomeKitAccessory: HomeKitPortDefinitions.isLikelyHomeKitAccessory(ports: device.openPorts.map { $0.port }),
+                discoveredAt: device.lastSeen,
+                ipAddress: device.ipAddress
+            )
+            EnhancedDeviceDetailView(device: homeKitDevice)
         }
         .task {
             // Auto-scan on launch
@@ -673,27 +678,6 @@ class IntegratedScanner: ObservableObject {
         status = "Scan complete - \(devices.count) devices found, \(threatsDetected) threats detected"
         isScanning = false
         hasScanned = true
-
-        // Notify DeviceManager
-        Task { @MainActor in
-            let deviceManager = DeviceManager.shared
-            for device in devices {
-                // Convert to DiscoveredDevice for compatibility
-                let discoveredDevice = DiscoveredDevice(
-                    ipAddress: device.ipAddress,
-                    macAddress: device.macAddress,
-                    hostname: device.hostname,
-                    manufacturer: device.manufacturer,
-                    deviceType: convertDeviceType(device.deviceType),
-                    openPorts: device.openPorts.map { $0.port },
-                    vulnerabilities: 0, // Calculated by threat analyzer
-                    isOnline: device.isOnline,
-                    firstSeen: device.firstSeen,
-                    lastSeen: device.lastSeen
-                )
-                deviceManager.addDevice(discoveredDevice)
-            }
-        }
     }
 
     private func detectSubnet() -> String {

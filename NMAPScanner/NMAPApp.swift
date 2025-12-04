@@ -1,6 +1,6 @@
 //
 //  NMAPApp.swift
-//  NMAP Scanner for AppleTV
+//  NMAP Scanner
 //
 //  Created by Jordan Koch & Claude Code on 2025-11-23.
 //  Copyright © 2025 Jordan Koch. All rights reserved.

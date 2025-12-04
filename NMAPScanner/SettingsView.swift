@@ -171,7 +171,8 @@ struct SettingsView: View {
                     }
                     .buttonStyle(.plain)
 
-                    // Network History
+                    // Network History - DISABLED (NetworkHistoryView not in project)
+                    /*
                     NavigationLink(destination: NetworkHistoryView()) {
                         SettingsSection(title: "Network History") {
                             HStack {
@@ -190,6 +191,7 @@ struct SettingsView: View {
                         }
                     }
                     .buttonStyle(.plain)
+                    */
 
                     // Data Management
                     SettingsSection(title: "Data Management") {

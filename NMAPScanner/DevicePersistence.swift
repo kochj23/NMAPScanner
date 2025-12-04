@@ -109,7 +109,10 @@ class DevicePersistenceManager: ObservableObject {
     private let settingsKey = "com.digitalnoise.nmapscanner.settings"
 
     private init() {
-        loadAll()
+        // Load data asynchronously to avoid blocking main thread on init
+        Task { @MainActor in
+            loadAll()
+        }
     }
 
     // MARK: - Device Management
@@ -203,6 +206,26 @@ class DevicePersistenceManager: ObservableObject {
         if let index = persistedDevices.firstIndex(where: { $0.ipAddress == ipAddress }) {
             persistedDevices[index].userNotes = notes
             saveDevices()
+        }
+    }
+
+    /// Get all devices as EnhancedDevice array
+    func getAllDevices() -> [EnhancedDevice] {
+        return persistedDevices.compactMap { persisted in
+            EnhancedDevice(
+                ipAddress: persisted.ipAddress,
+                macAddress: persisted.macAddress,
+                hostname: persisted.hostname,
+                manufacturer: persisted.manufacturer,
+                deviceType: .unknown,
+                openPorts: [],
+                isOnline: false,
+                firstSeen: persisted.firstSeen,
+                lastSeen: persisted.lastSeen,
+                isKnownDevice: persisted.isWhitelisted,
+                operatingSystem: nil,
+                deviceName: persisted.customName
+            )
         }
     }
 

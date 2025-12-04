@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct ScanSettingsView: View {
-    @ObservedObject var scanner: NMAPScanner
+    @ObservedObject var scanner: SimpleNetworkScanner
     @Environment(\.dismiss) var dismiss
 
     @State private var subnet = "192.168.1"
@@ -104,7 +104,8 @@ struct ScanSettingsView: View {
 
     private func startScan() {
         Task {
-            await scanner.scanNetwork(subnet: subnet, ports: scanType.ports)
+            // TODO: Update to use correct scanning method
+            await scanner.scanPingSweep(subnet: subnet)
             dismiss()
         }
     }
