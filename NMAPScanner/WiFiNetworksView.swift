@@ -2,7 +2,7 @@
 //  WiFiNetworksView.swift
 //  NMAP Plus Security Scanner - WiFi Networks Tab
 //
-//  Created by Jordan Koch & Claude Code on 2025-12-01.
+//  Created by Jordan Koch on 2025-12-01.
 //
 //  Displays all visible WiFi networks with detailed information and security analysis.
 //

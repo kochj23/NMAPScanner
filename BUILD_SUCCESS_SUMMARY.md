@@ -2,7 +2,7 @@
 
 **Date**: December 1, 2025
 **Time**: 09:45 PST
-**Authors**: Jordan Koch & Claude Code
+**Authors**: Jordan Koch
 **Project**: NMAPScanner with Apple Metal AI Integration
 **Build Status**: ✅ **SUCCESS**
 
@@ -211,4 +211,4 @@ The Metal AI features are fully integrated and ready for real-world testing. The
 **Build completed successfully at 09:45 PST on December 1, 2025**
 
 *Generated with [Claude Code](https://claude.com/claude-code)*
-*Co-Authored-By: Claude <noreply@anthropic.com>*
+**

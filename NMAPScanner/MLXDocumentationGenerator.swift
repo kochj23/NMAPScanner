@@ -2,7 +2,7 @@
 //  MLXDocumentationGenerator.swift
 //  NMAP Plus Security Scanner v8.0.0
 //
-//  Created by Jordan Koch & Claude Code on 2025-11-30.
+//  Created by Jordan Koch on 2025-11-30.
 //
 //  AI-powered network documentation generator using MLX.
 //  Creates comprehensive, professional network documentation.

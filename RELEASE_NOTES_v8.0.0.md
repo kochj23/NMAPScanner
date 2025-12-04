@@ -1,7 +1,7 @@
 # NMAP Plus Security Scanner v8.0.0 - AI-Powered Release
 
 **Release Date:** November 30, 2025
-**Created by:** Jordan Koch & Claude Code
+**Created by:** Jordan Koch
 
 ---
 
@@ -286,7 +286,7 @@ Planned for v8.1.0+:
 
 ## 🙏 Credits
 
-**Developed by:** Jordan Koch & Claude Code
+**Developed by:** Jordan Koch
 **AI Framework:** Apple MLX
 **AI Model:** Microsoft Phi-3.5-mini
 **Build Date:** November 30, 2025

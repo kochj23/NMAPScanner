@@ -1,7 +1,7 @@
 # Device Discovery Issue - Root Cause Analysis & Solution
 
 **Date:** December 1, 2025
-**Created by:** Jordan Koch & Claude Code
+**Created by:** Jordan Koch
 
 ---
 

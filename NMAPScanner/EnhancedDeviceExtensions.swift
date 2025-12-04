@@ -2,7 +2,7 @@
 //  EnhancedDeviceExtensions.swift
 //  NMAP Plus Security Scanner
 //
-//  Created by Jordan Koch & Claude Code on 2025-11-30.
+//  Created by Jordan Koch on 2025-11-30.
 //
 //  Extensions and computed properties for EnhancedDevice
 //

@@ -135,4 +135,4 @@ xcodebuild -project HomeKitAdopter.xcodeproj -scheme HomeKitAdopter -destination
 
 **Version:** 2.2
 **Last Updated:** November 22, 2025
-**Authors:** Jordan Koch & Claude Code
+**Authors:** Jordan Koch

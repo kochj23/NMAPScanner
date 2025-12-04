@@ -485,4 +485,4 @@ diff <(arp -a | sort) baseline_arp.txt
 **Document Classification:** Internal / Network Sensitive
 **Last Updated:** November 27, 2025, 9:26 PM
 **Next Scan:** December 4, 2025
-**Owner:** Jordan Koch & Claude Code
+**Owner:** Jordan Koch

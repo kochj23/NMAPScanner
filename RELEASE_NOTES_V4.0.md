@@ -1,6 +1,6 @@
 # NMAPScanner v4.0 Release Notes
 **Released:** November 24, 2025
-**Created by:** Jordan Koch & Claude Code
+**Created by:** Jordan Koch
 
 ---
 
@@ -161,7 +161,7 @@ Maintains the clean Home app aesthetic:
 
 ## 🙏 Credits
 
-**Developed by:** Jordan Koch & Claude Code
+**Developed by:** Jordan Koch
 **Release Date:** November 24, 2025
 **Version:** 4.0 (Build 4)
 **Platform:** macOS 13.0+

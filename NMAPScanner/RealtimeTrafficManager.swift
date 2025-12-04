@@ -2,7 +2,7 @@
 //  RealtimeTrafficManager.swift
 //  NMAPScanner
 //
-//  Created by Jordan Koch & Claude Code on 2025-11-29.
+//  Created by Jordan Koch on 2025-11-29.
 //  Real-time network traffic monitoring and visualization
 //
 

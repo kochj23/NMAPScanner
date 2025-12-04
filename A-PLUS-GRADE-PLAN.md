@@ -2,7 +2,7 @@
 
 **Goal:** Transform from working prototype to production-grade A+ application
 **Date:** November 21, 2025
-**Authors:** Jordan Koch & Claude Code
+**Authors:** Jordan Koch
 
 ---
 
@@ -1206,5 +1206,5 @@ class PerformanceTests: XCTestCase {
 
 **This plan transforms HomeKit Adopter from a working prototype to a production-grade A+ application ready for the App Store.**
 
-**Jordan Koch & Claude Code**
+**Jordan Koch**
 November 21, 2025

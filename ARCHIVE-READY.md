@@ -2,7 +2,7 @@
 
 **Version:** 2.0.0
 **Date:** 2025-11-21
-**Created by:** Jordan Koch & Claude Code
+**Created by:** Jordan Koch
 **Status:** Ready to archive once provisioning is configured
 
 ---
@@ -141,7 +141,7 @@ agvtool next-version -all
 # HomeKit Adopter v2.0.0
 
 **Release Date:** November 21, 2025
-**Implemented by:** Jordan Koch & Claude Code
+**Implemented by:** Jordan Koch
 
 ## 🎉 Major Release - 17 Features Implemented
 

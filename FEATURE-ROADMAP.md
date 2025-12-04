@@ -1,7 +1,7 @@
 # HomeKit Adopter - Feature Roadmap
 
 **Version:** 1.0.0
-**Created by:** Jordan Koch & Claude Code
+**Created by:** Jordan Koch
 **Date:** 2025-11-21
 
 This document outlines potential features and enhancements for future versions of HomeKit Adopter.

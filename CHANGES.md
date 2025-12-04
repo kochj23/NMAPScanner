@@ -154,12 +154,12 @@ Enhanced device detection and UI improvements (v1.1.0)
 
 🤖 Generated with Claude Code (https://claude.com/claude-code)
 
-Co-Authored-By: Claude <noreply@anthropic.com>
+
 ```
 
 ---
 
-**Created by:** Jordan Koch & Claude Code
+**Created by:** Jordan Koch
 **Date:** 2025-11-29
 **Build:** 1840
 **Version:** 1.1.0

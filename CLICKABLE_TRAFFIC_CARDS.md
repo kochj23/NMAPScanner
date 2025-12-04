@@ -1,6 +1,6 @@
 # Clickable Traffic Cards Feature
 
-**Created by:** Jordan Koch & Claude Code
+**Created by:** Jordan Koch
 **Date:** 2025-11-30
 **Version:** 5.3.0
 

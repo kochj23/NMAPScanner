@@ -2,7 +2,7 @@
 //  KismetWiFiViews.swift
 //  NMAP Plus Security Scanner - Kismet-Style WiFi UI
 //
-//  Created by Jordan Koch & Claude Code on 2025-12-01.
+//  Created by Jordan Koch on 2025-12-01.
 //
 //  Comprehensive WiFi analysis views inspired by Kismet
 //

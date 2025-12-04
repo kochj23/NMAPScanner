@@ -1,7 +1,7 @@
 # NMAPScanner Changelog
 
 ## v8.5.0 (December 3, 2025) - Comprehensive Port Coverage
-**Authors:** Jordan Koch & Claude Code
+**Authors:** Jordan Koch
 
 ### 🎯 Expanded Device Detection
 
@@ -43,7 +43,7 @@ With 115 ports and parallel scanning:
 ---
 
 ## v8.4.0 (December 3, 2025) - Speed Optimization Release
-**Authors:** Jordan Koch & Claude Code
+**Authors:** Jordan Koch
 
 ### 🚀 Major Performance Improvements
 
@@ -86,7 +86,7 @@ With 115 ports and parallel scanning:
 ---
 
 ## v8.3.0 (December 3, 2025) - Network Stats Removed
-**Authors:** Jordan Koch & Claude Code
+**Authors:** Jordan Koch
 
 ### Removed Features
 - **REMOVED**: Network Stats (netstat) functionality
@@ -107,7 +107,7 @@ With 115 ports and parallel scanning:
 ---
 
 ## v8.2.2 (December 3, 2025) - Race Condition Fix
-**Authors:** Jordan Koch & Claude Code
+**Authors:** Jordan Koch
 
 ### Critical Bug Fixes
 - **FIXED**: Race condition causing "Operation timed out after 60 seconds" errors
@@ -126,7 +126,7 @@ With 115 ports and parallel scanning:
 ---
 
 ## v8.2.1 (December 3, 2025) - Network Stats Fix
-**Authors:** Jordan Koch & Claude Code
+**Authors:** Jordan Koch
 
 ### Critical Bug Fixes
 - **FIXED**: Network Stats tool causing app freeze with spinning beach ball
@@ -147,7 +147,7 @@ With 115 ports and parallel scanning:
 ---
 
 ## v8.2.0 (December 1, 2025)
-**Authors:** Jordan Koch & Claude Code
+**Authors:** Jordan Koch
 
 ### Major Features
 - Network Tools tab with comprehensive diagnostics suite

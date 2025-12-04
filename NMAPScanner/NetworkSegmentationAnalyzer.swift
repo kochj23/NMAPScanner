@@ -2,7 +2,7 @@
 //  NetworkSegmentationAnalyzer.swift
 //  NMAPScanner - Network Segmentation & Isolation Analysis
 //
-//  Created by Jordan Koch & Claude Code on 2025-11-27.
+//  Created by Jordan Koch on 2025-11-27.
 //
 
 import Foundation

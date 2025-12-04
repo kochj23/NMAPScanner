@@ -1,7 +1,7 @@
 # HomeKitAdopter - Complete Feature List
 
 **Version**: 2.0.0
-**Created by**: Jordan Koch & Claude Code
+**Created by**: Jordan Koch
 **Date**: November 22, 2025
 
 ## Overview

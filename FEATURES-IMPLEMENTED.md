@@ -2,7 +2,7 @@
 
 **Date:** 2025-11-21
 **Version:** 1.1.0
-**Implemented by:** Jordan Koch & Claude Code
+**Implemented by:** Jordan Koch
 
 ## Summary
 

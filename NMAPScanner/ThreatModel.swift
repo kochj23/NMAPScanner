@@ -2,7 +2,7 @@
 //  ThreatModel.swift
 //  NMAP Scanner - Comprehensive Threat Analysis Model
 //
-//  Created by Jordan Koch & Claude Code on 2025-11-23.
+//  Created by Jordan Koch on 2025-11-23.
 //
 
 import Foundation

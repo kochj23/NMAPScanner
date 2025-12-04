@@ -2,7 +2,7 @@
 //  CustomDNSResolver.swift
 //  NMAP Plus Security Scanner - Custom DNS Resolution
 //
-//  Created by Jordan Koch & Claude Code on 2025-11-24.
+//  Created by Jordan Koch on 2025-11-24.
 //
 
 import Foundation

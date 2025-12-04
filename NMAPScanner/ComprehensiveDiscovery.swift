@@ -2,7 +2,7 @@
 //  ComprehensiveDiscovery.swift
 //  NMAP Plus Security Scanner - Comprehensive Device Discovery
 //
-//  Created by Jordan Koch & Claude Code on 2025-12-01.
+//  Created by Jordan Koch on 2025-12-01.
 //
 //  Ensures ALL devices on the network are discovered using multiple methods
 //

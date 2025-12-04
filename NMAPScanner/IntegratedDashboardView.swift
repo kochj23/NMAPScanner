@@ -2,7 +2,7 @@
 //  IntegratedDashboardView.swift
 //  NMAP Scanner - Integrated Threat Analysis Dashboard
 //
-//  Created by Jordan Koch & Claude Code on 2025-11-23.
+//  Created by Jordan Koch on 2025-11-23.
 //
 
 import SwiftUI

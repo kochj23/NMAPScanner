@@ -2,7 +2,7 @@
 
 This document tracks all implementation approaches, solutions, and architectural decisions for the HomeKitAdopter project.
 
-**Created by**: Jordan Koch & Claude Code
+**Created by**: Jordan Koch
 
 ---
 
@@ -387,7 +387,7 @@ Technical:
 Build: ✅ Success (zero warnings)
 Archive: ✅ Exported to /Volumes/Data/xcode/binaries/2025-11-23-HomeKitAdopter-v3.4/
 
-Created by Jordan Koch & Claude Code
+Created by Jordan Koch
 ```
 
 ---
@@ -698,7 +698,7 @@ Build: ✅ Success (zero warnings)
 Archive: ✅ Exported to /Volumes/Data/xcode/binaries/2025-11-23-HomeKitAdopter-v4.0/
 IPA Size: 741 KB
 
-Created by Jordan Koch & Claude Code
+Created by Jordan Koch
 ```
 
 ---
@@ -1410,7 +1410,7 @@ Build: ✅ Success (20 warnings, 0 errors)
 Archive: ✅ Exported to /Volumes/Data/xcode/binaries/NMAPScanner-6.0.0-20251130-103551/
 Binary Size: 5.0 MB
 
-Created by Jordan Koch & Claude Code
+Created by Jordan Koch
 ```
 
 ---
@@ -1898,7 +1898,7 @@ Build: ✅ Success (45 warnings, 0 errors)
 Archive: ✅ Exported to /Volumes/Data/xcode/binaries/NMAPScanner-6.1.0-20251130-104636/
 Binary Size: 5.0 MB
 
-Created by Jordan Koch & Claude Code
+Created by Jordan Koch
 ```
 
 ---
@@ -2909,7 +2909,7 @@ Build: ✅ Success (45 warnings, 0 errors)
 Archive: ✅ Exported to /Volumes/Data/xcode/binaries/NMAPScanner-6.2.0-20251130-110500/
 Binary Size: 5.0 MB
 
-Created by Jordan Koch & Claude Code
+Created by Jordan Koch
 ```
 
 ---
@@ -3314,7 +3314,7 @@ Build: ✅ Success (45 warnings, 0 errors)
 Archive: ✅ Exported to /Volumes/Data/xcode/binaries/NMAPScanner-6.3.0-20251130-112819/
 Binary Size: 5.6 MB
 
-Created by Jordan Koch & Claude Code
+Created by Jordan Koch
 ```
 
 ---
