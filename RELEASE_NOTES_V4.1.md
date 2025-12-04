@@ -1,6 +1,6 @@
 # NMAPScanner v4.1 Release Notes
 **Released:** November 24, 2025
-**Created by:** Jordan Koch & Claude Code
+**Created by:** Jordan Koch
 
 ---
 
@@ -281,7 +281,7 @@ Every piece of information we can gather about a device is now displayed in a be
 
 ## 🙏 Credits
 
-**Developed by:** Jordan Koch & Claude Code
+**Developed by:** Jordan Koch
 **Release Date:** November 24, 2025
 **Version:** 4.1 (Build 5)
 **Platform:** macOS 13.0+

@@ -4,7 +4,7 @@
 //
 //  Historical device tracking and change detection system
 //  Monitors device state changes, new devices, and network evolution over time
-//  Created by Jordan Koch & Claude Code on 11/23/2025.
+//  Created by Jordan Koch on 11/23/2025.
 //
 
 import Foundation

@@ -2,7 +2,7 @@
 //  MLXSecurityAssistant.swift
 //  NMAP Plus Security Scanner v8.0.0
 //
-//  Created by Jordan Koch & Claude Code on 2025-11-30.
+//  Created by Jordan Koch on 2025-11-30.
 //
 //  Conversational AI security assistant using MLX.
 //  Chat interface for network security questions and guidance.

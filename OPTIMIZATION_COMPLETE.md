@@ -1,6 +1,6 @@
 # NMAPScanner Optimization Complete - v8.5.0
 **Date:** December 3, 2025
-**Authors:** Jordan Koch & Claude Code
+**Authors:** Jordan Koch
 
 ## 🎉 Mission Accomplished!
 
@@ -472,6 +472,6 @@ This version is:
 
 **NMAPScanner v8.5.0 - Comprehensive Port Coverage**
 **December 3, 2025**
-**Jordan Koch & Claude Code**
+**Jordan Koch**
 
 *"Speed AND Comprehensiveness - you don't have to choose!"*

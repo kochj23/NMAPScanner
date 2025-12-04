@@ -2,7 +2,7 @@
 
 **Date:** November 27, 2025
 **Version:** 4.10 → 4.11
-**Performed by:** Jordan Koch & Claude Code
+**Performed by:** Jordan Koch
 
 ---
 

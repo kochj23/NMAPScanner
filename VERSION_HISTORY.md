@@ -4,7 +4,7 @@
 
 **Release Type:** MAJOR FEATURE RELEASE + CRITICAL HOTFIX
 
-**Created by:** Jordan Koch & Claude Code
+**Created by:** Jordan Koch
 
 ### Second Build (1:40 PM) - SSL Certificate Hotfix ⚡
 
@@ -94,7 +94,7 @@
 - Tab views: 4 specialized views
 - Service types: 7 mDNS types
 
-**Authors:** Jordan Koch & Claude Code
+**Authors:** Jordan Koch
 
 ---
 
@@ -115,7 +115,7 @@
 `/Volumes/Data/xcode/binaries/NMAPScanner-v5.2.2-2025-11-27-212151/`
 
 **Build Status:** ✅ Compiled successfully, running stable
-**Authors:** Jordan Koch & Claude Code
+**Authors:** Jordan Koch
 
 ---
 
@@ -186,7 +186,7 @@
 **Binary Location:**
 `/Volumes/Data/xcode/binaries/NMAPScanner-v5.2.1-2025-11-27-204059/`
 
-**Authors:** Jordan Koch & Claude Code
+**Authors:** Jordan Koch
 
 ---
 
@@ -227,7 +227,7 @@
 **Known Issues:**
 - Advanced security visualizations temporarily disabled (pending data integration)
 
-**Authors:** Jordan Koch & Claude Code
+**Authors:** Jordan Koch
 
 ---
 

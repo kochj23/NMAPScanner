@@ -4,7 +4,7 @@
 //
 //  Comprehensive notification system for security alerts and scan events
 //  Supports banners, sounds, and persistent notification history
-//  Created by Jordan Koch & Claude Code on 11/23/2025.
+//  Created by Jordan Koch on 11/23/2025.
 //
 
 import Foundation

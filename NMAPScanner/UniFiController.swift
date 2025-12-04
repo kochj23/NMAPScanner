@@ -2,7 +2,7 @@
 //  UniFiController.swift
 //  NMAP Plus Security Scanner - UniFi UDM Pro Integration
 //
-//  Created by Jordan Koch & Claude Code on 2025-11-24.
+//  Created by Jordan Koch on 2025-11-24.
 //
 
 import Foundation

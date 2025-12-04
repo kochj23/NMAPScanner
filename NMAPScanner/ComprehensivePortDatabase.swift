@@ -3,7 +3,7 @@
 //  NMAP Scanner - Comprehensive TCP/UDP Port Database
 //
 //  Based on IANA assignments and Wikipedia List of TCP and UDP port numbers
-//  Created by Jordan Koch & Claude Code on 2025-11-24.
+//  Created by Jordan Koch on 2025-11-24.
 //
 
 import Foundation

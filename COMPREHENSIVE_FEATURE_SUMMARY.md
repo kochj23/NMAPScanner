@@ -1,7 +1,7 @@
 # NMAPScanner - Comprehensive Feature Implementation Summary
 **Date:** November 23, 2025
 **Version:** 3.0 (In Progress)
-**Authors:** Jordan Koch & Claude Code
+**Authors:** Jordan Koch
 
 ## 🎯 IMPLEMENTATION STATUS
 

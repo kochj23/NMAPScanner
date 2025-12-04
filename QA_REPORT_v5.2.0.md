@@ -1,7 +1,7 @@
 # NMAPScanner v5.2.0 - QA Report
 
 **Date:** November 27, 2025
-**Testers:** Jordan Koch & Claude Code
+**Testers:** Jordan Koch
 **Build:** v5.2.0 (Build 2)
 
 ---
@@ -455,6 +455,6 @@ The application successfully launches and displays the Enhanced 3D Topology view
 
 ---
 
-**QA Team:** Jordan Koch & Claude Code
+**QA Team:** Jordan Koch
 **Date:** November 27, 2025
 **Next Review:** After critical fixes applied

@@ -1,7 +1,7 @@
 # Complete Network Tools Implementation - HomeKitAdopter
 
 **Date:** 2025-11-22
-**Authors:** Jordan Koch & Claude Code
+**Authors:** Jordan Koch
 **Version:** 2.2 - Professional Network Analysis Suite
 
 ---

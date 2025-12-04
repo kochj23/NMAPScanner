@@ -1,6 +1,6 @@
 # NMAPScanner - Complete Feature Implementation Roadmap
 **Created:** November 23, 2025
-**Authors:** Jordan Koch & Claude Code
+**Authors:** Jordan Koch
 
 ## ✅ COMPLETED FEATURES
 

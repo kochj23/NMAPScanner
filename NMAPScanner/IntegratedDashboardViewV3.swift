@@ -2,7 +2,7 @@
 //  IntegratedDashboardViewV3.swift
 //  NMAP Plus Security Scanner - Enhanced Dashboard with Ping Scanning
 //
-//  Created by Jordan Koch & Claude Code on 2025-11-23.
+//  Created by Jordan Koch on 2025-11-23.
 //
 
 import SwiftUI

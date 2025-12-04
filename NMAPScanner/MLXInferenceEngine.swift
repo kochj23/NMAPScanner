@@ -2,7 +2,7 @@
 //  MLXInferenceEngine.swift
 //  NMAP Plus Security Scanner v8.0.0
 //
-//  Created by Jordan Koch & Claude Code on 2025-11-30.
+//  Created by Jordan Koch on 2025-11-30.
 //
 //  Core MLX inference engine for on-device AI features.
 //  Handles model loading, prompt engineering, and response generation.

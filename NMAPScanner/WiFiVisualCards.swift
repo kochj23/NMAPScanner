@@ -2,7 +2,7 @@
 //  WiFiVisualCards.swift
 //  NMAP Plus Security Scanner - Visual WiFi Statistics Cards
 //
-//  Created by Jordan Koch & Claude Code on 2025-12-01.
+//  Created by Jordan Koch on 2025-12-01.
 //
 //  Beautiful, clickable visual cards for WiFi statistics and analysis
 //

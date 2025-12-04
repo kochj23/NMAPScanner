@@ -2,7 +2,7 @@
 //  NetworkVisualizationComponents.swift
 //  NMAPScanner
 //
-//  Created by Jordan Koch & Claude Code on 2025-11-29.
+//  Created by Jordan Koch on 2025-11-29.
 //  Visual components for network traffic and topology
 //
 

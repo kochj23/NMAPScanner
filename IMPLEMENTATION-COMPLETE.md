@@ -2,7 +2,7 @@
 
 **Date:** 2025-11-21
 **Version:** 2.0.0
-**Implemented by:** Jordan Koch & Claude Code
+**Implemented by:** Jordan Koch
 
 ---
 
@@ -395,7 +395,7 @@ The application evolved into a **comprehensive HomeKit management suite** with:
 - In-app help system
 - Production-ready code
 
-**Implemented by:** Jordan Koch & Claude Code
+**Implemented by:** Jordan Koch
 
 ---
 

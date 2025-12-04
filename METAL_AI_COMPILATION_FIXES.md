@@ -1,7 +1,7 @@
 # Apple Metal AI Compilation Fixes
 
 **Date**: December 1, 2025
-**Authors**: Jordan Koch & Claude Code
+**Authors**: Jordan Koch
 **Project**: NMAPScanner v7.0+
 
 ## Summary

@@ -2,7 +2,7 @@
 //  NetworkToolsTab.swift
 //  NMAP Plus Security Scanner - Network Diagnostic Tools
 //
-//  Created by Jordan Koch & Claude Code on 2025-12-01.
+//  Created by Jordan Koch on 2025-12-01.
 //
 //  Classic network tools: ping, traceroute, ipconfig, nslookup, netstat, arp
 //

@@ -1,5 +1,5 @@
 # NMAP Plus Security Scanner v8.0.0 - AI Implementation
-## Created by Jordan Koch & Claude Code - 2025-11-30
+## Created by Jordan Koch - 2025-11-30
 
 ## ✅ IMPLEMENTATION STATUS
 
@@ -214,7 +214,7 @@ xcodebuild -project NMAPScanner.xcodeproj \
 - Graceful degradation for non-AI systems
 - Comprehensive UI with dedicated AI tab
 
-**Authors:** Jordan Koch & Claude Code
+**Authors:** Jordan Koch
 
 ---
 
@@ -263,4 +263,4 @@ For questions about the AI implementation:
 **🎉 The AI revolution for NMAP Plus Security Scanner is complete!**
 **All that remains is resolving pre-existing build issues.**
 
-**Created with ❤️ by Jordan Koch & Claude Code**
+**Created with ❤️ by Jordan Koch**

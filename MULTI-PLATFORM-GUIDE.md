@@ -2,7 +2,7 @@
 
 **Version:** 1.0.0
 **Platforms:** macOS, iOS, tvOS
-**Created by:** Jordan Koch & Claude Code
+**Created by:** Jordan Koch
 **Date:** 2025-11-21
 
 ## Platform Support
@@ -522,7 +522,7 @@ struct PlatformConstants {
 ---
 
 **Last Updated:** 2025-11-21
-**Maintained by:** Jordan Koch & Claude Code
+**Maintained by:** Jordan Koch
 
 For questions or issues, refer to the main README.md or check the logs at:
 - macOS/iOS: `~/Library/Application Support/HomeKitAdopter/Logs/`

@@ -2,7 +2,7 @@
 //  KismetWiFiAnalyzer.swift
 //  NMAP Plus Security Scanner - Kismet-Style WiFi Analysis
 //
-//  Created by Jordan Koch & Claude Code on 2025-12-01.
+//  Created by Jordan Koch on 2025-12-01.
 //
 //  Implements comprehensive Kismet-style WiFi network analysis features:
 //  - Client device detection per network
