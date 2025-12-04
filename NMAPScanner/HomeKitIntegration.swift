@@ -2,7 +2,7 @@
 //  HomeKitIntegration.swift
 //  NMAP Plus Security Scanner - HomeKit Device Identification
 //
-//  Created by Jordan Koch & Claude Code on 2025-11-24.
+//  Created by Jordan Koch on 2025-11-24.
 //
 //  NOTE: HomeKit framework is only available on iOS, tvOS, and watchOS.
 //  For macOS, this provides a stub implementation that indicates HomeKit is unavailable.

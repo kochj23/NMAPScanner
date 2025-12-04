@@ -2,7 +2,7 @@
 
 **Status:** Successfully built and exported
 **Date:** November 21, 2025
-**Built by:** Jordan Koch & Claude Code
+**Built by:** Jordan Koch
 
 ---
 

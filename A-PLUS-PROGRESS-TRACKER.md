@@ -2,7 +2,7 @@
 
 **Project:** HomeKitAdopter v2.1+ (A+ Security/Stability/Performance Edition)
 **Date Started:** November 21, 2025
-**Authors:** Jordan Koch & Claude Code
+**Authors:** Jordan Koch
 **Current Status:** Phase 1 Complete ✅
 
 ---
@@ -464,5 +464,5 @@ Phase 5: Build & Deploy ░░░░░░░░░░░░░░░░░░�
 **Time Remaining:** ~19-23 hours
 **Completion:** 33%
 
-**Jordan Koch & Claude Code**
+**Jordan Koch**
 November 21, 2025

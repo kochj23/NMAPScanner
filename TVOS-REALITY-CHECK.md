@@ -2,7 +2,7 @@
 
 **Date:** November 21, 2025
 **Status:** 🚫 CRITICAL LIMITATIONS DISCOVERED
-**Authors:** Jordan Koch & Claude Code
+**Authors:** Jordan Koch
 
 ---
 
@@ -332,6 +332,6 @@ A beautiful control center that:
 
 ---
 
-**Created by:** Jordan Koch & Claude Code
+**Created by:** Jordan Koch
 **Date:** November 21, 2025
 **Status:** Documentation Complete - Awaiting User Decision

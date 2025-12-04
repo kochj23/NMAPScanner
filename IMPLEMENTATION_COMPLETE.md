@@ -227,7 +227,7 @@ See `README.md` for project overview.
 
 ---
 
-**Created by**: Jordan Koch & Claude Code
+**Created by**: Jordan Koch
 **Date**: November 22, 2025
 **Version**: 2.0.0
 **Status**: ✅ COMPLETE

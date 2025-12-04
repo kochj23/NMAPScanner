@@ -1,7 +1,7 @@
 # Security Implementation Complete - Phase 1
 
 **Date:** November 21, 2025
-**Authors:** Jordan Koch & Claude Code
+**Authors:** Jordan Koch
 **Status:** Phase 1 Security Improvements COMPLETE ✅
 
 ---
@@ -428,5 +428,5 @@ All security implementations are fully documented with:
 
 The HomeKitAdopter application now has enterprise-grade security suitable for production deployment.
 
-**Jordan Koch & Claude Code**
+**Jordan Koch**
 November 21, 2025

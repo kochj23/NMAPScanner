@@ -1,5 +1,5 @@
 # NMAP Scanner - Complete Feature Implementation
-## Created by Jordan Koch & Claude Code on 2025-11-24
+## Created by Jordan Koch on 2025-11-24
 
 ## 🎯 All Requested Features Implemented
 
@@ -437,6 +437,6 @@ All features follow the Home app aesthetic:
 
 ---
 
-**Developers:** Jordan Koch & Claude Code
+**Developers:** Jordan Koch
 **Date:** November 24, 2025
 **Version:** 3.0 (Major Feature Release)

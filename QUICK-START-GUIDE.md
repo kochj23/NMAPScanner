@@ -2,7 +2,7 @@
 
 **Version:** 2.0.0
 **Date:** 2025-11-21
-**By:** Jordan Koch & Claude Code
+**By:** Jordan Koch
 
 ---
 

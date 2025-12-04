@@ -1,5 +1,5 @@
 # HomeKitAdopter Version 3.0 - Implementation Log
-## Created by Jordan Koch & Claude Code
+## Created by Jordan Koch
 ## Date: November 22, 2025
 
 ---
@@ -303,6 +303,6 @@ case .none:
 ---
 
 **Log Complete**: November 22, 2025 19:05 PST
-**Authors**: Jordan Koch & Claude Code
+**Authors**: Jordan Koch
 **Status**: In Progress - Moving to Version 3.0 Release
 

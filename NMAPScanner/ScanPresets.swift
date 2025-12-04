@@ -4,7 +4,7 @@
 //
 //  Preconfigured scan presets for common use cases
 //  Allows quick-launch of specialized scans (web servers, IoT, databases, etc.)
-//  Created by Jordan Koch & Claude Code on 11/23/2025.
+//  Created by Jordan Koch on 11/23/2025.
 //
 
 import Foundation

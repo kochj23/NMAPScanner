@@ -2,7 +2,7 @@
 //  UniFiDeviceIdentifier.swift
 //  NMAP Plus Security Scanner - UniFi Device Identification
 //
-//  Created by Jordan Koch & Claude Code on 2025-12-01.
+//  Created by Jordan Koch on 2025-12-01.
 //
 //  Identifies UniFi network infrastructure devices using multiple detection methods:
 //  1. MAC Address OUI lookup (Ubiquiti MAC addresses)

@@ -1,6 +1,6 @@
 # Network Stats Fix - Technical Approach Documentation
 **Date:** December 3, 2025
-**Authors:** Jordan Koch & Claude Code
+**Authors:** Jordan Koch
 **Version:** 8.2.1
 
 ## Problem Statement

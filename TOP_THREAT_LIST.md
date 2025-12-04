@@ -558,5 +558,5 @@ These ports are **exclusively** associated with known malware and should NEVER b
 **Document Version:** 1.0
 **Last Updated:** November 27, 2025
 **Next Review:** December 27, 2025
-**Owner:** Jordan Koch & Claude Code
+**Owner:** Jordan Koch
 **Classification:** Internal Use / Security Sensitive

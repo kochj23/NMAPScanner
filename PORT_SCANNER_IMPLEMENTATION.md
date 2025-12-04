@@ -1,7 +1,7 @@
 # Port Scanner Implementation - HomeKitAdopter
 
 **Date:** 2025-11-22
-**Authors:** Jordan Koch & Claude Code
+**Authors:** Jordan Koch
 **Feature:** NMAP-style port scanner with security analysis
 
 ---

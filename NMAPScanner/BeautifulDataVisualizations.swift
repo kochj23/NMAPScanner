@@ -2,7 +2,7 @@
 //  BeautifulDataVisualizations.swift
 //  NMAP Plus Security Scanner v7.0.0
 //
-//  Created by Jordan Koch & Claude Code on 2025-11-30.
+//  Created by Jordan Koch on 2025-11-30.
 //
 //  Stunning data visualizations including:
 //  - Animated donut charts

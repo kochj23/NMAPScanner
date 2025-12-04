@@ -2,7 +2,7 @@
 //  SecurityDashboardView.swift
 //  NMAP Scanner - Comprehensive Security & Traffic Dashboard
 //
-//  Created by Jordan Koch & Claude Code on 2025-11-24.
+//  Created by Jordan Koch on 2025-11-24.
 //
 
 import SwiftUI

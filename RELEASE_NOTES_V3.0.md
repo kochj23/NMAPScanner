@@ -1,6 +1,6 @@
 # HomeKitAdopter Version 3.0 - Release Notes
 ## 🎉 Major Release: The Design Revolution
-### Created by Jordan Koch & Claude Code
+### Created by Jordan Koch
 ### Release Date: November 22, 2025
 
 ---
@@ -296,6 +296,6 @@ Thank you for using HomeKitAdopter! Version 3.0 represents a significant milesto
 
 **Version**: 3.0 (Build 1)
 **Release Date**: November 22, 2025
-**Authors**: Jordan Koch & Claude Code
+**Authors**: Jordan Koch
 **Build Status**: ✅ SUCCESS
 

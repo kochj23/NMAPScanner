@@ -2,7 +2,7 @@
 //  PortScanModeSelector.swift
 //  NMAPScanner
 //
-//  Created by Jordan Koch & Claude Code on 2025-11-29.
+//  Created by Jordan Koch on 2025-11-29.
 //  UI for selecting port scanning mode
 //
 

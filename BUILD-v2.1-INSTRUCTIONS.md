@@ -189,5 +189,5 @@ Once files are added and build succeeds, you'll have the most advanced unadopted
 
 **Questions?** All code is heavily documented with inline comments.
 
-**Jordan Koch & Claude Code**
+**Jordan Koch**
 November 21, 2025

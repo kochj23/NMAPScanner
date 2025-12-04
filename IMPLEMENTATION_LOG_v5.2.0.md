@@ -2,7 +2,7 @@
 
 **Feature:** Enhanced 3D Network Topology Visualization
 **Date:** November 27, 2025
-**Developers:** Jordan Koch & Claude Code
+**Developers:** Jordan Koch
 
 ---
 
@@ -406,5 +406,5 @@ The Enhanced 3D Topology feature was successfully implemented with all 15 reques
 
 ---
 
-**Authors:** Jordan Koch & Claude Code
+**Authors:** Jordan Koch
 **Date:** November 27, 2025

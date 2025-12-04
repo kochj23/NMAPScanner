@@ -1,7 +1,7 @@
 # HomeKit Adopter v2.1 - Enhanced Features Implementation
 
 **Date:** November 21, 2025
-**Authors:** Jordan Koch & Claude Code
+**Authors:** Jordan Koch
 **Status:** Implementation Complete - Build Pending
 **Platform:** tvOS 16.0+
 
@@ -447,5 +447,5 @@ The app is now a **professional-grade unadopted device detector** with industry-
 
 ---
 
-**Jordan Koch & Claude Code**
+**Jordan Koch**
 November 21, 2025

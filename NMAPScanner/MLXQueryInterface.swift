@@ -2,7 +2,7 @@
 //  MLXQueryInterface.swift
 //  NMAP Plus Security Scanner v8.0.0
 //
-//  Created by Jordan Koch & Claude Code on 2025-11-30.
+//  Created by Jordan Koch on 2025-11-30.
 //
 //  Natural language query interface using MLX.
 //  Allows users to query network devices using plain English.

@@ -2,7 +2,7 @@
 //  WiFiNetworkScanner.swift
 //  NMAP Plus Security Scanner - WiFi Network Discovery
 //
-//  Created by Jordan Koch & Claude Code on 2025-12-01.
+//  Created by Jordan Koch on 2025-12-01.
 //
 //  Scans for all visible WiFi networks with detailed information.
 //  Requires CoreWLAN framework for macOS WiFi scanning.

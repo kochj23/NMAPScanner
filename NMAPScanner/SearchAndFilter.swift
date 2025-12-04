@@ -4,7 +4,7 @@
 //
 //  Comprehensive search and filtering system for network devices
 //  Supports text search, multi-criteria filtering, and saved searches
-//  Created by Jordan Koch & Claude Code on 11/23/2025.
+//  Created by Jordan Koch on 11/23/2025.
 //
 
 import Foundation

@@ -1,6 +1,6 @@
 # Scan Performance Analysis & Optimization Recommendations
 **Date:** December 3, 2025
-**Authors:** Jordan Koch & Claude Code
+**Authors:** Jordan Koch
 
 ## Current Performance Analysis
 
@@ -380,4 +380,4 @@ func pingSubnet(_ subnet: String) async -> Set<String> {
 3. Measure and document performance improvements
 4. Deploy optimized version as v8.4.0
 
-**Authors:** Jordan Koch & Claude Code
+**Authors:** Jordan Koch

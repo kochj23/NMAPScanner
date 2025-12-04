@@ -2,7 +2,7 @@
 //  UniFiDashboardView.swift
 //  NMAP Plus Security Scanner - UniFi Devices Dashboard
 //
-//  Created by Jordan Koch & Claude Code on 2025-12-01.
+//  Created by Jordan Koch on 2025-12-01.
 //
 //  Comprehensive dashboard for UniFi network infrastructure:
 //  - UDP Discovery (port 10001) - finds all UniFi devices

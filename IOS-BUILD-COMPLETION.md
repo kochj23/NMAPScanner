@@ -309,7 +309,7 @@ The app can now:
 
 ---
 
-**Created by:** Jordan Koch & Claude Code
+**Created by:** Jordan Koch
 **Date:** November 21, 2025
 **Version:** 2.1.0
 **Build:** Successful ✅

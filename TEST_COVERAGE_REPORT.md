@@ -1,7 +1,7 @@
 # Test Coverage Report - HomeKitAdopter A+ Implementation
 
 **Date:** 2025-11-22
-**Authors:** Jordan Koch & Claude Code
+**Authors:** Jordan Koch
 **Target Grade:** A+ (98/100)
 **Current Progress:** 4 of 8 test files completed
 

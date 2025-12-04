@@ -2,7 +2,7 @@
 //  UniFiDiscoveryScanner.swift
 //  NMAP Plus Security Scanner - UniFi UDP Discovery Protocol
 //
-//  Created by Jordan Koch & Claude Code on 2025-12-01.
+//  Created by Jordan Koch on 2025-12-01.
 //
 //  Implements UniFi Discovery Protocol (UDP port 10001) for finding all UniFi devices.
 //  This is the most reliable method as ALL UniFi devices respond to discovery broadcasts.
