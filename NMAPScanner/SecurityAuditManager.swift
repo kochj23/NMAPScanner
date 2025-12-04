@@ -71,18 +71,6 @@ struct NetworkDevice {
     let lastSeen: Date
 }
 
-/// Certificate information
-struct CertificateInfo {
-    let host: String
-    let port: Int
-    let issuer: String
-    let subject: String
-    let validFrom: Date
-    let validTo: Date
-    let isValid: Bool
-    let isSelfSigned: Bool
-    let issues: [String]
-}
 
 /// Manages network security auditing
 @MainActor
@@ -260,46 +248,19 @@ class SecurityAuditManager: ObservableObject {
     /// Validate HTTPS certificates
     private func validateCertificates(scanResults: [(host: String, ports: [Int])]) async {
         for result in scanResults where result.ports.contains(443) {
-            let certInfo = await checkCertificate(host: result.host, port: 443)
-
-            if let cert = certInfo {
-                if !cert.isValid {
+            // Use SSLCertificateAnalyzer directly for full findings
+            let analyzer = SSLCertificateAnalyzer.shared
+            if let sslFindings = await analyzer.analyzeSSL(host: result.host, port: 443) {
+                if !sslFindings.isSecure || !sslFindings.issues.isEmpty {
+                    let issueDesc = sslFindings.issues.map { $0.description }.joined(separator: ", ")
+                    let severity: SecurityFinding.Severity = sslFindings.issues.contains(where: { $0.severity == .critical }) ? .critical : .high
                     let finding = SecurityFinding(
                         category: .certificateIssue,
-                        severity: .high,
-                        title: "Invalid SSL Certificate",
-                        description: "Host \(result.host) has an invalid SSL certificate: \(cert.issues.joined(separator: ", "))",
+                        severity: severity,
+                        title: "SSL/TLS Security Issue",
+                        description: "Host \(result.host) has SSL/TLS issues: \(issueDesc)",
                         affectedHosts: [result.host],
                         recommendation: "Install a valid SSL certificate from a trusted Certificate Authority.",
-                        detectedAt: Date()
-                    )
-
-                    findings.append(finding)
-                }
-
-                if cert.isSelfSigned {
-                    let finding = SecurityFinding(
-                        category: .certificateIssue,
-                        severity: .medium,
-                        title: "Self-Signed Certificate",
-                        description: "Host \(result.host) is using a self-signed SSL certificate.",
-                        affectedHosts: [result.host],
-                        recommendation: "Use a certificate from a trusted Certificate Authority for production environments.",
-                        detectedAt: Date()
-                    )
-
-                    findings.append(finding)
-                }
-
-                // Check expiration
-                if cert.validTo < Date().addingTimeInterval(30 * 24 * 3600) {
-                    let finding = SecurityFinding(
-                        category: .certificateIssue,
-                        severity: .medium,
-                        title: "Certificate Expiring Soon",
-                        description: "SSL certificate for \(result.host) expires on \(cert.validTo).",
-                        affectedHosts: [result.host],
-                        recommendation: "Renew SSL certificate before expiration to avoid service disruption.",
                         detectedAt: Date()
                     )
 
@@ -522,22 +483,6 @@ class SecurityAuditManager: ObservableObject {
                 }
             }
         }
-    }
-
-    private func checkCertificate(host: String, port: Int) async -> CertificateInfo? {
-        // Simplified certificate check
-        // Real implementation would use SecTrust and parse certificate details
-        return CertificateInfo(
-            host: host,
-            port: port,
-            issuer: "Unknown CA",
-            subject: host,
-            validFrom: Date().addingTimeInterval(-365 * 24 * 3600),
-            validTo: Date().addingTimeInterval(365 * 24 * 3600),
-            isValid: true,
-            isSelfSigned: false,
-            issues: []
-        )
     }
 
     private func testDNSResolver(host: String) async -> Bool {

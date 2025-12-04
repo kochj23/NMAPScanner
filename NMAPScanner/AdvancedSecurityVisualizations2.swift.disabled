@@ -1,0 +1,955 @@
+//
+//  AdvancedSecurityVisualizations2.swift
+//  NMAPScanner - Additional Advanced Visualizations (Part 2)
+//
+//  Created by Jordan Koch & Claude Code on 2025-11-27.
+//
+
+import SwiftUI
+import Charts
+
+// MARK: - 11. Incident Response Playbook Panel
+
+struct IncidentResponsePlaybook: View {
+    @StateObject private var irManager = IncidentResponseManager.shared
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            HStack {
+                Text("INCIDENT RESPONSE PLAYBOOK")
+                    .font(.system(size: 24, weight: .bold, design: .monospaced))
+                    .foregroundColor(LCARSColors.orange)
+
+                Spacer()
+
+                if irManager.activeIncident != nil {
+                    HStack(spacing: 8) {
+                        Circle()
+                            .fill(LCARSColors.red)
+                            .frame(width: 12, height: 12)
+
+                        Text("ACTIVE INCIDENT")
+                            .font(.system(size: 14, weight: .bold, design: .monospaced))
+                            .foregroundColor(LCARSColors.red)
+                    }
+                }
+            }
+            .padding(.horizontal, 20)
+
+            if let incident = irManager.activeIncident {
+                VStack(alignment: .leading, spacing: 12) {
+                    // Incident header
+                    HStack {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text(incident.title)
+                                .font(.system(size: 18, weight: .bold, design: .monospaced))
+                                .foregroundColor(LCARSColors.paleOrange)
+
+                            Text(incident.description)
+                                .font(.system(size: 13, design: .monospaced))
+                                .foregroundColor(LCARSColors.blue)
+                        }
+
+                        Spacer()
+
+                        VStack(alignment: .trailing, spacing: 4) {
+                            Text(incident.severity.rawValue.uppercased())
+                                .font(.system(size: 12, weight: .bold, design: .monospaced))
+                                .foregroundColor(.white)
+                                .padding(.horizontal, 10)
+                                .padding(.vertical, 4)
+                                .background(incident.severity.color)
+                                .cornerRadius(6)
+
+                            Text("Started: \(formatTime(incident.startTime))")
+                                .font(.system(size: 11, design: .monospaced))
+                                .foregroundColor(LCARSColors.orange)
+                        }
+                    }
+                    .padding(16)
+                    .background(incident.severity.color.opacity(0.1))
+                    .cornerRadius(12)
+
+                    // Response steps
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("RESPONSE STEPS:")
+                            .font(.system(size: 14, weight: .bold, design: .monospaced))
+                            .foregroundColor(LCARSColors.orange)
+
+                        ForEach(Array(incident.steps.enumerated()), id: \.offset) { index, step in
+                            IRStepRow(step: step, index: index + 1)
+                        }
+                    }
+
+                    // Action buttons
+                    HStack(spacing: 12) {
+                        Button(action: { irManager.exportIncidentReport() }) {
+                            HStack(spacing: 6) {
+                                Image(systemName: "square.and.arrow.up")
+                                Text("Export Report")
+                            }
+                            .font(.system(size: 13, weight: .semibold, design: .monospaced))
+                            .foregroundColor(.white)
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 8)
+                            .background(LCARSColors.blue)
+                            .cornerRadius(8)
+                        }
+                        .buttonStyle(.plain)
+
+                        Button(action: { irManager.resolveIncident() }) {
+                            HStack(spacing: 6) {
+                                Image(systemName: "checkmark.circle.fill")
+                                Text("Resolve Incident")
+                            }
+                            .font(.system(size: 13, weight: .semibold, design: .monospaced))
+                            .foregroundColor(.white)
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 8)
+                            .background(LCARSColors.blue)
+                            .cornerRadius(8)
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
+                .padding(20)
+            } else {
+                VStack(spacing: 12) {
+                    Image(systemName: "shield.checkmark.fill")
+                        .font(.system(size: 48))
+                        .foregroundColor(LCARSColors.blue)
+
+                    Text("NO ACTIVE INCIDENTS")
+                        .font(.system(size: 18, weight: .bold, design: .monospaced))
+                        .foregroundColor(LCARSColors.blue)
+
+                    Text("Network is secure. Ready to respond.")
+                        .font(.system(size: 13, design: .monospaced))
+                        .foregroundColor(LCARSColors.paleOrange)
+                }
+                .frame(maxWidth: .infinity)
+                .padding(40)
+            }
+        }
+        .padding(24)
+        .background(LCARSColors.panelBackground)
+        .cornerRadius(20)
+    }
+
+    private func formatTime(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "HH:mm:ss"
+        return formatter.string(from: date)
+    }
+}
+
+struct IRStepRow: View {
+    let step: IncidentResponseStep
+    let index: Int
+
+    var body: some View {
+        HStack(spacing: 12) {
+            // Step number
+            ZStack {
+                Circle()
+                    .fill(step.completed ? LCARSColors.blue : LCARSColors.panelBackground)
+                    .frame(width: 30, height: 30)
+
+                if step.completed {
+                    Image(systemName: "checkmark")
+                        .font(.system(size: 14, weight: .bold))
+                        .foregroundColor(.white)
+                } else {
+                    Text("\(index)")
+                        .font(.system(size: 14, weight: .bold, design: .monospaced))
+                        .foregroundColor(LCARSColors.blue)
+                }
+            }
+
+            // Step description
+            VStack(alignment: .leading, spacing: 4) {
+                Text(step.title)
+                    .font(.system(size: 13, weight: .semibold, design: .monospaced))
+                    .foregroundColor(step.completed ? LCARSColors.blue : LCARSColors.paleOrange)
+
+                Text(step.description)
+                    .font(.system(size: 11, design: .monospaced))
+                    .foregroundColor(LCARSColors.blue.opacity(0.7))
+            }
+
+            Spacer()
+
+            if !step.completed {
+                Button(action: {}) {
+                    Text("Complete")
+                        .font(.system(size: 11, weight: .semibold, design: .monospaced))
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 4)
+                        .background(LCARSColors.orange)
+                        .cornerRadius(6)
+                }
+                .buttonStyle(.plain)
+            }
+        }
+        .padding(12)
+        .background(step.completed ? LCARSColors.blue.opacity(0.05) : Color.clear)
+        .cornerRadius(8)
+        .overlay(
+            RoundedRectangle(cornerRadius: 8)
+                .stroke(step.completed ? LCARSColors.blue : LCARSColors.orange, lineWidth: 1)
+        )
+    }
+}
+
+// MARK: - 12. ML Anomaly Score Trends
+
+struct MLAnomalyScoreTrends: View {
+    @StateObject private var mlMonitor = MLAnomalyMonitor.shared
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            HStack {
+                Text("ML ANOMALY DETECTION")
+                    .font(.system(size: 24, weight: .bold, design: .monospaced))
+                    .foregroundColor(LCARSColors.orange)
+
+                Spacer()
+
+                HStack(spacing: 16) {
+                    VStack(alignment: .trailing, spacing: 2) {
+                        Text("Model Accuracy")
+                            .font(.system(size: 11, design: .monospaced))
+                            .foregroundColor(LCARSColors.blue)
+                        Text("\(Int(mlMonitor.modelAccuracy * 100))%")
+                            .font(.system(size: 16, weight: .bold, design: .monospaced))
+                            .foregroundColor(LCARSColors.blue)
+                    }
+
+                    VStack(alignment: .trailing, spacing: 2) {
+                        Text("Baseline Learning")
+                            .font(.system(size: 11, design: .monospaced))
+                            .foregroundColor(LCARSColors.blue)
+                        Text("\(Int(mlMonitor.baselineProgress * 100))%")
+                            .font(.system(size: 16, weight: .bold, design: .monospaced))
+                            .foregroundColor(mlMonitor.baselineProgress >= 1.0 ? LCARSColors.blue : LCARSColors.yellow)
+                    }
+                }
+            }
+            .padding(.horizontal, 20)
+
+            // Score timeline chart
+            Chart {
+                ForEach(mlMonitor.scoreHistory) { dataPoint in
+                    LineMark(
+                        x: .value("Time", dataPoint.timestamp),
+                        y: .value("Score", dataPoint.score)
+                    )
+                    .foregroundStyle(LCARSColors.blue)
+                    .lineStyle(StrokeStyle(lineWidth: 3))
+
+                    AreaMark(
+                        x: .value("Time", dataPoint.timestamp),
+                        y: .value("Score", dataPoint.score)
+                    )
+                    .foregroundStyle(
+                        LinearGradient(
+                            colors: [LCARSColors.blue.opacity(0.3), LCARSColors.blue.opacity(0.05)],
+                            startPoint: .top,
+                            endPoint: .bottom
+                        )
+                    )
+                }
+
+                // Threshold line
+                RuleMark(y: .value("Threshold", mlMonitor.anomalyThreshold))
+                    .foregroundStyle(LCARSColors.red)
+                    .lineStyle(StrokeStyle(lineWidth: 2, dash: [5, 5]))
+            }
+            .frame(height: 200)
+            .padding(20)
+
+            // Recent anomalies
+            if !mlMonitor.recentAnomalies.isEmpty {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("RECENT ML DETECTIONS:")
+                        .font(.system(size: 14, weight: .bold, design: .monospaced))
+                        .foregroundColor(LCARSColors.orange)
+
+                    ForEach(mlMonitor.recentAnomalies.prefix(5)) { anomaly in
+                        HStack {
+                            Circle()
+                                .fill(anomaly.confidence > 0.8 ? LCARSColors.red : LCARSColors.yellow)
+                                .frame(width: 8, height: 8)
+
+                            Text(anomaly.description)
+                                .font(.system(size: 12, design: .monospaced))
+                                .foregroundColor(LCARSColors.paleOrange)
+
+                            Spacer()
+
+                            Text("\(Int(anomaly.confidence * 100))%")
+                                .font(.system(size: 12, weight: .bold, design: .monospaced))
+                                .foregroundColor(anomaly.confidence > 0.8 ? LCARSColors.red : LCARSColors.yellow)
+                        }
+                    }
+                }
+                .padding(.horizontal, 20)
+            }
+        }
+        .padding(24)
+        .background(LCARSColors.panelBackground)
+        .cornerRadius(20)
+    }
+}
+
+// MARK: - 13. DNS Query Waterfall
+
+struct DNSQueryWaterfall: View {
+    @StateObject private var dnsAnalyzer = DNSSecurityAnalyzer.shared
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            HStack {
+                Text("DNS QUERY WATERFALL")
+                    .font(.system(size: 24, weight: .bold, design: .monospaced))
+                    .foregroundColor(LCARSColors.orange)
+
+                Spacer()
+
+                HStack(spacing: 16) {
+                    HStack(spacing: 6) {
+                        Circle().fill(LCARSColors.red).frame(width: 10, height: 10)
+                        Text("Suspicious")
+                    }
+                    HStack(spacing: 6) {
+                        Circle().fill(LCARSColors.yellow).frame(width: 10, height: 10)
+                        Text("DGA")
+                    }
+                    HStack(spacing: 6) {
+                        Circle().fill(LCARSColors.blue).frame(width: 10, height: 10)
+                        Text("Normal")
+                    }
+                }
+                .font(.system(size: 11, design: .monospaced))
+                .foregroundColor(LCARSColors.paleOrange)
+            }
+            .padding(.horizontal, 20)
+
+            ScrollView {
+                VStack(spacing: 4) {
+                    ForEach(dnsAnalyzer.recentQueries.prefix(20)) { query in
+                        DNSQueryRow(query: query)
+                    }
+                }
+                .padding(20)
+            }
+            .frame(height: 400)
+        }
+        .padding(24)
+        .background(LCARSColors.panelBackground)
+        .cornerRadius(20)
+    }
+}
+
+struct DNSQueryRow: View {
+    let query: DNSQuery
+
+    var statusColor: Color {
+        if query.isSuspicious { return LCARSColors.red }
+        if query.isDGA { return LCARSColors.yellow }
+        return LCARSColors.blue
+    }
+
+    var body: some View {
+        HStack(spacing: 12) {
+            // Timeline indicator
+            Rectangle()
+                .fill(statusColor)
+                .frame(width: 4, height: 30)
+
+            VStack(alignment: .leading, spacing: 2) {
+                HStack {
+                    Text(query.domain)
+                        .font(.system(size: 12, weight: .semibold, design: .monospaced))
+                        .foregroundColor(LCARSColors.paleOrange)
+
+                    if query.isSuspicious || query.isDGA {
+                        Image(systemName: "exclamationmark.triangle.fill")
+                            .font(.system(size: 10))
+                            .foregroundColor(statusColor)
+                    }
+                }
+
+                Text("\(query.sourceIP) → \(query.resolvedIP ?? "Unresolved")")
+                    .font(.system(size: 10, design: .monospaced))
+                    .foregroundColor(LCARSColors.blue)
+            }
+
+            Spacer()
+
+            Text(formatTime(query.timestamp))
+                .font(.system(size: 10, design: .monospaced))
+                .foregroundColor(LCARSColors.orange)
+        }
+        .padding(.vertical, 6)
+        .padding(.horizontal, 12)
+        .background(statusColor.opacity(0.05))
+        .cornerRadius(6)
+    }
+
+    private func formatTime(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "HH:mm:ss.SSS"
+        return formatter.string(from: date)
+    }
+}
+
+// MARK: - 14. Executive Security Summary
+
+struct ExecutiveSecuritySummary: View {
+    let devices: [EnhancedDevice]
+    @StateObject private var vulnerabilityScanner = VulnerabilityScanner()
+    @StateObject private var anomalyManager = AnomalyDetectionManager.shared
+
+    var securityPosture: SecurityPosture {
+        let criticalIssues = vulnerabilityScanner.vulnerabilities.filter { $0.severity == .critical }.count
+        let highAnomalies = anomalyManager.anomalies.filter { $0.severity == .high }.count
+
+        if criticalIssues > 0 || highAnomalies > 3 {
+            return .critical
+        } else if vulnerabilityScanner.vulnerabilities.count > 5 || highAnomalies > 0 {
+            return .elevated
+        } else {
+            return .normal
+        }
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 24) {
+            Text("EXECUTIVE SECURITY SUMMARY")
+                .font(.system(size: 32, weight: .bold, design: .monospaced))
+                .foregroundColor(LCARSColors.orange)
+                .padding(.horizontal, 20)
+
+            // Security posture meter
+            HStack(spacing: 30) {
+                ZStack {
+                    Circle()
+                        .fill(securityPosture.color.opacity(0.2))
+                        .frame(width: 200, height: 200)
+
+                    Circle()
+                        .stroke(securityPosture.color, lineWidth: 20)
+                        .frame(width: 200, height: 200)
+                        .shadow(color: securityPosture.color.opacity(0.6), radius: 12)
+
+                    VStack(spacing: 8) {
+                        Image(systemName: securityPosture.icon)
+                            .font(.system(size: 48))
+                            .foregroundColor(securityPosture.color)
+
+                        Text(securityPosture.rawValue.uppercased())
+                            .font(.system(size: 20, weight: .bold, design: .monospaced))
+                            .foregroundColor(securityPosture.color)
+                    }
+                }
+
+                VStack(alignment: .leading, spacing: 16) {
+                    ExecutiveStat(label: "Network Devices", value: "\(devices.count)", trend: .stable)
+                    ExecutiveStat(label: "Critical Vulnerabilities", value: "\(vulnerabilityScanner.vulnerabilities.filter { $0.severity == .critical }.count)", trend: .improving)
+                    ExecutiveStat(label: "Active Anomalies", value: "\(anomalyManager.anomalies.count)", trend: .degrading)
+                    ExecutiveStat(label: "Compliance Score", value: "87%", trend: .stable)
+                }
+            }
+            .padding(20)
+
+            Divider()
+                .background(LCARSColors.blue)
+
+            // Top 5 Risks
+            VStack(alignment: .leading, spacing: 12) {
+                Text("TOP 5 BUSINESS RISKS")
+                    .font(.system(size: 20, weight: .bold, design: .monospaced))
+                    .foregroundColor(LCARSColors.orange)
+
+                ForEach(Array(topRisks.prefix(5).enumerated()), id: \.offset) { index, risk in
+                    ExecutiveRiskRow(rank: index + 1, risk: risk)
+                }
+            }
+            .padding(20)
+
+            // Export button
+            HStack {
+                Spacer()
+                Button(action: {}) {
+                    HStack(spacing: 8) {
+                        Image(systemName: "square.and.arrow.up")
+                        Text("Export PDF Report")
+                    }
+                    .font(.system(size: 16, weight: .semibold, design: .monospaced))
+                    .foregroundColor(.white)
+                    .padding(.horizontal, 24)
+                    .padding(.vertical, 12)
+                    .background(LCARSColors.blue)
+                    .cornerRadius(10)
+                }
+                .buttonStyle(.plain)
+                Spacer()
+            }
+        }
+        .padding(24)
+        .background(LCARSColors.panelBackground)
+        .cornerRadius(20)
+    }
+
+    var topRisks: [ExecutiveRisk] {
+        [
+            ExecutiveRisk(
+                title: "Critical Port Vulnerabilities",
+                businessImpact: "Data breach risk - $2M potential loss",
+                severity: .critical
+            ),
+            ExecutiveRisk(
+                title: "Unpatched Systems Detected",
+                businessImpact: "Operational downtime risk",
+                severity: .high
+            ),
+            ExecutiveRisk(
+                title: "Weak Access Controls",
+                businessImpact: "Unauthorized access risk",
+                severity: .medium
+            ),
+            ExecutiveRisk(
+                title: "IoT Device Exposure",
+                businessImpact: "Network pivot point",
+                severity: .medium
+            ),
+            ExecutiveRisk(
+                title: "Certificate Expiration",
+                businessImpact: "Service disruption in 30 days",
+                severity: .low
+            )
+        ]
+    }
+}
+
+struct ExecutiveStat: View {
+    let label: String
+    let value: String
+    let trend: Trend
+
+    enum Trend {
+        case improving, stable, degrading
+
+        var icon: String {
+            switch self {
+            case .improving: return "arrow.down.right.circle.fill"
+            case .stable: return "minus.circle.fill"
+            case .degrading: return "arrow.up.right.circle.fill"
+            }
+        }
+
+        var color: Color {
+            switch self {
+            case .improving: return .green
+            case .stable: return .blue
+            case .degrading: return .red
+            }
+        }
+    }
+
+    var body: some View {
+        HStack {
+            VStack(alignment: .leading, spacing: 4) {
+                Text(label)
+                    .font(.system(size: 13, design: .monospaced))
+                    .foregroundColor(LCARSColors.blue)
+
+                Text(value)
+                    .font(.system(size: 28, weight: .bold, design: .monospaced))
+                    .foregroundColor(LCARSColors.paleOrange)
+            }
+
+            Spacer()
+
+            Image(systemName: trend.icon)
+                .font(.system(size: 24))
+                .foregroundColor(trend.color)
+        }
+        .frame(width: 300)
+    }
+}
+
+struct ExecutiveRiskRow: View {
+    let rank: Int
+    let risk: ExecutiveRisk
+
+    var body: some View {
+        HStack(spacing: 16) {
+            // Rank
+            Text("\(rank)")
+                .font(.system(size: 24, weight: .bold, design: .monospaced))
+                .foregroundColor(risk.severity.color)
+                .frame(width: 40)
+
+            VStack(alignment: .leading, spacing: 4) {
+                Text(risk.title)
+                    .font(.system(size: 14, weight: .semibold, design: .monospaced))
+                    .foregroundColor(LCARSColors.paleOrange)
+
+                Text(risk.businessImpact)
+                    .font(.system(size: 12, design: .monospaced))
+                    .foregroundColor(LCARSColors.blue)
+            }
+
+            Spacer()
+
+            Text(risk.severity.rawValue.uppercased())
+                .font(.system(size: 11, weight: .bold, design: .monospaced))
+                .foregroundColor(.white)
+                .padding(.horizontal, 12)
+                .padding(.vertical, 4)
+                .background(risk.severity.color)
+                .cornerRadius(6)
+        }
+        .padding(12)
+        .background(risk.severity.color.opacity(0.05))
+        .cornerRadius(8)
+        .overlay(
+            RoundedRectangle(cornerRadius: 8)
+                .stroke(risk.severity.color, lineWidth: 1)
+        )
+    }
+}
+
+// MARK: - 15. Live Security Event Stream
+
+struct LiveSecurityEventStream: View {
+    @StateObject private var eventStreamManager = SecurityEventStreamManager.shared
+
+    @State private var filterText = ""
+    @State private var selectedSeverity: ThreatLevel?
+
+    var filteredEvents: [SecurityStreamEvent] {
+        var events = eventStreamManager.events
+
+        if !filterText.isEmpty {
+            events = events.filter { $0.description.localizedCaseInsensitiveContains(filterText) }
+        }
+
+        if let severity = selectedSeverity {
+            events = events.filter { $0.severity == severity }
+        }
+
+        return events
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            HStack {
+                Text("LIVE SECURITY EVENT STREAM")
+                    .font(.system(size: 24, weight: .bold, design: .monospaced))
+                    .foregroundColor(LCARSColors.orange)
+
+                Spacer()
+
+                // Filters
+                HStack(spacing: 12) {
+                    // Severity filter
+                    Menu {
+                        Button("All Severities") { selectedSeverity = nil }
+                        Divider()
+                        Button("Critical") { selectedSeverity = .critical }
+                        Button("High") { selectedSeverity = .high }
+                        Button("Medium") { selectedSeverity = .medium }
+                        Button("Secure") { selectedSeverity = .secure }
+                    } label: {
+                        HStack(spacing: 6) {
+                            Image(systemName: "line.3.horizontal.decrease.circle")
+                            Text(selectedSeverity?.rawValue ?? "All")
+                        }
+                        .font(.system(size: 12, design: .monospaced))
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 6)
+                        .background(LCARSColors.blue)
+                        .cornerRadius(6)
+                    }
+
+                    // Search
+                    HStack(spacing: 6) {
+                        Image(systemName: "magnifyingglass")
+                            .foregroundColor(LCARSColors.blue)
+                        TextField("Search...", text: $filterText)
+                            .textFieldStyle(.plain)
+                            .frame(width: 150)
+                    }
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 6)
+                    .background(LCARSColors.panelBackground)
+                    .cornerRadius(6)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 6)
+                            .stroke(LCARSColors.blue, lineWidth: 1)
+                    )
+
+                    // Export
+                    Button(action: { eventStreamManager.exportToCSV() }) {
+                        Image(systemName: "square.and.arrow.up")
+                            .font(.system(size: 14))
+                            .foregroundColor(.white)
+                            .padding(8)
+                            .background(LCARSColors.blue)
+                            .cornerRadius(6)
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+            .padding(.horizontal, 20)
+
+            // Event stream
+            ScrollView {
+                LazyVStack(spacing: 4) {
+                    ForEach(filteredEvents.prefix(100)) { event in
+                        SecurityEventStreamRow(event: event)
+                    }
+                }
+                .padding(20)
+            }
+            .frame(height: 500)
+            .background(Color.black.opacity(0.95))
+            .cornerRadius(12)
+            .padding(.horizontal, 20)
+
+            // Stats bar
+            HStack(spacing: 30) {
+                HStack(spacing: 8) {
+                    Circle().fill(LCARSColors.red).frame(width: 10, height: 10)
+                    Text("Critical: \(eventStreamManager.events.filter { $0.severity == .critical }.count)")
+                }
+                HStack(spacing: 8) {
+                    Circle().fill(LCARSColors.orange).frame(width: 10, height: 10)
+                    Text("High: \(eventStreamManager.events.filter { $0.severity == .high }.count)")
+                }
+                HStack(spacing: 8) {
+                    Circle().fill(LCARSColors.yellow).frame(width: 10, height: 10)
+                    Text("Medium: \(eventStreamManager.events.filter { $0.severity == .medium }.count)")
+                }
+                Spacer()
+                Text("Total: \(eventStreamManager.events.count) events")
+            }
+            .font(.system(size: 12, design: .monospaced))
+            .foregroundColor(LCARSColors.paleOrange)
+            .padding(.horizontal, 20)
+        }
+        .padding(24)
+        .background(LCARSColors.panelBackground)
+        .cornerRadius(20)
+    }
+}
+
+struct SecurityEventStreamRow: View {
+    let event: SecurityStreamEvent
+
+    var body: some View {
+        HStack(spacing: 12) {
+            // Timestamp
+            Text(formatTime(event.timestamp))
+                .font(.system(size: 11, design: .monospaced))
+                .foregroundColor(LCARSColors.orange)
+                .frame(width: 90, alignment: .leading)
+
+            // Severity indicator
+            Circle()
+                .fill(event.severity.color)
+                .frame(width: 8, height: 8)
+
+            // Event type icon
+            Image(systemName: event.icon)
+                .font(.system(size: 12))
+                .foregroundColor(event.severity.color)
+                .frame(width: 20)
+
+            // Description
+            Text(event.description)
+                .font(.system(size: 12, design: .monospaced))
+                .foregroundColor(LCARSColors.paleOrange)
+                .lineLimit(1)
+
+            Spacer()
+
+            // Source
+            Text(event.source)
+                .font(.system(size: 10, design: .monospaced))
+                .foregroundColor(LCARSColors.blue)
+                .frame(width: 100, alignment: .trailing)
+        }
+        .padding(.vertical, 6)
+        .padding(.horizontal, 12)
+        .background(event.severity.color.opacity(0.03))
+        .cornerRadius(4)
+        .overlay(
+            Rectangle()
+                .fill(event.severity.color)
+                .frame(width: 3)
+                .cornerRadius(2),
+            alignment: .leading
+        )
+    }
+
+    private func formatTime(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "HH:mm:ss.SSS"
+        return formatter.string(from: date)
+    }
+}
+
+// MARK: - Supporting Data Models
+
+struct ExecutiveRisk {
+    let title: String
+    let businessImpact: String
+    let severity: ThreatLevel
+}
+
+enum SecurityPosture: String {
+    case normal = "Normal"
+    case elevated = "Elevated"
+    case critical = "Critical"
+
+    var color: Color {
+        switch self {
+        case .normal: return LCARSColors.blue
+        case .elevated: return LCARSColors.yellow
+        case .critical: return LCARSColors.red
+        }
+    }
+
+    var icon: String {
+        switch self {
+        case .normal: return "shield.checkmark.fill"
+        case .elevated: return "exclamationmark.shield.fill"
+        case .critical: return "shield.slash.fill"
+        }
+    }
+}
+
+struct SecurityStreamEvent: Identifiable {
+    let id = UUID()
+    let timestamp: Date
+    let severity: ThreatLevel
+    let description: String
+    let source: String
+    let icon: String
+}
+
+struct DNSQuery: Identifiable {
+    let id = UUID()
+    let domain: String
+    let sourceIP: String
+    let resolvedIP: String?
+    let timestamp: Date
+    let isSuspicious: Bool
+    let isDGA: Bool
+}
+
+struct MLScoreDataPoint: Identifiable {
+    let id = UUID()
+    let timestamp: Date
+    let score: Double
+}
+
+struct MLAnomalyDetection: Identifiable {
+    let id = UUID()
+    let description: String
+    let confidence: Double
+}
+
+struct Incident {
+    let title: String
+    let description: String
+    let severity: ThreatLevel
+    let startTime: Date
+    let steps: [IncidentResponseStep]
+}
+
+struct IncidentResponseStep: Identifiable {
+    let id = UUID()
+    let title: String
+    let description: String
+    var completed: Bool
+}
+
+// MARK: - Supporting Managers
+
+@MainActor
+class IncidentResponseManager: ObservableObject {
+    static let shared = IncidentResponseManager()
+    @Published var activeIncident: Incident?
+
+    private init() {
+        // Mock incident
+        activeIncident = nil
+    }
+
+    func exportIncidentReport() {
+        print("📄 Exporting incident report...")
+    }
+
+    func resolveIncident() {
+        activeIncident = nil
+    }
+}
+
+@MainActor
+class MLAnomalyMonitor: ObservableObject {
+    static let shared = MLAnomalyMonitor()
+    @Published var scoreHistory: [MLScoreDataPoint] = []
+    @Published var recentAnomalies: [MLAnomalyDetection] = []
+    @Published var modelAccuracy: Double = 0.94
+    @Published var baselineProgress: Double = 0.87
+    @Published var anomalyThreshold: Double = 0.75
+
+    private init() {
+        generateMockData()
+    }
+
+    private func generateMockData() {
+        let now = Date()
+        for i in 0..<50 {
+            scoreHistory.append(MLScoreDataPoint(
+                timestamp: now.addingTimeInterval(Double(-i * 60)),
+                score: Double.random(in: 0.3...0.9)
+            ))
+        }
+        scoreHistory.reverse()
+    }
+}
+
+@MainActor
+class SecurityEventStreamManager: ObservableObject {
+    static let shared = SecurityEventStreamManager()
+    @Published var events: [SecurityStreamEvent] = []
+
+    private init() {
+        generateMockData()
+    }
+
+    private func generateMockData() {
+        let now = Date()
+        for i in 0..<50 {
+            events.append(SecurityStreamEvent(
+                timestamp: now.addingTimeInterval(Double(-i * 5)),
+                severity: [.critical, .high, .medium, .secure].randomElement()!,
+                description: "Network event \(i): Sample security event description",
+                source: "192.168.1.\(Int.random(in: 1...254))",
+                icon: "network"
+            ))
+        }
+    }
+
+    func exportToCSV() {
+        print("📊 Exporting event stream to CSV...")
+    }
+}

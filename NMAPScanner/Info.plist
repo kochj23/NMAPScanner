@@ -11,15 +11,17 @@
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>NMAP Plus Security Scanner for AppleTV</string>
+	<string>NMAP Plus Security Scanner</string>
 	<key>CFBundlePackageType</key>
 	<string>$(PRODUCT_BUNDLE_PACKAGE_TYPE)</string>
 	<key>CFBundleShortVersionString</key>
-	<string>3.0</string>
+	<string>8.5.0</string>
 	<key>CFBundleVersion</key>
-	<string>6</string>
+	<string>13</string>
 	<key>LSApplicationCategoryType</key>
 	<string>public.app-category.utilities</string>
+	<key>NSHomeKitUsageDescription</key>
+	<string>NMAP Scanner needs access to HomeKit to better identify IoT devices on your network by correlating IP addresses with HomeKit accessories.</string>
 	<key>NSLocalNetworkUsageDescription</key>
 	<string>NMAP Scanner requires local network access to scan for devices and perform network diagnostics.</string>
 </dict>

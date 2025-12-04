@@ -1,142 +1,221 @@
 //
 //  NetworkTopologyView.swift
-//  NMAP Scanner - Network Topology Visualization
+//  NMAP Scanner - Enhanced Network Topology Visualization
 //
-//  Created by Jordan Koch & Claude Code on 2025-11-23.
+//  Created by Jordan Koch & Claude Code on 2025-11-24.
 //
 
 import SwiftUI
 
 struct NetworkTopologyView: View {
-    @ObservedObject var deviceManager = DeviceManager.shared
-    @State private var selectedDevice: DiscoveredDevice?
+    let devices: [EnhancedDevice]
+    @State private var selectedDevice: EnhancedDevice?
+    @State private var layoutMode: LayoutMode = .grid
+    @State private var zoomLevel: CGFloat = 1.0
+    @State private var searchText = ""
+
+    enum LayoutMode: String, CaseIterable {
+        case grid = "Grid"
+        case hierarchical = "Hierarchical"
+    }
+
+    var filteredDevices: [EnhancedDevice] {
+        if searchText.isEmpty {
+            return devices
+        }
+        return devices.filter { device in
+            device.ipAddress.contains(searchText) ||
+            device.hostname?.localizedCaseInsensitiveContains(searchText) == true ||
+            device.manufacturer?.localizedCaseInsensitiveContains(searchText) == true
+        }
+    }
 
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 30) {
-                Text("Network Topology")
-                    .font(.system(size: 50, weight: .bold))
+                // Header with controls
+                HStack {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("Network Topology")
+                            .font(.system(size: 50, weight: .bold))
 
-                if deviceManager.discoveredDevices.isEmpty {
+                        Text("\(filteredDevices.count) of \(devices.count) devices")
+                            .font(.system(size: 24))
+                            .foregroundColor(.secondary)
+                    }
+
+                    Spacer()
+
+                    // Layout mode picker
+                    Picker("Layout", selection: $layoutMode) {
+                        ForEach(LayoutMode.allCases, id: \.self) { mode in
+                            Text(mode.rawValue).tag(mode)
+                        }
+                    }
+                    .pickerStyle(.segmented)
+                    .frame(width: 400)
+                }
+
+                // Search bar
+                HStack {
+                    Image(systemName: "magnifyingglass")
+                        .foregroundColor(.secondary)
+                    TextField("Search devices...", text: $searchText)
+                        .textFieldStyle(.plain)
+                        .font(.system(size: 20))
+                    if !searchText.isEmpty {
+                        Button(action: { searchText = "" }) {
+                            Image(systemName: "xmark.circle.fill")
+                                .foregroundColor(.secondary)
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
+                .padding(16)
+                .background(Color.gray.opacity(0.1))
+                .cornerRadius(12)
+
+                if filteredDevices.isEmpty {
                     VStack(spacing: 20) {
-                        Image(systemName: "network.slash")
+                        Image(systemName: searchText.isEmpty ? "network.slash" : "magnifyingglass")
                             .font(.system(size: 80))
                             .foregroundColor(.gray)
-                        Text("No devices discovered yet")
+                        Text(searchText.isEmpty ? "No devices discovered yet" : "No devices match '\(searchText)'")
                             .font(.system(size: 28))
                             .foregroundColor(.gray)
-                        Text("Run a network scan to discover devices")
+                        Text(searchText.isEmpty ? "Run a network scan to discover devices" : "Try a different search term")
                             .font(.system(size: 22))
                             .foregroundColor(.secondary)
                     }
                     .frame(maxWidth: .infinity)
                     .padding(60)
                 } else {
-                    // Topology visualization
-                    TopologyMapView(devices: deviceManager.discoveredDevices, selectedDevice: $selectedDevice)
+                    // Topology visualization based on layout mode
+                    switch layoutMode {
+                    case .grid:
+                        GridLayoutView(devices: filteredDevices, selectedDevice: $selectedDevice)
+                    case .hierarchical:
+                        HierarchicalLayoutView(devices: filteredDevices, selectedDevice: $selectedDevice)
+                    }
 
                     // Device statistics
-                    DeviceStatisticsCard(devices: deviceManager.discoveredDevices)
+                    DeviceStatisticsCard(devices: filteredDevices)
 
                     // Device type breakdown
-                    DeviceTypeBreakdownCard(devices: deviceManager.discoveredDevices)
+                    DeviceTypeBreakdownCard(devices: filteredDevices)
                 }
             }
             .padding(40)
         }
         .sheet(item: $selectedDevice) { device in
-            DeviceDetailView(device: device)
+            ComprehensiveDeviceDetailView(device: device)
         }
     }
 }
 
-struct TopologyMapView: View {
-    let devices: [DiscoveredDevice]
-    @Binding var selectedDevice: DiscoveredDevice?
+// MARK: - Grid Layout (Best for many devices)
+
+struct GridLayoutView: View {
+    let devices: [EnhancedDevice]
+    @Binding var selectedDevice: EnhancedDevice?
 
     var body: some View {
         VStack(alignment: .leading, spacing: 20) {
-            Text("Device Map")
+            Text("Device Grid")
                 .font(.system(size: 36, weight: .semibold))
 
-            GeometryReader { geometry in
-                ZStack {
-                    // Background
-                    RoundedRectangle(cornerRadius: 20)
-                        .fill(Color.black.opacity(0.05))
-
-                    // Gateway/Router in center
-                    Button(action: {
-                        // Could show router details
-                    }) {
-                        VStack(spacing: 8) {
-                            ZStack {
-                                Circle()
-                                    .fill(Color.blue)
-                                    .frame(width: 100, height: 100)
-
-                                Image(systemName: "wifi.router.fill")
-                                    .font(.system(size: 50))
-                                    .foregroundColor(.white)
-                            }
-                            Text("Gateway")
-                                .font(.system(size: 20, weight: .semibold))
-                        }
-                        .position(x: geometry.size.width / 2, y: geometry.size.height / 2)
-                    }
-                    .buttonStyle(.plain)
-
-                    // Devices arranged in circle around router
-                    ForEach(Array(devices.enumerated()), id: \.element.id) { index, device in
-                        let totalDevices = Double(devices.count)
-                        let angle = Double(index) * (360.0 / totalDevices) * .pi / 180.0
-                        let radius = min(geometry.size.width, geometry.size.height) / 2.5
-                        let x = geometry.size.width / 2 + cos(angle) * radius
-                        let y = geometry.size.height / 2 + sin(angle) * radius
-
-                        // Connection line from router to device
-                        Path { path in
-                            path.move(to: CGPoint(x: geometry.size.width / 2, y: geometry.size.height / 2))
-                            path.addLine(to: CGPoint(x: x, y: y))
-                        }
-                        .stroke(device.isOnline ? Color.green.opacity(0.5) : Color.gray.opacity(0.3), lineWidth: 3)
-
-                        // Device node
-                        Button(action: {
+            LazyVGrid(columns: [
+                GridItem(.adaptive(minimum: 180, maximum: 220), spacing: 16)
+            ], spacing: 16) {
+                ForEach(devices) { device in
+                    DeviceGridCard(device: device)
+                        .onTapGesture {
                             selectedDevice = device
-                        }) {
-                            VStack(spacing: 6) {
-                                ZStack {
-                                    Circle()
-                                        .fill(deviceColor(device))
-                                        .frame(width: 70, height: 70)
-
-                                    Image(systemName: deviceIcon(device))
-                                        .font(.system(size: 32))
-                                        .foregroundColor(.white)
-                                }
-
-                                Text(device.hostname ?? "Unknown")
-                                    .font(.system(size: 16, weight: .medium))
-                                    .lineLimit(1)
-                                    .frame(width: 120)
-
-                                Text(device.ipAddress)
-                                    .font(.system(size: 14, design: .monospaced))
-                                    .foregroundColor(.secondary)
-                            }
-                            .position(x: x, y: y)
                         }
-                        .buttonStyle(.plain)
-                    }
                 }
             }
-            .frame(height: 600)
-            .padding(20)
         }
     }
+}
 
-    private func deviceIcon(_ device: DiscoveredDevice) -> String {
+struct DeviceGridCard: View {
+    let device: EnhancedDevice
+
+    var body: some View {
+        VStack(spacing: 12) {
+            ZStack {
+                Circle()
+                    .fill(deviceColor)
+                    .frame(width: 60, height: 60)
+
+                Image(systemName: deviceIcon)
+                    .font(.system(size: 28))
+                    .foregroundColor(.white)
+            }
+
+            VStack(spacing: 4) {
+                Text(device.deviceName ?? device.hostname ?? device.ipAddress)
+                    .font(.system(size: 16, weight: .semibold))
+                    .lineLimit(1)
+
+                if device.hostname != nil {
+                    Text(device.ipAddress)
+                        .font(.system(size: 13, design: .monospaced))
+                        .foregroundColor(.secondary)
+                }
+
+                if let manufacturer = device.manufacturer {
+                    Text(manufacturer)
+                        .font(.system(size: 12))
+                        .foregroundColor(.secondary)
+                        .lineLimit(1)
+                }
+
+                // HomeKit Badge
+                if let homeKitInfo = device.homeKitMDNSInfo, homeKitInfo.isHomeKitAccessory {
+                    HStack(spacing: 4) {
+                        Image(systemName: "homekit")
+                            .font(.system(size: 10))
+                        Text("HomeKit")
+                            .font(.system(size: 10, weight: .medium))
+                    }
+                    .foregroundColor(.white)
+                    .padding(.horizontal, 6)
+                    .padding(.vertical, 3)
+                    .background(Color.orange)
+                    .cornerRadius(6)
+                }
+            }
+
+            // Status indicators
+            HStack(spacing: 8) {
+                HStack(spacing: 4) {
+                    Circle()
+                        .fill(device.isOnline ? Color.green : Color.gray)
+                        .frame(width: 8, height: 8)
+                    Text(device.isOnline ? "Online" : "Offline")
+                        .font(.system(size: 11))
+                        .foregroundColor(.secondary)
+                }
+
+                if !device.openPorts.isEmpty {
+                    Text("\(device.openPorts.count) ports")
+                        .font(.system(size: 11))
+                        .foregroundColor(.secondary)
+                }
+            }
+        }
+        .padding(12)
+        .frame(maxWidth: .infinity)
+        .background(Color(NSColor.controlBackgroundColor))
+        .cornerRadius(12)
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(device.isOnline ? deviceColor.opacity(0.3) : Color.clear, lineWidth: 2)
+        )
+    }
+
+    private var deviceIcon: String {
         switch device.deviceType {
         case .router: return "wifi.router"
         case .server: return "server.rack"
@@ -148,23 +227,365 @@ struct TopologyMapView: View {
         }
     }
 
-    private func deviceColor(_ device: DiscoveredDevice) -> Color {
+    private var deviceColor: Color {
         if !device.isOnline { return .gray }
-        if device.vulnerabilities > 0 { return .red }
-        if device.openPorts.count > 5 { return .orange }
-        return .green
+        switch device.deviceType {
+        case .router: return .blue
+        case .server: return .purple
+        case .computer: return .green
+        case .mobile: return .orange
+        case .iot: return .cyan
+        case .printer: return .pink
+        case .unknown: return .gray
+        }
     }
 }
 
+// MARK: - List Layout (Detailed view)
+
+struct ListLayoutView: View {
+    let devices: [EnhancedDevice]
+    @Binding var selectedDevice: EnhancedDevice?
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 20) {
+            Text("Device List")
+                .font(.system(size: 36, weight: .semibold))
+
+            VStack(spacing: 12) {
+                ForEach(devices) { device in
+                    DeviceListRow(device: device)
+                        .onTapGesture {
+                            selectedDevice = device
+                        }
+                }
+            }
+        }
+    }
+}
+
+struct DeviceListRow: View {
+    let device: EnhancedDevice
+
+    var body: some View {
+        HStack(spacing: 16) {
+            // Icon
+            ZStack {
+                Circle()
+                    .fill(deviceColor)
+                    .frame(width: 50, height: 50)
+
+                Image(systemName: deviceIcon)
+                    .font(.system(size: 24))
+                    .foregroundColor(.white)
+            }
+
+            // Device info
+            VStack(alignment: .leading, spacing: 4) {
+                Text(device.hostname ?? "Unknown Device")
+                    .font(.system(size: 18, weight: .semibold))
+
+                HStack(spacing: 12) {
+                    Text(device.ipAddress)
+                        .font(.system(size: 15, design: .monospaced))
+                        .foregroundColor(.secondary)
+
+                    if let mac = device.macAddress {
+                        Text(mac)
+                            .font(.system(size: 14, design: .monospaced))
+                            .foregroundColor(.secondary)
+                    }
+
+                    if let manufacturer = device.manufacturer {
+                        Text(manufacturer)
+                            .font(.system(size: 14))
+                            .foregroundColor(.secondary)
+                    }
+                }
+            }
+
+            Spacer()
+
+            // Status and ports
+            HStack(spacing: 16) {
+                HStack(spacing: 6) {
+                    Circle()
+                        .fill(device.isOnline ? Color.green : Color.gray)
+                        .frame(width: 10, height: 10)
+                    Text(device.isOnline ? "Online" : "Offline")
+                        .font(.system(size: 14))
+                }
+
+                if !device.openPorts.isEmpty {
+                    VStack(alignment: .trailing, spacing: 2) {
+                        Text("\(device.openPorts.count)")
+                            .font(.system(size: 20, weight: .bold))
+                            .foregroundColor(deviceColor)
+                        Text("ports")
+                            .font(.system(size: 12))
+                            .foregroundColor(.secondary)
+                    }
+                }
+            }
+        }
+        .padding(16)
+        .background(Color(NSColor.controlBackgroundColor))
+        .cornerRadius(12)
+    }
+
+    private var deviceIcon: String {
+        switch device.deviceType {
+        case .router: return "wifi.router"
+        case .server: return "server.rack"
+        case .computer: return "desktopcomputer"
+        case .mobile: return "iphone"
+        case .iot: return "sensor"
+        case .printer: return "printer"
+        case .unknown: return "questionmark.circle"
+        }
+    }
+
+    private var deviceColor: Color {
+        if !device.isOnline { return .gray }
+        switch device.deviceType {
+        case .router: return .blue
+        case .server: return .purple
+        case .computer: return .green
+        case .mobile: return .orange
+        case .iot: return .cyan
+        case .printer: return .pink
+        case .unknown: return .gray
+        }
+    }
+}
+
+// MARK: - Circular Layout (Better for fewer devices)
+
+struct CircularLayoutView: View {
+    let devices: [EnhancedDevice]
+    @Binding var selectedDevice: EnhancedDevice?
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 20) {
+            Text("Circular Topology")
+                .font(.system(size: 36, weight: .semibold))
+
+            if devices.count > 30 {
+                Text("⚠️ Too many devices for circular view (\(devices.count)). Switch to Grid or List layout for better visibility.")
+                    .font(.system(size: 18))
+                    .foregroundColor(.orange)
+                    .padding(16)
+                    .background(Color.orange.opacity(0.1))
+                    .cornerRadius(12)
+            }
+
+            GeometryReader { geometry in
+                ZStack {
+                    // Background
+                    RoundedRectangle(cornerRadius: 20)
+                        .fill(Color.black.opacity(0.05))
+
+                    // Gateway/Router in center
+                    VStack(spacing: 8) {
+                        ZStack {
+                            Circle()
+                                .fill(Color.blue)
+                                .frame(width: 80, height: 80)
+
+                            Image(systemName: "wifi.router.fill")
+                                .font(.system(size: 40))
+                                .foregroundColor(.white)
+                        }
+                        Text("Gateway")
+                            .font(.system(size: 18, weight: .semibold))
+                    }
+                    .position(x: geometry.size.width / 2, y: geometry.size.height / 2)
+
+                    // Devices arranged in multiple rings if needed
+                    let devicesPerRing = 12
+                    let totalRings = max(1, (devices.count + devicesPerRing - 1) / devicesPerRing)
+
+                    ForEach(devices.indices, id: \.self) { index in
+                        let device = devices[index]
+                        let ring = index / devicesPerRing
+                        let positionInRing = index % devicesPerRing
+                        let devicesInRing = min(devicesPerRing, devices.count - ring * devicesPerRing)
+
+                        let angle = Double(positionInRing) * (360.0 / Double(devicesInRing)) * .pi / 180.0
+                        let baseRadius = min(geometry.size.width, geometry.size.height) / 3.5
+                        let radius = baseRadius + CGFloat(ring) * 120
+                        let x = geometry.size.width / 2 + cos(angle) * radius
+                        let y = geometry.size.height / 2 + sin(angle) * radius
+
+                        // Connection line
+                        Path { path in
+                            path.move(to: CGPoint(x: geometry.size.width / 2, y: geometry.size.height / 2))
+                            path.addLine(to: CGPoint(x: x, y: y))
+                        }
+                        .stroke(device.isOnline ? Color.green.opacity(0.3) : Color.gray.opacity(0.2), lineWidth: 2)
+
+                        // Device node
+                        Button(action: {
+                            selectedDevice = device
+                        }) {
+                            VStack(spacing: 4) {
+                                ZStack {
+                                    Circle()
+                                        .fill(deviceColor(device))
+                                        .frame(width: 50, height: 50)
+
+                                    Image(systemName: deviceIcon(device))
+                                        .font(.system(size: 24))
+                                        .foregroundColor(.white)
+                                }
+
+                                Text(device.hostname ?? String(device.ipAddress.suffix(7)))
+                                    .font(.system(size: 12, weight: .medium))
+                                    .lineLimit(1)
+                                    .frame(width: 90)
+                            }
+                            .position(x: x, y: y)
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
+            }
+            .frame(height: max(600, CGFloat(devices.count > 12 ? 800 : 600)))
+            .padding(20)
+        }
+    }
+
+    private func deviceIcon(_ device: EnhancedDevice) -> String {
+        switch device.deviceType {
+        case .router: return "wifi.router"
+        case .server: return "server.rack"
+        case .computer: return "desktopcomputer"
+        case .mobile: return "iphone"
+        case .iot: return "sensor"
+        case .printer: return "printer"
+        case .unknown: return "questionmark.circle"
+        }
+    }
+
+    private func deviceColor(_ device: EnhancedDevice) -> Color {
+        if !device.isOnline { return .gray }
+        switch device.deviceType {
+        case .router: return .blue
+        case .server: return .purple
+        case .computer: return .green
+        case .mobile: return .orange
+        case .iot: return .cyan
+        case .printer: return .pink
+        case .unknown: return .gray
+        }
+    }
+}
+
+// MARK: - Hierarchical Layout (Organized by type)
+
+struct HierarchicalLayoutView: View {
+    let devices: [EnhancedDevice]
+    @Binding var selectedDevice: EnhancedDevice?
+
+    var devicesByType: [(EnhancedDevice.DeviceType, [EnhancedDevice])] {
+        let grouped = Dictionary(grouping: devices) { $0.deviceType }
+        return grouped.sorted { typeOrder($0.key) < typeOrder($1.key) }
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 30) {
+            Text("Hierarchical View")
+                .font(.system(size: 36, weight: .semibold))
+
+            ForEach(devicesByType, id: \.0) { type, typeDevices in
+                VStack(alignment: .leading, spacing: 16) {
+                    HStack(spacing: 12) {
+                        Image(systemName: iconForType(type))
+                            .font(.system(size: 28))
+                            .foregroundColor(colorForType(type))
+
+                        Text(nameForType(type))
+                            .font(.system(size: 28, weight: .semibold))
+
+                        Text("(\(typeDevices.count))")
+                            .font(.system(size: 24))
+                            .foregroundColor(.secondary)
+                    }
+
+                    LazyVGrid(columns: [
+                        GridItem(.adaptive(minimum: 180, maximum: 220), spacing: 12)
+                    ], spacing: 12) {
+                        ForEach(typeDevices) { device in
+                            DeviceGridCard(device: device)
+                                .onTapGesture {
+                                    selectedDevice = device
+                                }
+                        }
+                    }
+                }
+                .padding(20)
+                .background(colorForType(type).opacity(0.05))
+                .cornerRadius(16)
+            }
+        }
+    }
+
+    private func typeOrder(_ type: EnhancedDevice.DeviceType) -> Int {
+        switch type {
+        case .router: return 0
+        case .server: return 1
+        case .computer: return 2
+        case .mobile: return 3
+        case .iot: return 4
+        case .printer: return 5
+        case .unknown: return 6
+        }
+    }
+
+    private func nameForType(_ type: EnhancedDevice.DeviceType) -> String {
+        switch type {
+        case .router: return "Network Devices"
+        case .server: return "Servers & NAS"
+        case .computer: return "Computers"
+        case .mobile: return "Mobile Devices"
+        case .iot: return "IoT & Smart Home"
+        case .printer: return "Printers"
+        case .unknown: return "Unknown Devices"
+        }
+    }
+
+    private func iconForType(_ type: EnhancedDevice.DeviceType) -> String {
+        switch type {
+        case .router: return "wifi.router"
+        case .server: return "server.rack"
+        case .computer: return "desktopcomputer"
+        case .mobile: return "iphone"
+        case .iot: return "sensor"
+        case .printer: return "printer"
+        case .unknown: return "questionmark.circle"
+        }
+    }
+
+    private func colorForType(_ type: EnhancedDevice.DeviceType) -> Color {
+        switch type {
+        case .router: return .blue
+        case .server: return .purple
+        case .computer: return .green
+        case .mobile: return .orange
+        case .iot: return .cyan
+        case .printer: return .pink
+        case .unknown: return .gray
+        }
+    }
+}
+
+// MARK: - Supporting Views
+
 struct DeviceStatisticsCard: View {
-    let devices: [DiscoveredDevice]
+    let devices: [EnhancedDevice]
 
     var onlineDevices: Int {
         devices.filter { $0.isOnline }.count
-    }
-
-    var vulnerableDevices: Int {
-        devices.filter { $0.vulnerabilities > 0 }.count
     }
 
     var totalOpenPorts: Int {
@@ -177,10 +598,9 @@ struct DeviceStatisticsCard: View {
                 .font(.system(size: 36, weight: .semibold))
 
             HStack(spacing: 40) {
-                StatItem(label: "Total Devices", value: "\(devices.count)")
-                StatItem(label: "Online", value: "\(onlineDevices)")
-                StatItem(label: "Vulnerable", value: "\(vulnerableDevices)")
-                StatItem(label: "Open Ports", value: "\(totalOpenPorts)")
+                TopologyStatItem(label: "Total Devices", value: "\(devices.count)")
+                TopologyStatItem(label: "Online", value: "\(onlineDevices)")
+                TopologyStatItem(label: "Open Ports", value: "\(totalOpenPorts)")
             }
         }
         .padding(24)
@@ -189,11 +609,27 @@ struct DeviceStatisticsCard: View {
     }
 }
 
-struct DeviceTypeBreakdownCard: View {
-    let devices: [DiscoveredDevice]
+struct TopologyStatItem: View {
+    let label: String
+    let value: String
 
-    var typeCounts: [DiscoveredDevice.DeviceType: Int] {
-        var counts: [DiscoveredDevice.DeviceType: Int] = [:]
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(value)
+                .font(.system(size: 48, weight: .bold))
+                .foregroundColor(.primary)
+            Text(label)
+                .font(.system(size: 20))
+                .foregroundColor(.secondary)
+        }
+    }
+}
+
+struct DeviceTypeBreakdownCard: View {
+    let devices: [EnhancedDevice]
+
+    var typeCounts: [EnhancedDevice.DeviceType: Int] {
+        var counts: [EnhancedDevice.DeviceType: Int] = [:]
         devices.forEach { device in
             counts[device.deviceType, default: 0] += 1
         }
@@ -221,7 +657,7 @@ struct DeviceTypeBreakdownCard: View {
         .cornerRadius(16)
     }
 
-    private func typeOrder(_ type: DiscoveredDevice.DeviceType) -> Int {
+    private func typeOrder(_ type: EnhancedDevice.DeviceType) -> Int {
         switch type {
         case .router: return 0
         case .server: return 1
@@ -233,7 +669,7 @@ struct DeviceTypeBreakdownCard: View {
         }
     }
 
-    private func iconForType(_ type: DiscoveredDevice.DeviceType) -> String {
+    private func iconForType(_ type: EnhancedDevice.DeviceType) -> String {
         switch type {
         case .router: return "wifi.router"
         case .server: return "server.rack"
@@ -245,7 +681,7 @@ struct DeviceTypeBreakdownCard: View {
         }
     }
 
-    private func colorForType(_ type: DiscoveredDevice.DeviceType) -> Color {
+    private func colorForType(_ type: EnhancedDevice.DeviceType) -> Color {
         switch type {
         case .router: return .blue
         case .server: return .purple
@@ -259,18 +695,18 @@ struct DeviceTypeBreakdownCard: View {
 }
 
 struct DeviceTypeCard: View {
-    let type: DiscoveredDevice.DeviceType
+    let type: EnhancedDevice.DeviceType
     let count: Int
     let icon: String
     let color: Color
 
     var typeName: String {
         switch type {
-        case .router: return "Routers"
+        case .router: return "Network"
         case .server: return "Servers"
         case .computer: return "Computers"
         case .mobile: return "Mobile"
-        case .iot: return "IoT Devices"
+        case .iot: return "Smart Home"
         case .printer: return "Printers"
         case .unknown: return "Unknown"
         }

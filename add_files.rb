@@ -1,29 +1,26 @@
+#!/usr/bin/env ruby
 require 'xcodeproj'
 
-project_path = 'HomeKitAdopter.xcodeproj'
+project_path = '/Volumes/Data/xcode/NMAPScanner/NMAPScanner.xcodeproj'
 project = Xcodeproj::Project.open(project_path)
 target = project.targets.first
 
-# Files to add
-files = [
-  'HomeKitAdopter/Models/DeviceNote.swift',
-  'HomeKitAdopter/Managers/ExportManager.swift',
-  'HomeKitAdopter/Managers/NetworkDiagnosticsManager.swift',
-  'HomeKitAdopter/Managers/QRCodeManager.swift',
-  'HomeKitAdopter/Managers/ScanSchedulerManager.swift',
-  'HomeKitAdopter/Managers/PairingInstructionsManager.swift',
-  'HomeKitAdopter/Managers/FirmwareManager.swift',
-  'HomeKitAdopter/Managers/SecurityAuditManager.swift',
-  'HomeKitAdopter/Views/DashboardView.swift'
+# Add the 5 new Swift files
+files_to_add = [
+  'VisualEnhancementsSystem.swift',
+  'AnimatedDiscoveryView.swift',
+  'BeautifulDataVisualizations.swift',
+  'EnhancedDeviceDetailView.swift',
+  'DeviceIconSystem.swift'
 ]
 
-files.each do |file|
-  next unless File.exist?(file)
-  file_ref = project.main_group.find_file_by_path(file)
-  unless file_ref
-    file_ref = project.main_group.new_reference(file)
-    target.add_file_references([file_ref])
-  end
+main_group = project.main_group['NMAPScanner']
+
+files_to_add.each do |file_path|
+  file_ref = main_group.new_reference(file_path)
+  target.add_file_references([file_ref])
+  puts "Added: #{file_path}"
 end
 
 project.save
+puts "Project saved successfully!"

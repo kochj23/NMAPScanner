@@ -167,6 +167,9 @@ struct EnhancedDevice: Identifiable, Hashable {
     let operatingSystem: String?
     let deviceName: String? // User-friendly name
 
+    // HomeKit mDNS discovery integration
+    var homeKitMDNSInfo: HomeKitMDNSInfo?
+
     enum DeviceType: String {
         case router = "Router"
         case server = "Server"
@@ -537,6 +540,30 @@ class ThreatAnalyzer: ObservableObject {
         case 30100, 30101, 30102: return "NetSphere trojan"
         case 5000, 5001, 5002: return "Back Door Setup/Sockets de Troie"
         default: return "Unknown backdoor/trojan"
+        }
+    }
+}
+
+// MARK: - HomeKit mDNS Info
+
+/// HomeKit device information from mDNS/Bonjour discovery
+struct HomeKitMDNSInfo: Hashable {
+    let deviceName: String
+    let serviceType: String
+    let category: String
+    let isHomeKitAccessory: Bool
+    let discoveredAt: Date
+
+    /// Icon for HomeKit device type
+    var icon: String {
+        if serviceType.contains("airplay") {
+            return "airplayvideo"
+        } else if serviceType.contains("hap") || serviceType.contains("homekit") {
+            return "homekit"
+        } else if serviceType.contains("companion") {
+            return "applelogo"
+        } else {
+            return "sensor"
         }
     }
 }

@@ -54,7 +54,7 @@ struct NetworkHistoryView: View {
             .padding(40)
         }
         .sheet(item: $selectedNetwork) { network in
-            NetworkDetailView(network: network)
+            NetworkHistoryDetailView(network: network)
         }
     }
 }
@@ -150,9 +150,9 @@ struct NetworkHistoryCard: View {
     }
 }
 
-// MARK: - Network Detail View
+// MARK: - Network History Detail View
 
-struct NetworkDetailView: View {
+struct NetworkHistoryDetailView: View {
     let network: NetworkRecord
     @StateObject private var persistenceManager = DevicePersistenceManager.shared
     @Environment(\.dismiss) var dismiss
