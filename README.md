@@ -123,7 +123,7 @@ This tool is for network administration and security auditing of networks you ow
 
 ## 👥 Authors
 
-**Jordan Koch** & **Claude Code**
+**Jordan Koch**
 
 ---
 
