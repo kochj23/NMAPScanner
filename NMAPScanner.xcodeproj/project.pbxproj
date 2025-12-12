@@ -47,6 +47,7 @@
 		66D1D7FEBE59D85222CBDBE1 /* NMAPApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3F84499A15882E0E98D0467 /* NMAPApp.swift */; };
 		6D68ECFFA4EF220384B6BFA1 /* PortScanConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = D50B4E2ACE37EB5DDA19DCA9 /* PortScanConfiguration.swift */; };
 		6F70279D834AE62608C93300 /* NetworkSegmentationAnalyzer.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0E782C4AD05ADCD5F42F64F /* NetworkSegmentationAnalyzer.swift */; };
+		6F930A122508AA4EF4DE4CB0 /* SecureUniFiDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDDE9E3E4CB97868C716FAF6 /* SecureUniFiDelegate.swift */; };
 		7116027B214F0974CCFFAD30 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 757D5131F66179242D4B8841 /* SettingsView.swift */; };
 		711EEDC242795A1AF013C2CE /* SecurityViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EF7282AD6E502A58188E09A /* SecurityViews.swift */; };
 		713304E72AA1479269F213BF /* EnhancedTopologyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD008EF82E26E406F997BEB2 /* EnhancedTopologyView.swift */; };
@@ -111,6 +112,7 @@
 		F57D4A9A3E0C0C555DB81AC2 /* CustomDNSResolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55C98DB9E8F3A03F171A5159 /* CustomDNSResolver.swift */; };
 		F74FBC8D3B23B634FA994074 /* NetworkIntegration.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6FDE558821329A6454823EE /* NetworkIntegration.swift */; };
 		FB20FA62B969835B23385042 /* ManufacturerIconManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5C6359BF6FFE45B407385F5D /* ManufacturerIconManager.swift */; };
+		FD23EC8E0C924C5FB328F0F0 /* SecurityUtilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = 54EB5226F7810514AF918BE4 /* SecurityUtilities.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -163,6 +165,7 @@
 		4D30CA0493BD8D066F2F1017 /* SSLCertificateAnalyzer.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = SSLCertificateAnalyzer.swift; path = NMAPScanner/SSLCertificateAnalyzer.swift; sourceTree = "<group>"; };
 		4E62F3829704E4770CE2A427 /* PingScanner.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = PingScanner.swift; path = NMAPScanner/PingScanner.swift; sourceTree = "<group>"; };
 		4ED5A53EA5A60DB2E9C4E4E9 /* LocalNetworkMonitor.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = LocalNetworkMonitor.swift; path = NMAPScanner/LocalNetworkMonitor.swift; sourceTree = "<group>"; };
+		54EB5226F7810514AF918BE4 /* SecurityUtilities.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = SecurityUtilities.swift; path = NMAPScanner/SecurityUtilities.swift; sourceTree = "<group>"; };
 		55C98DB9E8F3A03F171A5159 /* CustomDNSResolver.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = CustomDNSResolver.swift; path = NMAPScanner/CustomDNSResolver.swift; sourceTree = "<group>"; };
 		5A500574FB9F31E97075695B /* NetworkTrafficAnalyzer.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = NetworkTrafficAnalyzer.swift; path = NMAPScanner/NetworkTrafficAnalyzer.swift; sourceTree = "<group>"; };
 		5AAE0153BFFF929AED332969 /* EnhancedDeviceDetailView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = EnhancedDeviceDetailView.swift; path = NMAPScanner/EnhancedDeviceDetailView.swift; sourceTree = "<group>"; };
@@ -253,7 +256,7 @@
 		CAB30F70949929514AB60514 /* MLXDeviceClassifier.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = MLXDeviceClassifier.swift; path = NMAPScanner/MLXDeviceClassifier.swift; sourceTree = "<group>"; };
 		CAC521E11475E20F00C5DBE3 /* SearchAndFilter.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = SearchAndFilter.swift; path = NMAPScanner/SearchAndFilter.swift; sourceTree = "<group>"; };
 		CBD5AAC03AF88DBC453594BA /* MalwarePatternDetector.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = MalwarePatternDetector.swift; path = NMAPScanner/MalwarePatternDetector.swift; sourceTree = "<group>"; };
-		CC0001 /* HomeKitAdopter.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = HomeKitAdopter.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		CC0001 /* HomeKitAdopter.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; name = HomeKitAdopter.app; path = NMAPScanner.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		CC0180BAF9A039D04CF5A463 /* ScanSchedulerManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ScanSchedulerManager.swift; path = HomeKitAdopter/Managers/ScanSchedulerManager.swift; sourceTree = "<group>"; };
 		CC80948F796F7832E4A8EEFE /* DeviceWhitelistView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = DeviceWhitelistView.swift; path = NMAPScanner/DeviceWhitelistView.swift; sourceTree = "<group>"; };
 		CCB24E291EA18C2B2DB4A0F8 /* SearchAndFilter.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = SearchAndFilter.swift; path = NMAPScanner/SearchAndFilter.swift; sourceTree = "<group>"; };
@@ -261,6 +264,7 @@
 		CE1020C511E459E143F7BEE1 /* PingMonitorManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PingMonitorManager.swift; sourceTree = "<group>"; };
 		CFD176ED9E0C65D8131922A0 /* MLXInferenceEngine.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = MLXInferenceEngine.swift; path = NMAPScanner/MLXInferenceEngine.swift; sourceTree = "<group>"; };
 		D036F6F704873A13CE5B7222 /* PacketCaptureManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = PacketCaptureManager.swift; path = NMAPScanner/PacketCaptureManager.swift; sourceTree = "<group>"; };
+		D076A27F2EEBD2E500833D37 /* SecurityUtilities.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecurityUtilities.swift; sourceTree = "<group>"; };
 		D0A12B3C59D1097A3081C0CC /* DeviceDetailView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = DeviceDetailView.swift; path = NMAPScanner/DeviceDetailView.swift; sourceTree = "<group>"; };
 		D0E782C4AD05ADCD5F42F64F /* NetworkSegmentationAnalyzer.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = NetworkSegmentationAnalyzer.swift; path = NMAPScanner/NetworkSegmentationAnalyzer.swift; sourceTree = "<group>"; };
 		D17B4C392A1ECE0C12DEA874 /* ComprehensiveDeviceDetailView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ComprehensiveDeviceDetailView.swift; path = NMAPScanner/ComprehensiveDeviceDetailView.swift; sourceTree = "<group>"; };
@@ -287,6 +291,7 @@
 		FBE66D65265B91D0F51CE917 /* PacketCaptureManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = PacketCaptureManager.swift; path = NMAPScanner/PacketCaptureManager.swift; sourceTree = "<group>"; };
 		FCCF23441396BA009217E59E /* DevicePersistence.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = DevicePersistence.swift; path = NMAPScanner/DevicePersistence.swift; sourceTree = "<group>"; };
 		FCDBF5333F1828DC637EC7F0 /* ExportManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ExportManager.swift; path = HomeKitAdopter/Managers/ExportManager.swift; sourceTree = "<group>"; };
+		FDDE9E3E4CB97868C716FAF6 /* SecureUniFiDelegate.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = SecureUniFiDelegate.swift; path = NMAPScanner/SecureUniFiDelegate.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -436,14 +441,16 @@
 				96DE0A74B867649A3E18E88D /* ComprehensiveDiscovery.swift */,
 				9D57ADCC9D26443D2893B4E3 /* WiFiVisualCards.swift */,
 				8A3F4AA92DC99F802FA5AAF9 /* NetworkToolsTab.swift */,
+				54EB5226F7810514AF918BE4 /* SecurityUtilities.swift */,
+				FDDE9E3E4CB97868C716FAF6 /* SecureUniFiDelegate.swift */,
 			);
 			name = NMAPScanner;
-			path = "";
 			sourceTree = "<group>";
 		};
 		EE0001 = {
 			isa = PBXGroup;
 			children = (
+				D076A27F2EEBD2E500833D37 /* SecurityUtilities.swift */,
 				EE0002 /* HomeKitAdopter */,
 				EE0003 /* Products */,
 				D361F62E7808887F48B04115 /* DeviceNote.swift */,
@@ -477,7 +484,6 @@
 		EE0002 /* HomeKitAdopter */ = {
 			isa = PBXGroup;
 			children = (
-				BB0012 /* SecureStorageManager.swift */,
 				BB0011 /* Info.plist */,
 				BB0001 /* HomeKitAdopterApp.swift */,
 				BB0002 /* ContentView.swift */,
@@ -693,6 +699,8 @@
 				836D63B27689549B96E6852C /* ComprehensiveDiscovery.swift in Sources */,
 				72FE76BF91685B10A78977D1 /* WiFiVisualCards.swift in Sources */,
 				9CE2B2B16DA8059E58006A04 /* NetworkToolsTab.swift in Sources */,
+				FD23EC8E0C924C5FB328F0F0 /* SecurityUtilities.swift in Sources */,
+				6F930A122508AA4EF4DE4CB0 /* SecureUniFiDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
