@@ -68,11 +68,20 @@ class AdvancedPortScanner: ObservableObject {
 
     /// Perform advanced scan on device
     func scanDevice(_ device: EnhancedDevice, profile: ScanProfile) async {
+        // Validate IP address
+        do {
+            try IPValidator.validateIPAddress(device.ipAddress)
+        } catch {
+            SecureLogger.log("Invalid IP for advanced scan: \(device.ipAddress) - \(error)", level: .error)
+            return
+        }
+
         isScanning = true
         currentOperation = "Scanning \(device.ipAddress)"
         progress = 0.0
 
-        print("🔍 AdvancedPortScanner: Starting \(profile.rawValue) on \(device.ipAddress)")
+        SecureLogger.log("Starting \(profile.rawValue) on \(device.ipAddress)", level: .info)
+        SecurityAuditLog.log(event: .scanStarted, details: "\(profile.rawValue) on \(device.ipAddress)", level: .info)
 
         var result = AdvancedScanResult(ipAddress: device.ipAddress, hostname: device.hostname, scanProfile: profile)
 
@@ -114,6 +123,14 @@ class AdvancedPortScanner: ObservableObject {
 
     /// Scan TCP ports
     private func scanTCPPorts(_ ipAddress: String) async -> [Int] {
+        // Validate IP address
+        do {
+            try IPValidator.validateIPAddress(ipAddress)
+        } catch {
+            SecureLogger.log("Invalid IP for TCP scan: \(ipAddress) - \(error)", level: .error)
+            return []
+        }
+
         // Use nmap for TCP scanning
         let process = Process()
         process.executableURL = URL(fileURLWithPath: "/usr/local/bin/nmap")
@@ -143,6 +160,14 @@ class AdvancedPortScanner: ObservableObject {
 
     /// Scan UDP ports
     private func scanUDPPorts(_ ipAddress: String) async -> [Int] {
+        // Validate IP address
+        do {
+            try IPValidator.validateIPAddress(ipAddress)
+        } catch {
+            SecureLogger.log("Invalid IP for UDP scan: \(ipAddress) - \(error)", level: .error)
+            return []
+        }
+
         // UDP scanning requires root privileges
         // Using nmap with -sU flag
         let process = Process()
