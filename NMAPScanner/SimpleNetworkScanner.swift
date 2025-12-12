@@ -63,7 +63,18 @@ class SimpleNetworkScanner: ObservableObject {
 
     /// Scan using ping sweep (reliable, sequential)
     func scanPingSweep(subnet: String) async {
-        print("📡 SimpleNetworkScanner: Starting ping sweep of \(subnet).0/24...")
+        // Validate subnet
+        do {
+            try IPValidator.validateSubnet(subnet)
+        } catch {
+            SecureLogger.log("Invalid subnet: \(subnet) - \(error)", level: .error)
+            status = "Invalid subnet format"
+            return
+        }
+
+        SecureLogger.log("Starting ping sweep of \(subnet).0/24", level: .info)
+        SecurityAuditLog.log(event: .scanStarted, details: "Ping sweep of \(subnet).0/24", level: .info)
+
         isScanning = true
         status = "Starting ping sweep..."
         progress = 0
