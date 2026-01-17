@@ -104,6 +104,7 @@
 		D9EA405CDB0F08A8F40A582B /* ScanWatchdog.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6FCECD06919E530F81EE80A /* ScanWatchdog.swift */; };
 		DA8F689FBDBA7CBCC88FA5C1 /* DeviceUptimeTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 773DE1B9ED0A36055F4EAE0B /* DeviceUptimeTracker.swift */; };
 		DAE44C1BC1F48F3403FD4EB6 /* MLXInferenceEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 45FB1598826B59756C2EE8F6 /* MLXInferenceEngine.swift */; };
+		62363564316365322D323865372D343763362D613036372D /* AIBackendManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61386533623865632D326561332D343230632D626136612D /* AIBackendManager.swift */; };
 		DB5CF08CE0FE86A9B0E39576 /* MLXThreatAnalyzer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3849E36ACCF8B3949871F0BD /* MLXThreatAnalyzer.swift */; };
 		DE8E12BF391E2B8AB848B0C1 /* MLXSecurityAssistant.swift in Sources */ = {isa = PBXBuildFile; fileRef = C46193B11ECF76D3411B4D5E /* MLXSecurityAssistant.swift */; };
 		E2FAEA027E6E8F02CE98D7B5 /* MLXQueryInterface.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7FF57F385653756544121157 /* MLXQueryInterface.swift */; };
@@ -166,6 +167,7 @@
 		44B2E1D605E39EE90352933F /* HistoricalComparisonView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = HistoricalComparisonView.swift; path = NMAPScanner/HistoricalComparisonView.swift; sourceTree = "<group>"; };
 		455F6DB93E99947F5FADA7AA /* ComprehensiveDeviceDetailView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ComprehensiveDeviceDetailView.swift; path = NMAPScanner/ComprehensiveDeviceDetailView.swift; sourceTree = "<group>"; };
 		45FB1598826B59756C2EE8F6 /* MLXInferenceEngine.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = MLXInferenceEngine.swift; path = NMAPScanner/MLXInferenceEngine.swift; sourceTree = "<group>"; };
+		61386533623865632D326561332D343230632D626136612D /* AIBackendManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NMAPScanner/AIBackendManager.swift; sourceTree = "<group>"; };
 		461F5EB13CAEB2A3408ACB14 /* UniFiDeviceIdentifier.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = UniFiDeviceIdentifier.swift; path = NMAPScanner/UniFiDeviceIdentifier.swift; sourceTree = "<group>"; };
 		46775941D99E4EE65F9DC945 /* ScanPresets.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ScanPresets.swift; path = NMAPScanner/ScanPresets.swift; sourceTree = "<group>"; };
 		48191FDB55810B4B56A26C3C /* DNSSecurityAnalyzer.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = DNSSecurityAnalyzer.swift; path = NMAPScanner/DNSSecurityAnalyzer.swift; sourceTree = "<group>"; };
@@ -341,6 +343,7 @@
 				997E4B40F69E081E68C082E5 /* NotificationManager.swift */,
 				0EAAA50FDDE1929C6649B644 /* MLXCapabilityDetector.swift */,
 				45FB1598826B59756C2EE8F6 /* MLXInferenceEngine.swift */,
+				61386533623865632D326561332D343230632D626136612D /* AIBackendManager.swift */,
 				3849E36ACCF8B3949871F0BD /* MLXThreatAnalyzer.swift */,
 				CAB30F70949929514AB60514 /* MLXDeviceClassifier.swift */,
 				7FF57F385653756544121157 /* MLXQueryInterface.swift */,
@@ -637,6 +640,7 @@
 				16EEDD675FD957ECDA69C3F7 /* NotificationManager.swift in Sources */,
 				D27176EC3B2750A056625B07 /* MLXCapabilityDetector.swift in Sources */,
 				DAE44C1BC1F48F3403FD4EB6 /* MLXInferenceEngine.swift in Sources */,
+				62363564316365322D323865372D343763362D613036372D /* AIBackendManager.swift in Sources */,
 				DB5CF08CE0FE86A9B0E39576 /* MLXThreatAnalyzer.swift in Sources */,
 				3ED0034466AFE759CA95EDE4 /* MLXDeviceClassifier.swift in Sources */,
 				E2FAEA027E6E8F02CE98D7B5 /* MLXQueryInterface.swift in Sources */,
