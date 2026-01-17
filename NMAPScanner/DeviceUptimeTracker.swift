@@ -234,12 +234,18 @@ class DeviceUptimeTracker: ObservableObject {
 
         let avgUptime = records.isEmpty ? 0.0 : records.map { $0.uptimePercentage }.reduce(0.0, +) / Double(records.count)
 
+        let excellentCount = records.filter { $0.reliability == .excellent }.count
+        let goodCount = records.filter { $0.reliability == .good }.count
+        let fairCount = records.filter { $0.reliability == .fair }.count
+        let poorCount = records.filter { $0.reliability == .poor }.count
+        let unstableCount = records.filter { $0.reliability == .unstable }.count
+
         let reliabilityCounts = [
-            ReliabilityRating.excellent: records.filter { $0.reliability == .excellent }.count,
-            .good: records.filter { $0.reliability == .good }.count,
-            .fair: records.filter { $0.reliability == .fair }.count,
-            .poor: records.filter { $0.reliability == .poor }.count,
-            .unstable: records.filter { $0.reliability == .unstable }.count
+            ReliabilityRating.excellent: excellentCount,
+            .good: goodCount,
+            .fair: fairCount,
+            .poor: poorCount,
+            .unstable: unstableCount
         ]
 
         return UptimeStatistics(

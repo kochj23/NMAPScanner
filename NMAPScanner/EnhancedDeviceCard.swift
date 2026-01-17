@@ -291,17 +291,18 @@ struct EnhancedDeviceCard_Previews: PreviewProvider {
             macAddress: "AA:BB:CC:DD:EE:FF",
             hostname: "HomePod-Kitchen",
             manufacturer: "Apple Inc.",
+            deviceType: .iot,
             openPorts: [
                 PortInfo(port: 80, service: "HTTP", version: nil, state: .open, protocolType: "TCP", banner: nil),
                 PortInfo(port: 443, service: "HTTPS", version: nil, state: .open, protocolType: "TCP", banner: nil)
             ],
-            deviceType: .iot,
             isOnline: true,
             firstSeen: Date().addingTimeInterval(-3600),
             lastSeen: Date().addingTimeInterval(-60),
-            customName: nil,
-            notes: nil,
-            tags: []
+            isKnownDevice: true,
+            operatingSystem: "iOS",
+            deviceName: "HomePod Kitchen",
+            homeKitMDNSInfo: nil
         ))
         .frame(width: 400)
         .padding()

@@ -59,7 +59,7 @@ struct DeviceSnapshot: Identifiable, Codable {
 struct ScanComparison {
     let scan1: ScanSnapshot
     let scan2: ScanSnapshot
-    let changes: [DeviceChange]
+    let changes: [ScanDeviceChange]
 
     var newDevices: [DeviceSnapshot] {
         let scan1IPs = Set(scan1.devices.map { $0.ipAddress })
@@ -113,7 +113,7 @@ enum ChangeType: String, Codable {
     case trustedNow = "Trusted Now"
 }
 
-struct DeviceChange: Identifiable {
+struct ScanDeviceChange: Identifiable {
     let id = UUID()
     let deviceIP: String
     let changeType: ChangeType
@@ -133,14 +133,14 @@ class ScanComparisonEngine {
 
     /// Compare two scans and generate diff
     static func compare(scan1: ScanSnapshot, scan2: ScanSnapshot) -> ScanComparison {
-        var changes: [DeviceChange] = []
+        var changes: [ScanDeviceChange] = []
 
         let scan1Devices = Dictionary(uniqueKeysWithValues: scan1.devices.map { ($0.ipAddress, $0) })
         let scan2Devices = Dictionary(uniqueKeysWithValues: scan2.devices.map { ($0.ipAddress, $0) })
 
         // Find new devices
         for (ip, device) in scan2Devices where scan1Devices[ip] == nil {
-            changes.append(DeviceChange(
+            changes.append(ScanDeviceChange(
                 deviceIP: ip,
                 changeType: .added,
                 details: "New device discovered: \(device.hostname ?? ip)",
@@ -150,7 +150,7 @@ class ScanComparisonEngine {
 
         // Find removed devices
         for (ip, device) in scan1Devices where scan2Devices[ip] == nil {
-            changes.append(DeviceChange(
+            changes.append(ScanDeviceChange(
                 deviceIP: ip,
                 changeType: .removed,
                 details: "Device left network: \(device.hostname ?? ip)",
@@ -179,7 +179,7 @@ class ScanComparisonEngine {
                     detail += "Removed \(Array(removed).sorted().map { String($0) }.joined(separator: ", "))"
                 }
 
-                changes.append(DeviceChange(
+                changes.append(ScanDeviceChange(
                     deviceIP: ip,
                     changeType: .portsChanged,
                     details: detail,
@@ -189,7 +189,7 @@ class ScanComparisonEngine {
 
             // Check for hostname changes
             if device1.hostname != device2.hostname {
-                changes.append(DeviceChange(
+                changes.append(ScanDeviceChange(
                     deviceIP: ip,
                     changeType: .hostnameChanged,
                     details: "Hostname changed: '\(device1.hostname ?? "none")' → '\(device2.hostname ?? "none")'",
@@ -199,7 +199,7 @@ class ScanComparisonEngine {
 
             // Check for status changes
             if device1.isOnline != device2.isOnline {
-                changes.append(DeviceChange(
+                changes.append(ScanDeviceChange(
                     deviceIP: ip,
                     changeType: .statusChanged,
                     details: device2.isOnline ? "Device came online" : "Device went offline",
@@ -209,14 +209,14 @@ class ScanComparisonEngine {
 
             // Check for rogue status changes
             if !device1.isRogue && device2.isRogue {
-                changes.append(DeviceChange(
+                changes.append(ScanDeviceChange(
                     deviceIP: ip,
                     changeType: .becameRogue,
                     details: "Device flagged as rogue (previously trusted)",
                     severity: .critical
                 ))
             } else if device1.isRogue && !device2.isRogue {
-                changes.append(DeviceChange(
+                changes.append(ScanDeviceChange(
                     deviceIP: ip,
                     changeType: .trustedNow,
                     details: "Device now trusted (was rogue)",
@@ -244,7 +244,7 @@ struct ScanComparisonView: View {
         case critical = "Critical"
     }
 
-    private var filteredChanges: [DeviceChange] {
+    private var filteredChanges: [ScanDeviceChange] {
         switch selectedFilter {
         case .all:
             return comparison.changes
@@ -289,10 +289,10 @@ struct ScanComparisonView: View {
 
             // Statistics cards
             HStack(spacing: 16) {
-                StatCard(title: "New", count: comparison.newDevices.count, color: .green)
-                StatCard(title: "Removed", count: comparison.removedDevices.count, color: .red)
-                StatCard(title: "Modified", count: comparison.modifiedDevices.count, color: .orange)
-                StatCard(title: "Unchanged", count: comparison.unchangedDevices.count, color: .gray)
+                ScanStatCard(title: "New", count: comparison.newDevices.count, color: .green)
+                ScanStatCard(title: "Removed", count: comparison.removedDevices.count, color: .red)
+                ScanStatCard(title: "Modified", count: comparison.modifiedDevices.count, color: .orange)
+                ScanStatCard(title: "Unchanged", count: comparison.unchangedDevices.count, color: .gray)
             }
             .padding(.horizontal)
 
@@ -328,7 +328,7 @@ struct ScanComparisonView: View {
 // MARK: - Change Row
 
 struct ChangeRow: View {
-    let change: DeviceChange
+    let change: ScanDeviceChange
 
     private var iconName: String {
         switch change.changeType {
@@ -387,7 +387,7 @@ struct ChangeRow: View {
 
 // MARK: - Stat Card
 
-private struct StatCard: View {
+private struct ScanStatCard: View {
     let title: String
     let count: Int
     let color: Color

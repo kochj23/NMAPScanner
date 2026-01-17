@@ -118,6 +118,7 @@
 		F74FBC8D3B23B634FA994074 /* NetworkIntegration.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6FDE558821329A6454823EE /* NetworkIntegration.swift */; };
 		FB20FA62B969835B23385042 /* ManufacturerIconManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5C6359BF6FFE45B407385F5D /* ManufacturerIconManager.swift */; };
 		FD23EC8E0C924C5FB328F0F0 /* SecurityUtilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = 54EB5226F7810514AF918BE4 /* SecurityUtilities.swift */; };
+		FCA79F8703EF4FCCA86D911C /* ModernDesign.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5CB9E585D814DE19DFCBA5C /* ModernDesign.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -302,6 +303,7 @@
 		FCCF23441396BA009217E59E /* DevicePersistence.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = DevicePersistence.swift; path = NMAPScanner/DevicePersistence.swift; sourceTree = "<group>"; };
 		FCDBF5333F1828DC637EC7F0 /* ExportManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ExportManager.swift; path = HomeKitAdopter/Managers/ExportManager.swift; sourceTree = "<group>"; };
 		FDDE9E3E4CB97868C716FAF6 /* SecureUniFiDelegate.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = SecureUniFiDelegate.swift; path = NMAPScanner/SecureUniFiDelegate.swift; sourceTree = "<group>"; };
+		F5CB9E585D814DE19DFCBA5C /* ModernDesign.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ModernDesign.swift; path = NMAPScanner/ModernDesign.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -458,6 +460,8 @@
 				8F35D7735C101C38DE66DA9E /* ScanComparisonView.swift */,
 				164A648E96D0B7DC2ADB4DCF /* DeviceReputationScorer.swift */,
 				99EE1DECEF9DDD86EDFCE270 /* MenuBarAgent.swift */,
+			
+				F5CB9E585D814DE19DFCBA5C /* ModernDesign.swift */,
 			);
 			name = NMAPScanner;
 			sourceTree = "<group>";
@@ -721,6 +725,8 @@
 				4366D3DD877CE35A6A6A9FF7 /* ScanComparisonView.swift in Sources */,
 				99C2A43E0CA5B652EAB5B8EC /* DeviceReputationScorer.swift in Sources */,
 				B9691C5DAA6F6C59CE6B45B7 /* MenuBarAgent.swift in Sources */,
+			
+				FCA79F8703EF4FCCA86D911C /* ModernDesign.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
