@@ -12,7 +12,11 @@ struct MainTabView: View {
     @StateObject private var scanner = IntegratedScannerV3.shared
 
     var body: some View {
-        TabView(selection: $selectedTab) {
+        ZStack {
+            // Modern glassmorphic background
+            GlassmorphicBackground()
+
+            TabView(selection: $selectedTab) {
             // Main Dashboard
             IntegratedDashboardViewV3()
                 .tabItem {
@@ -61,8 +65,9 @@ struct MainTabView: View {
                     Label("Topology", systemImage: "point.3.connected.trianglepath.dotted")
                 }
                 .tag(6)
+            }
+            .frame(minWidth: 1400, minHeight: 900)
         }
-        .frame(minWidth: 1400, minHeight: 900)
     }
 }
 
