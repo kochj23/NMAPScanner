@@ -128,3 +128,8 @@ This tool is for network administration and security auditing of networks you ow
 ---
 
 [Download Latest Release](https://github.com/kochj23/NMAPScanner/releases/latest) | [Report Issues](https://github.com/kochj23/NMAPScanner/issues)
+
+---
+
+**Last Updated:** January 22, 2026
+**Status:** ✅ Production Ready
