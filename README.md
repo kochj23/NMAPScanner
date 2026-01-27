@@ -11,9 +11,30 @@
 
 ---
 
-## ✨ Latest Update: January 26, 2026
+## ✨ Latest Update: January 27, 2026 - v8.6.0
 
 ### 🎉 Major Enhancements:
+
+#### 🛡️ Advanced Device Actions (NEW in v8.6.0)
+- **Whitelist Devices** - Add trusted devices to whitelist (persisted in UserDefaults)
+- **Block Devices** - Add to blocklist with optional firewall rules via pfctl
+- **Deep Scan** - Launch aggressive nmap scans (-A -T4 -p- for all ports)
+- **Isolate via UniFi** - Network isolation using UniFi Controller API
+- **Real-time Notifications** - System notifications for all security actions
+- **MAC Address Tracking** - Whitelist/blocklist by MAC address
+- **Admin Privileges** - Optional elevated permissions for firewall rules
+
+**Usage:**
+- Click device action buttons in device card
+- Deep scans run in background with completion notifications
+- Firewall rules require admin approval
+- UniFi isolation requires controller authentication
+
+#### 🚀 MLX Backend Implementation (NEW in v8.6.0)
+- **Full MLX Integration** - Apple Silicon AI via mlx_lm CLI
+- **Network Analysis** - AI-powered security recommendations
+- **Vulnerability Detection** - Smart pattern recognition
+- **Local Processing** - No cloud required for AI features
 
 #### ☁️ Cloud AI Integration (5 Providers)
 - **OpenAI API** - GPT-4o for advanced capabilities
