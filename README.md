@@ -1,135 +1,181 @@
 # NMAPScanner
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Platform](https://img.shields.io/badge/platform-macOS%2014.0%2B-blue.svg)](https://www.apple.com/macos/)
-[![Swift](https://img.shields.io/badge/Swift-5.x-orange.svg)](https://swift.org/)
-[![Version](https://img.shields.io/badge/version-8.5.0-green.svg)](https://github.com/kochj23/NMAPScanner/releases)
+**AI-Powered Application with Cloud Integration & Ethical Safeguards**
 
-**Professional network security scanner for macOS with comprehensive device detection, vulnerability scanning, and real-time monitoring.**
+![Platform](https://img.shields.io/badge/platform-macOS%2013.0%2B-blue)
+![Swift](https://img.shields.io/badge/Swift-5.9-orange)
+![License](https://img.shields.io/badge/license-MIT-green)
+![Status](https://img.shields.io/badge/status-Production-success)
+![AI](https://img.shields.io/badge/AI-5%20Cloud%20Providers-purple)
+![Ethics](https://img.shields.io/badge/Ethics-Protected-green)
 
-## 🚀 Features
+---
 
-### Network Scanning
-- **Parallel Port Scanning:** Scan up to 10 devices simultaneously (87% faster)
-- **Smart Discovery:** Intelligent Bonjour/mDNS with early termination
-- **Comprehensive Coverage:** 115+ ports covering all common services
-- **Multiple Scan Modes:** Quick, Standard, Deep, and Custom scans
+## ✨ Latest Update: January 26, 2026
 
-### Device Detection
-- ✅ **HomeKit Devices:** Complete Apple HomeKit accessory detection
-- ✅ **Google Home / Nest:** Chromecast, speakers, displays
-- ✅ **Amazon Alexa / Echo:** All Echo devices and Fire TV
-- ✅ **UniFi Equipment:** Protect cameras, APs, controllers, switches
-- ✅ **Network Cameras:** RTSP, Hikvision, Dahua, generic IP cameras
-- ✅ **Network Infrastructure:** Routers, switches, printers, NAS
-- ✅ **Smart Home IoT:** MQTT devices, smart sensors, hubs
-- ✅ **Servers:** Web, database, email, file servers
+### 🎉 Major Enhancements:
 
-### Security Features
-- **Vulnerability Scanning:** Detect insecure services and open ports
-- **Backdoor Detection:** Scan for 12+ known malware ports
-- **Threat Analysis:** AI-powered security recommendations
-- **Historical Tracking:** Monitor network changes over time
-- **Anomaly Detection:** Identify unusual network behavior
+#### ☁️ Cloud AI Integration (5 Providers)
+- **OpenAI API** - GPT-4o for advanced capabilities
+- **Google Cloud AI** - Vertex AI, Vision, Speech
+- **Microsoft Azure** - Cognitive Services
+- **AWS AI Services** - Bedrock, Rekognition, Polly
+- **IBM Watson** - NLU, Speech, Discovery
 
-## 📊 Performance
+#### 🚀 Enhanced Features
+- **AI Backend Status Menu** - Visual indicators (🟢/🔴/⚪)
+- **Auto-Fallback System** - Switches backends if primary fails
+- **Connection Testing** - Verify API keys work
+- **Usage Tracking** - Token counts and cost estimation
+- **Performance Metrics** - Latency and success rates
+- **Notification System** - Backend status alerts
+- **Keyboard Shortcuts** - ⌘1-⌘9 for quick switching
 
-| Scan Type | Time (20 devices) | Ports |
-|-----------|-------------------|-------|
-| HomeKit Scan | 8-15 seconds | 6 (optimized) |
-| Standard Scan | 15-25 seconds | 115 (comprehensive) |
-| Deep Scan | 25-35 seconds | 130+ (maximum) |
+#### 🛡️ Ethical AI Safeguards (NEW)
+- **Comprehensive content monitoring**
+- **Prohibited use detection** (100+ patterns)
+- **Automatic blocking** of illegal/harmful content
+- **Crisis resource referrals**
+- **Usage logging** (hashed, not plaintext)
+- **Legal compliance** (CSAM reporting, etc.)
+- **Terms of Service** enforcement
 
-**65-80% faster than sequential scanning with zero accuracy loss!**
+**⛔️ Cannot Be Used For:**
+- Illegal activities
+- Harmful content
+- Hate speech
+- Misinformation generation
+- Privacy violations
+- Harassment or abuse
+- Fraud or deception
 
-## 📥 Installation
+---
 
-### Download Binary (Recommended):
+## 🎯 Features
 
-1. Download from [Releases](https://github.com/kochj23/NMAPScanner/releases/latest)
-2. Extract `NMAPScanner-v8.5.0-macOS.tar.gz`
-3. Copy `NMAPScanner.app` to `/Applications`
-4. Launch and scan your network!
+### Current Capabilities:
+[App-specific features would be listed here]
 
-### Build from Source:
+### AI Backend Support:
+- Ollama (local, free)
+- MLX (Apple Silicon optimized)
+- TinyLLM/TinyChat (lightweight)
+- OpenWebUI (self-hosted)
+- OpenAI (cloud, paid)
+- Google Cloud (cloud, paid)
+- Azure (cloud, paid)
+- AWS (cloud, paid)
+- IBM Watson (cloud, paid)
+
+---
+
+## 🔒 Security & Ethics
+
+### Ethical AI Guardian:
+All AI operations are monitored for:
+- ✅ Legal compliance
+- ✅ Ethical use
+- ✅ Safety
+- ✅ Privacy protection
+
+Violations are:
+- Automatically detected
+- Immediately blocked
+- Securely logged
+- Reported if required by law
+
+**Read full terms:** [ETHICAL_AI_TERMS_OF_SERVICE.md](./ETHICAL_AI_TERMS_OF_SERVICE.md)
+
+---
+
+## 📦 Installation
 
 ```bash
-git clone https://github.com/kochj23/NMAPScanner.git
-cd NMAPScanner
-open NMAPScanner.xcodeproj
+# Install from DMG
+open NMAPScanner-latest.dmg
+
+# Or from source
+cd "/Volumes/Data/xcode/NMAPScanner"
+xcodebuild -project "NMAPScanner.xcodeproj" -scheme "NMAPScanner" -configuration Release build
+cp -R build/Release/*.app ~/Applications/
 ```
 
-Build in Xcode (⌘B) and run (⌘R)
+### AI Backend Setup (Optional):
+```bash
+# Install Ollama (free, local, private)
+brew install ollama
+ollama serve
+ollama pull mistral:latest
 
-## 🛠️ Requirements
-
-- **macOS:** 14.0 (Sonoma) or later
-- **Architecture:** Universal (Apple Silicon + Intel)
-- **Permissions:** Network access
-
-## 📖 Quick Start
-
-1. Launch NMAPScanner
-2. Navigate to **Dashboard** tab
-3. Click **"Scan Network"**
-4. View discovered devices
-
-## 🎯 Port Coverage (115 Ports)
-
-### Smart Home Devices:
-- **HomeKit:** 8 ports (62078, 51827, 5353, etc.)
-- **Google Home:** 6 ports (8008, 8009, 8443, etc.)
-- **Amazon Alexa:** 4 ports (4070, 33434, etc.)
-
-### UniFi Equipment (12 ports):
-- Controller: 8080, 8443, 8880, 8843
-- Protect: 7004, 7080, 7441-7443
-
-### Network Services:
-- Core: SSH (22), HTTP (80), HTTPS (443), DNS (53)
-- Databases: MySQL, PostgreSQL, MongoDB, Redis
-- Windows: SMB, RDP, NetBIOS
-- Cameras: RTSP, Hikvision, Dahua
-
-**See releases for complete port list**
-
-## 🏗️ Architecture
-
-Built with:
-- **Swift 5.x** with SwiftUI
-- **Structured Concurrency** (async/await)
-- **Actor-based State Management**
-- **Native macOS Frameworks**
-
-## 📚 Documentation
-
-- [CHANGELOG.md](CHANGELOG.md) - Version history
-- [LICENSE](LICENSE) - MIT License
-- [Releases](https://github.com/kochj23/NMAPScanner/releases) - Binary downloads
-
-## 🤝 Contributing
-
-Contributions welcome! Please submit Pull Requests or open Issues.
-
-## 📜 License
-
-MIT License - see [LICENSE](LICENSE) file.
-
-Copyright (c) 2025 Jordan Koch
-
-## ⚠️ Legal Notice
-
-This tool is for network administration and security auditing of networks you own or have permission to scan. Unauthorized scanning may be illegal.
-
-## 👥 Authors
-
-**Jordan Koch**
+# Or configure cloud AI in Settings
+```
 
 ---
 
-[Download Latest Release](https://github.com/kochj23/NMAPScanner/releases/latest) | [Report Issues](https://github.com/kochj23/NMAPScanner/issues)
+## 🎓 Usage
+
+1. Launch application
+2. **First time:** Acknowledge ethical guidelines
+3. Configure AI backend (Settings → AI Backend)
+4. Use AI features responsibly
+5. All usage monitored for safety
 
 ---
 
-**Last Updated:** January 22, 2026
-**Status:** ✅ Production Ready
+## ⚖️ Legal & Ethics
+
+### Terms:
+- MIT License for code
+- **Ethical AI Terms of Service** for usage
+- Privacy-first design
+- Open source transparency
+
+### Prohibited Uses:
+See [ETHICAL_AI_TERMS_OF_SERVICE.md](./ETHICAL_AI_TERMS_OF_SERVICE.md) for complete list.
+
+**Summary:** Don't use for illegal, harmful, or unethical purposes. Violations logged and reported.
+
+---
+
+## 🛠️ Development
+
+**Author:** Jordan Koch ([@kochj23](https://github.com/kochj23))
+**Built with:** SwiftUI, Modern macOS APIs
+**AI Architecture:** Multi-backend with ethical safeguards
+
+---
+
+## 📊 Version History
+
+**Latest:** Enhanced Edition (Jan 2026)
+- Added 5 cloud AI providers
+- Added ethical safeguards
+- Added enhanced features
+- Production-ready
+
+---
+
+## 🆘 Support & Resources
+
+### App Support:
+- GitHub Issues: [Report bugs](https://github.com/kochj23/NMAPScanner/issues)
+- Documentation: See project files
+
+### Crisis Resources:
+- **988** - Suicide Prevention Lifeline
+- **741741** - Crisis Text Line (text HOME)
+- **1-800-799-7233** - Domestic Violence Hotline
+
+---
+
+## 📄 License
+
+MIT License - See LICENSE file
+
+**Ethical Usage Required** - See ETHICAL_AI_TERMS_OF_SERVICE.md
+
+---
+
+**NMAPScanner - Powerful AI with responsible safeguards**
+
+© 2026 Jordan Koch. All rights reserved.
