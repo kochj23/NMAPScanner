@@ -605,33 +605,38 @@ extension AIBackendManager {
         maxTokens: Int
     ) async throws -> String {
 
-        // MLX runs via Python subprocess
-        // For now, fallback to Ollama if available
-        if isOllamaAvailable {
-            return try await generateWithOllama(
-                prompt: prompt,
-                systemPrompt: systemPrompt,
-                temperature: 0.7,
-                maxTokens: maxTokens
-            )
-
-        case .openAI:
-            throw AIError.mlxNotImplemented
-
-        case .googleCloud:
-            throw AIError.mlxNotImplemented
-
-        case .azureCognitive:
-            throw AIError.mlxNotImplemented
-
-        case .awsAI:
-            throw AIError.mlxNotImplemented
-
-        case .ibmWatson:
+        let mlxPath = "/opt/homebrew/bin/mlx_lm.generate"
+        guard FileManager.default.fileExists(atPath: mlxPath) else {
+            print("[AIBackend] MLX not installed")
             throw AIError.mlxNotImplemented
         }
 
-        throw AIError.mlxNotImplemented
+        var fullPrompt = prompt
+        if let system = systemPrompt {
+            fullPrompt = "\(system)\n\n\(prompt)"
+        }
+
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: mlxPath)
+        process.arguments = ["--model", "mlx-community/Llama-3.2-3B-Instruct-4bit", "--prompt", fullPrompt, "--max-tokens", "\(maxTokens)"]
+
+        let outputPipe = Pipe()
+        process.standardOutput = outputPipe
+        process.standardError = Pipe()
+
+        try process.run()
+        process.waitUntilExit()
+
+        guard process.terminationStatus == 0 else {
+            throw AIError.mlxNotImplemented
+        }
+
+        let outputData = outputPipe.fileHandleForReading.readDataToEndOfFile()
+        guard let output = String(data: outputData, encoding: .utf8), !output.isEmpty else {
+            throw AIError.noResponse
+        }
+
+        return output.trimmingCharacters(in: .whitespacesAndNewlines)
     }
 }
 
