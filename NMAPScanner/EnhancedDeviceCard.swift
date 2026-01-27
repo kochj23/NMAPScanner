@@ -237,22 +237,114 @@ struct EnhancedDeviceCard: View {
 
     private func handleWhitelist() {
         print("Whitelisting device: \(device.ipAddress)")
-        // TODO: Implement whitelist action
+
+        // Add to whitelist in UserDefaults
+        var whitelist = UserDefaults.standard.stringArray(forKey: "DeviceWhitelist") ?? []
+        if !whitelist.contains(device.ipAddress) {
+            whitelist.append(device.ipAddress)
+            UserDefaults.standard.set(whitelist, forKey: "DeviceWhitelist")
+
+            // Also store MAC address if available
+            if let mac = device.macAddress, !mac.isEmpty {
+                var macWhitelist = UserDefaults.standard.stringArray(forKey: "MACWhitelist") ?? []
+                if !macWhitelist.contains(mac) {
+                    macWhitelist.append(mac)
+                    UserDefaults.standard.set(macWhitelist, forKey: "MACWhitelist")
+                }
+            }
+
+            print("[DeviceCard] ✅ Device \(device.ipAddress) added to whitelist")
+            print("[DeviceCard] Device Whitelisted: \(device.hostname ?? device.ipAddress) is now trusted")
+        }
     }
 
     private func handleBlock() {
         print("Blocking device: \(device.ipAddress)")
-        // TODO: Implement block action
+
+        // Add to block list
+        var blocklist = UserDefaults.standard.stringArray(forKey: "DeviceBlocklist") ?? []
+        if !blocklist.contains(device.ipAddress) {
+            blocklist.append(device.ipAddress)
+            UserDefaults.standard.set(blocklist, forKey: "DeviceBlocklist")
+
+            print("[DeviceCard] ✅ Device \(device.ipAddress) added to blocklist")
+
+            // Try to add firewall rule (requires admin)
+            let script = """
+            do shell script "pfctl -t blocklist -T add \(device.ipAddress)" with administrator privileges
+            """
+
+            if let appleScript = NSAppleScript(source: script) {
+                var error: NSDictionary?
+                appleScript.executeAndReturnError(&error)
+
+                if let error = error {
+                    print("[DeviceCard] ⚠️ Firewall rule failed (needs admin): \(error)")
+                } else {
+                    print("[DeviceCard] ✅ Firewall rule added for \(device.ipAddress)")
+                }
+            }
+        }
     }
 
     private func handleDeepScan() {
         print("Starting deep scan on: \(device.ipAddress)")
-        // TODO: Implement deep scan action
+
+        // Launch aggressive nmap scan in background
+        Task.detached {
+            let process = Process()
+            process.executableURL = URL(fileURLWithPath: "/opt/homebrew/bin/nmap")
+            process.arguments = [
+                "-A",           // Aggressive scan (OS detection, version, scripts, traceroute)
+                "-T4",          // Aggressive timing
+                "-p-",          // All ports
+                "-sV",          // Service version detection
+                device.ipAddress
+            ]
+
+            let outputPipe = Pipe()
+            process.standardOutput = outputPipe
+            process.standardError = outputPipe
+
+            do {
+                try process.run()
+                process.waitUntilExit()
+
+                let outputData = outputPipe.fileHandleForReading.readDataToEndOfFile()
+                if let output = String(data: outputData, encoding: .utf8) {
+                    print("[DeviceCard] Deep scan complete for \(device.ipAddress)")
+                    print(output)
+
+                    await MainActor.run {
+                    }
+                }
+            } catch {
+                print("[DeviceCard] Deep scan failed: \(error)")
+            }
+        }
+
     }
 
     private func handleIsolate() {
         print("Isolating device: \(device.ipAddress)")
-        // TODO: Implement isolate action
+
+        // Add to isolated devices list
+        var isolated = UserDefaults.standard.stringArray(forKey: "IsolatedDevices") ?? []
+        if !isolated.contains(device.ipAddress) {
+            isolated.append(device.ipAddress)
+            UserDefaults.standard.set(isolated, forKey: "IsolatedDevices")
+
+            if let mac = device.macAddress {
+                var macIsolated = UserDefaults.standard.stringArray(forKey: "IsolatedMACs") ?? []
+                if !macIsolated.contains(mac) {
+                    macIsolated.append(mac)
+                    UserDefaults.standard.set(macIsolated, forKey: "IsolatedMACs")
+                }
+            }
+
+            print("[DeviceCard] ✅ Device \(device.ipAddress) marked as isolated")
+            print("[DeviceCard] Note: UniFi API integration requires controller configuration")
+        }
     }
 }
 

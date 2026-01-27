@@ -47,7 +47,7 @@ class SecurityUnified: ObservableObject {
 
     // MARK: - Exploit Generation
 
-    func generateExploit(vulnerability: Vulnerability) async throws -> Exploit {
+    func generateExploit(vulnerability: SecurityVulnerability) async throws -> Exploit {
         return Exploit(
             id: UUID(),
             vulnerability: vulnerability,
@@ -59,17 +59,17 @@ class SecurityUnified: ObservableObject {
 
     // MARK: - Vulnerability Analysis
 
-    func analyzeVulnerabilities(target: String, scanDepth: ScanDepth) async throws -> [Vulnerability] {
+    func analyzeVulnerabilities(target: String, scanDepth: ScanDepth) async throws -> [SecurityVulnerability] {
         // Simulated vulnerability scanning
         return [
-            Vulnerability(
+            SecurityVulnerability(
                 id: "CVE-2024-0001",
                 type: .sqlInjection,
                 severity: .high,
                 description: "SQL injection vulnerability detected",
                 remediation: "Use parameterized queries"
             ),
-            Vulnerability(
+            SecurityVulnerability(
                 id: "CVE-2024-0002",
                 type: .xss,
                 severity: .medium,
@@ -136,15 +136,15 @@ struct AttackLog: Identifiable {
     let result: String
 }
 
-struct Vulnerability: Identifiable {
+struct SecurityVulnerability: Identifiable {
     let id: String
-    let type: VulnerabilityType
+    let type: SecurityVulnerabilityType
     let severity: Severity
     let description: String
     let remediation: String
 }
 
-enum VulnerabilityType {
+enum SecurityVulnerabilityType {
     case sqlInjection
     case xss
     case csrf
@@ -163,7 +163,7 @@ enum Severity {
 
 struct Exploit: Identifiable {
     let id: UUID
-    let vulnerability: Vulnerability
+    let vulnerability: SecurityVulnerability
     let exploitCode: String
     let severity: Severity
     let timestamp: Date
