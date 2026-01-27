@@ -587,6 +587,12 @@
 			dependencies = (
 			);
 			name = NMAPScanner;
+			packageProductDependencies = (
+				1A47B95868E6801E44215E9B /* MLX */,
+				88A846F31F9AD4B746027483 /* MLXNN */,
+				88225EA187EB3A67BFCA1B25 /* MLXLLM */,
+				F41F6C6C51B3E3813B1A2940 /* MLXLMCommon */,
+			);
 			productName = NMAPScanner;
 			productReference = CC0001 /* HomeKitAdopter.app */;
 			productType = "com.apple.product-type.application";
@@ -615,6 +621,10 @@
 				Base,
 			);
 			mainGroup = EE0001;
+			packageReferences = (
+				F615778B96260A2922F65854 /* XCRemoteSwiftPackageReference "mlx-swift" */,
+				C49F4A873E818D2F6BC7AD37 /* XCRemoteSwiftPackageReference "mlx-swift-lm" */,
+			);
 			productRefGroup = EE0003 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -971,6 +981,48 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		C49F4A873E818D2F6BC7AD37 /* XCRemoteSwiftPackageReference "mlx-swift-lm" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/ml-explore/mlx-swift-lm";
+			requirement = {
+				kind = upToNextMinorVersion;
+				minimumVersion = 0.1.0;
+			};
+		};
+		F615778B96260A2922F65854 /* XCRemoteSwiftPackageReference "mlx-swift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/ml-explore/mlx-swift";
+			requirement = {
+				kind = upToNextMinorVersion;
+				minimumVersion = 0.30.3;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		1A47B95868E6801E44215E9B /* MLX */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = F615778B96260A2922F65854 /* XCRemoteSwiftPackageReference "mlx-swift" */;
+			productName = MLX;
+		};
+		88225EA187EB3A67BFCA1B25 /* MLXLLM */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = C49F4A873E818D2F6BC7AD37 /* XCRemoteSwiftPackageReference "mlx-swift-lm" */;
+			productName = MLXLLM;
+		};
+		88A846F31F9AD4B746027483 /* MLXNN */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = F615778B96260A2922F65854 /* XCRemoteSwiftPackageReference "mlx-swift" */;
+			productName = MLXNN;
+		};
+		F41F6C6C51B3E3813B1A2940 /* MLXLMCommon */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = C49F4A873E818D2F6BC7AD37 /* XCRemoteSwiftPackageReference "mlx-swift-lm" */;
+			productName = MLXLMCommon;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = GG0001 /* Project object */;
 }
