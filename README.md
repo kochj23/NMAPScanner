@@ -1,202 +1,271 @@
-# NMAPScanner
+# NMAPScanner v8.6.0
 
-**AI-Powered Application with Cloud Integration & Ethical Safeguards**
+**Advanced network security scanner with AI-powered threat detection and device management**
 
-![Platform](https://img.shields.io/badge/platform-macOS%2013.0%2B-blue)
-![Swift](https://img.shields.io/badge/Swift-5.9-orange)
-![License](https://img.shields.io/badge/license-MIT-green)
-![Status](https://img.shields.io/badge/status-Production-success)
-![AI](https://img.shields.io/badge/AI-5%20Cloud%20Providers-purple)
-![Ethics](https://img.shields.io/badge/Ethics-Protected-green)
+Comprehensive network scanning, vulnerability detection, and device action controls—all with local AI processing on Apple Silicon.
 
 ---
 
-## ✨ Latest Update: January 27, 2026 - v8.6.0
+## What is NMAPScanner?
 
-### 🎉 Major Enhancements:
+NMAPScanner is a native macOS application that wraps nmap with an intuitive GUI, adding AI-powered threat detection, device management actions, and real-time network monitoring. It provides professional security scanning capabilities with the ease of a native Mac app.
 
-#### 🛡️ Advanced Device Actions (NEW in v8.6.0)
-- **Whitelist Devices** - Add trusted devices to whitelist (persisted in UserDefaults)
-- **Block Devices** - Add to blocklist with optional firewall rules via pfctl
-- **Deep Scan** - Launch aggressive nmap scans (-A -T4 -p- for all ports)
-- **Isolate via UniFi** - Network isolation using UniFi Controller API
-- **Real-time Notifications** - System notifications for all security actions
-- **MAC Address Tracking** - Whitelist/blocklist by MAC address
-- **Admin Privileges** - Optional elevated permissions for firewall rules
+**Key Benefits:**
+- **Advanced Device Actions (v8.6.0)**: Whitelist, block, deep scan, isolate devices
+- **AI Threat Detection**: MLX-powered security analysis
+- **Real-Time Monitoring**: Live network activity tracking
+- **UniFi Integration**: Control network devices via UniFi Controller
+- **Professional Reports**: Detailed security audit reports
 
-**Usage:**
-- Click device action buttons in device card
-- Deep scans run in background with completion notifications
-- Firewall rules require admin approval
-- UniFi isolation requires controller authentication
-
-#### 🚀 MLX Backend Implementation (NEW in v8.6.0)
-- **Full MLX Integration** - Apple Silicon AI via mlx_lm CLI
-- **Network Analysis** - AI-powered security recommendations
-- **Vulnerability Detection** - Smart pattern recognition
-- **Local Processing** - No cloud required for AI features
-
-#### ☁️ Cloud AI Integration (5 Providers)
-- **OpenAI API** - GPT-4o for advanced capabilities
-- **Google Cloud AI** - Vertex AI, Vision, Speech
-- **Microsoft Azure** - Cognitive Services
-- **AWS AI Services** - Bedrock, Rekognition, Polly
-- **IBM Watson** - NLU, Speech, Discovery
-
-#### 🚀 Enhanced Features
-- **AI Backend Status Menu** - Visual indicators (🟢/🔴/⚪)
-- **Auto-Fallback System** - Switches backends if primary fails
-- **Connection Testing** - Verify API keys work
-- **Usage Tracking** - Token counts and cost estimation
-- **Performance Metrics** - Latency and success rates
-- **Notification System** - Backend status alerts
-- **Keyboard Shortcuts** - ⌘1-⌘9 for quick switching
-
-#### 🛡️ Ethical AI Safeguards (NEW)
-- **Comprehensive content monitoring**
-- **Prohibited use detection** (100+ patterns)
-- **Automatic blocking** of illegal/harmful content
-- **Crisis resource referrals**
-- **Usage logging** (hashed, not plaintext)
-- **Legal compliance** (CSAM reporting, etc.)
-- **Terms of Service** enforcement
-
-**⛔️ Cannot Be Used For:**
-- Illegal activities
-- Harmful content
-- Hate speech
-- Misinformation generation
-- Privacy violations
-- Harassment or abuse
-- Fraud or deception
+**Perfect For:**
+- **Network Administrators**: Monitor and secure networks
+- **Security Professionals**: Vulnerability assessment and penetration testing
+- **Home Users**: Identify rogue devices on home network
+- **IT Teams**: Asset discovery and inventory management
 
 ---
 
-## 🎯 Features
+## What's New in v8.6.0 (January 2026)
 
-### Current Capabilities:
-[App-specific features would be listed here]
+### 🛡️ Advanced Device Actions
+**Comprehensive device management:**
 
-### AI Backend Support:
-- Ollama (local, free)
-- MLX (Apple Silicon optimized)
-- TinyLLM/TinyChat (lightweight)
-- OpenWebUI (self-hosted)
-- OpenAI (cloud, paid)
-- Google Cloud (cloud, paid)
-- Azure (cloud, paid)
-- AWS (cloud, paid)
-- IBM Watson (cloud, paid)
+**Whitelist Devices:**
+- Add to trusted devices list (UserDefaults + MAC address tracking)
+- Disable security alerts for whitelisted devices
+- Persistent across app restarts
 
----
+**Block Devices:**
+- Add to blocklist
+- Optional firewall rules via pfctl (requires admin)
+- System notifications on block actions
 
-## 🔒 Security & Ethics
+**Deep Scan:**
+- Launch aggressive nmap scan (-A -T4 -p-)
+- All ports, OS detection, service version detection
+- Background processing with completion notifications
 
-### Ethical AI Guardian:
-All AI operations are monitored for:
-- ✅ Legal compliance
-- ✅ Ethical use
-- ✅ Safety
-- ✅ Privacy protection
+**Isolate Devices:**
+- Mark as isolated in app
+- Integration with UniFi Controller for VLAN isolation
+- Persistent isolation tracking
 
-Violations are:
-- Automatically detected
-- Immediately blocked
-- Securely logged
-- Reported if required by law
+**Implementation:**
+```swift
+private func handleBlock() {
+    // Add to blocklist
+    var blocklist = UserDefaults.standard.stringArray(forKey: "DeviceBlocklist") ?? []
+    blocklist.append(device.ipAddress)
+    UserDefaults.standard.set(blocklist, forKey: "DeviceBlocklist")
 
-**Read full terms:** [ETHICAL_AI_TERMS_OF_SERVICE.md](./ETHICAL_AI_TERMS_OF_SERVICE.md)
-
----
-
-## 📦 Installation
-
-```bash
-# Install from DMG
-open NMAPScanner-latest.dmg
-
-# Or from source
-cd "/Volumes/Data/xcode/NMAPScanner"
-xcodebuild -project "NMAPScanner.xcodeproj" -scheme "NMAPScanner" -configuration Release build
-cp -R build/Release/*.app ~/Applications/
+    // Add firewall rule (requires admin)
+    let script = "do shell script \"pfctl -t blocklist -T add \(device.ipAddress)\" with administrator privileges"
+    // Execute AppleScript
+}
 ```
 
-### AI Backend Setup (Optional):
-```bash
-# Install Ollama (free, local, private)
-brew install ollama
-ollama serve
-ollama pull mistral:latest
+### 🚀 MLX Backend Implementation
+**Apple Silicon native threat analysis:**
 
-# Or configure cloud AI in Settings
+- **Local AI**: Security analysis without cloud
+- **Model Support**: mlx-community security models
+- **Vulnerability Detection**: AI-powered pattern recognition
+- **Threat Scoring**: Intelligent risk assessment
+- **Neural Engine**: Fast inference on Apple Silicon
+
+---
+
+## Features
+
+### Core Scanning
+- **Network Discovery**: Identify all devices on network
+- **Port Scanning**: Detect open ports and services
+- **OS Detection**: Identify device operating systems
+- **Service Version**: Detect software versions
+- **Vulnerability Scanning**: Check for known CVEs
+- **Live Monitoring**: Real-time network activity
+
+### Device Management (v8.6.0)
+- **Whitelist**: Trust specific devices
+- **Block**: Prevent network access
+- **Deep Scan**: Aggressive security assessment
+- **Isolate**: VLAN isolation via UniFi
+- **Device Tracking**: MAC address and IP tracking
+- **History**: Device appearance/disappearance logging
+
+### Security Features
+- **Threat Detection**: AI-powered anomaly detection
+- **Rogue Device Alerts**: Identify unauthorized devices
+- **Vulnerability Database**: Known exploit checking
+- **Security Dashboard**: Visual risk assessment
+- **Audit Reports**: Comprehensive security reports
+- **Compliance Checking**: Security policy verification
+
+### UniFi Integration
+- **Controller Connection**: UniFi API integration
+- **Device Identification**: Match UniFi devices to scan results
+- **Firewall Rules**: Create rules via UniFi
+- **VLAN Management**: Isolate devices to specific VLANs
+- **Real-Time Status**: Live UniFi device status
+
+### Reporting
+- **PDF Reports**: Professional security audit documents
+- **CSV Export**: Data for further analysis
+- **Timeline View**: Historical network changes
+- **Statistics**: Network health metrics
+- **Compliance Reports**: Regulatory compliance documentation
+
+---
+
+## Security
+
+### Privacy & Data Protection
+- **Local Scanning**: All scanning happens on your network
+- **No Cloud Upload**: Scan results stay on your Mac
+- **MLX AI**: Threat analysis runs locally
+- **Encrypted Storage**: Sensitive data encrypted at rest
+- **Keychain Integration**: UniFi credentials in Keychain
+
+### Ethical Use
+- **Authorized Networks Only**: Only scan networks you own/manage
+- **Legal Compliance**: Follow local computer security laws
+- **No Attack Tools**: Defensive security only
+- **Audit Logging**: All operations logged for accountability
+
+### Best Practices
+- Only scan authorized networks
+- Get written permission for client networks
+- Use whitelist to reduce false positives
+- Review firewall rules before applying
+- Keep nmap and app updated
+
+---
+
+## Requirements
+
+### System Requirements
+- **macOS 13.0 (Ventura) or later**
+- **Architecture**: Universal (Apple Silicon recommended)
+- **nmap**: `brew install nmap`
+
+### For MLX Backend
+- **Apple Silicon**: M1/M2/M3/M4
+- **Python 3.9+**
+- **mlx-lm**: `pip install mlx-lm`
+- **8GB+ RAM**
+
+### Network Requirements
+- **Admin Access**: For deep scanning and firewall rules
+- **Network Access**: Must be on network to scan
+- **UniFi Controller** (Optional): For isolation features
+
+### Dependencies
+**Required:**
+- nmap: `brew install nmap`
+
+**Built-in:**
+- SwiftUI, AppKit, Foundation
+
+**Optional:**
+- mlx-lm (for MLX AI)
+- UniFi Controller (for isolation)
+
+---
+
+## Installation
+
+### Install nmap
+
+```bash
+brew install nmap
+```
+
+### Install NMAPScanner
+
+```bash
+open "/Volumes/Data/xcode/binaries/20260127-NMAPScanner-v8.6.0/NMAPScanner-v8.6.0-build14.dmg"
+```
+
+### Build from Source
+
+```bash
+git clone https://github.com/kochj23/NMAPScanner.git
+cd NMAPScanner
+open "NMAPScanner.xcodeproj"
 ```
 
 ---
 
-## 🎓 Usage
+## Usage
 
-1. Launch application
-2. **First time:** Acknowledge ethical guidelines
-3. Configure AI backend (Settings → AI Backend)
-4. Use AI features responsibly
-5. All usage monitored for safety
+### Quick Scan
 
----
+1. Launch NMAPScanner
+2. Enter network range (e.g., 192.168.1.0/24)
+3. Click "Scan Network"
+4. View discovered devices
 
-## ⚖️ Legal & Ethics
+### Device Actions
 
-### Terms:
-- MIT License for code
-- **Ethical AI Terms of Service** for usage
-- Privacy-first design
-- Open source transparency
+**Whitelist Device:**
+1. Right-click device in list
+2. Select "Whitelist"
+3. Device added to trusted list
 
-### Prohibited Uses:
-See [ETHICAL_AI_TERMS_OF_SERVICE.md](./ETHICAL_AI_TERMS_OF_SERVICE.md) for complete list.
+**Block Device:**
+1. Right-click device
+2. Select "Block"
+3. Optionally add firewall rule (requires admin)
 
-**Summary:** Don't use for illegal, harmful, or unethical purposes. Violations logged and reported.
+**Deep Scan:**
+1. Right-click device
+2. Select "Deep Scan"
+3. Wait for aggressive scan to complete
 
----
-
-## 🛠️ Development
-
-**Author:** Jordan Koch ([@kochj23](https://github.com/kochj23))
-**Built with:** SwiftUI, Modern macOS APIs
-**AI Architecture:** Multi-backend with ethical safeguards
-
----
-
-## 📊 Version History
-
-**Latest:** Enhanced Edition (Jan 2026)
-- Added 5 cloud AI providers
-- Added ethical safeguards
-- Added enhanced features
-- Production-ready
+**Isolate Device:**
+1. Right-click device
+2. Select "Isolate"
+3. Device marked for VLAN isolation
 
 ---
 
-## 🆘 Support & Resources
+## Troubleshooting
 
-### App Support:
-- GitHub Issues: [Report bugs](https://github.com/kochj23/NMAPScanner/issues)
-- Documentation: See project files
+**nmap Not Found:**
+- Install: `brew install nmap`
+- Verify: `which nmap`
 
-### Crisis Resources:
-- **988** - Suicide Prevention Lifeline
-- **741741** - Crisis Text Line (text HOME)
-- **1-800-799-7233** - Domestic Violence Hotline
+**Can't Scan Network:**
+- Check network connectivity
+- Verify IP range format
+- Try with admin privileges
 
----
-
-## 📄 License
-
-MIT License - See LICENSE file
-
-**Ethical Usage Required** - See ETHICAL_AI_TERMS_OF_SERVICE.md
+**Firewall Rules Fail:**
+- Need administrator password
+- Check pfctl is available
+- Verify firewall enabled
 
 ---
 
-**NMAPScanner - Powerful AI with responsible safeguards**
+## Version History
 
-© 2026 Jordan Koch. All rights reserved.
+### v8.6.0 (January 2026)
+- Device actions (whitelist, block, deep scan, isolate)
+- MLX backend integration
+- UniFi improvements
+
+### v8.0.0 (2025)
+- Initial release
+- Network scanning
+- Threat detection
+
+---
+
+## License
+
+MIT License - Copyright © 2026 Jordan Koch
+
+---
+
+**Last Updated:** January 27, 2026
+**Status:** ✅ Production Ready
