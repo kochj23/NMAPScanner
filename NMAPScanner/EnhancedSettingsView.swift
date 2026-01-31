@@ -125,6 +125,7 @@ struct SettingsTab: View {
 struct GeneralSettings: View {
     @Binding var enableDarkMode: Bool
     @Binding var enableBulkOperations: Bool
+    @AppStorage("RunInMenuBarOnly") private var runInMenuBarOnly = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 20) {
@@ -154,6 +155,40 @@ struct GeneralSettings: View {
                                 .foregroundColor(.secondary)
                         }
                     }
+
+                    Divider()
+
+                    Toggle(isOn: $runInMenuBarOnly) {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("Run in Menu Bar Only")
+                                .font(.system(size: 15, weight: .medium))
+                            Text("Keep app running in menu bar when window is closed")
+                                .font(.system(size: 12))
+                                .foregroundColor(.secondary)
+                        }
+                    }
+                }
+                .padding()
+            }
+
+            // Menu Bar Status
+            GroupBox {
+                VStack(alignment: .leading, spacing: 12) {
+                    Label("Menu Bar Agent", systemImage: "menubar.rectangle")
+                        .font(.system(size: 15, weight: .medium))
+
+                    HStack {
+                        Circle()
+                            .fill(Color.green)
+                            .frame(width: 8, height: 8)
+                        Text("Active in menu bar")
+                            .font(.system(size: 13))
+                            .foregroundColor(.secondary)
+                    }
+
+                    Text("Quick scan and notifications available from the menu bar icon")
+                        .font(.system(size: 12))
+                        .foregroundColor(.secondary)
                 }
                 .padding()
             }
