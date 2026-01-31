@@ -4,6 +4,7 @@
 //
 //  Created by Jordan Koch on 2025-11-23.
 //  Updated: 2026-01-31 - Added Menu Bar Agent integration
+//  Updated: 2026-01-31 - Migrated to @Observable (Swift 5.9+)
 //  Copyright © 2025-2026 Jordan Koch. All rights reserved.
 //
 
@@ -13,8 +14,11 @@ import UserNotifications
 @main
 struct NMAPApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
-    @StateObject private var menuBarAgent = MenuBarAgent.shared
-    @StateObject private var scheduledScanManager = ScheduledScanManager.shared
+
+    // With @Observable, singletons don't need @StateObject wrapper
+    // They're automatically observable when accessed in views
+    private var menuBarAgent = MenuBarAgent.shared
+    private var scheduledScanManager = ScheduledScanManager.shared
 
     var body: some Scene {
         WindowGroup {

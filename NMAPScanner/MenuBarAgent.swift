@@ -5,26 +5,36 @@
 //  Persistent menu bar presence with quick scan and notifications
 //  Created by Jordan Koch on 2025-12-11.
 //  Updated: 2026-01-31 - Modern notifications, recent devices support
+//  Updated: 2026-01-31 - Migrated to @Observable (Swift 5.9+)
 //
 
 import SwiftUI
 import AppKit
 import UserNotifications
+import Observation
 
 // MARK: - Menu Bar Agent
 
+/// Menu bar agent using the modern @Observable macro
+///
+/// **Migration from ObservableObject:**
+/// - Replaced `ObservableObject` protocol with `@Observable` macro
+/// - Removed `@Published` property wrappers (automatic observation)
+///
+/// **Requirements:** macOS 14+
+@Observable
 @MainActor
-class MenuBarAgent: ObservableObject {
+final class MenuBarAgent {
     static let shared = MenuBarAgent()
 
     private var statusItem: NSStatusItem?
     private var menu: NSMenu?
 
-    @Published var deviceCount: Int = 0
-    @Published var threatCount: Int = 0
-    @Published var isScanning: Bool = false
-    @Published var lastScanTime: Date?
-    @Published var recentDevices: [(name: String, ip: String, isOnline: Bool)] = []
+    var deviceCount: Int = 0
+    var threatCount: Int = 0
+    var isScanning: Bool = false
+    var lastScanTime: Date?
+    var recentDevices: [(name: String, ip: String, isOnline: Bool)] = []
 
     private init() {}
 
