@@ -4,10 +4,12 @@
 //
 //  Persistent menu bar presence with quick scan and notifications
 //  Created by Jordan Koch on 2025-12-11.
+//  Updated: 2026-01-31 - Modern notifications, recent devices support
 //
 
 import SwiftUI
 import AppKit
+import UserNotifications
 
 // MARK: - Menu Bar Agent
 
@@ -22,8 +24,17 @@ class MenuBarAgent: ObservableObject {
     @Published var threatCount: Int = 0
     @Published var isScanning: Bool = false
     @Published var lastScanTime: Date?
+    @Published var recentDevices: [(name: String, ip: String, isOnline: Bool)] = []
 
     private init() {}
+
+    // MARK: - Recent Devices
+
+    /// Update recent devices for menu display
+    func updateRecentDevices(_ devices: [(name: String, ip: String, isOnline: Bool)]) {
+        self.recentDevices = Array(devices.prefix(10)) // Keep top 10
+        updateMenu()
+    }
 
     // MARK: - Setup
 
@@ -142,17 +153,26 @@ class MenuBarAgent: ObservableObject {
         menu.addItem(NSMenuItem.separator())
 
         // Recent devices submenu (if we have devices)
-        if deviceCount > 0 {
+        if deviceCount > 0 || !recentDevices.isEmpty {
             let recentDevicesMenu = NSMenu()
             let recentItem = NSMenuItem(title: "Recent Devices", action: nil, keyEquivalent: "")
             recentItem.submenu = recentDevicesMenu
             menu.addItem(recentItem)
 
-            // TODO: Populate with actual recent devices
-            let placeholderItem = NSMenuItem()
-            placeholderItem.title = "No recent devices"
-            placeholderItem.isEnabled = false
-            recentDevicesMenu.addItem(placeholderItem)
+            if recentDevices.isEmpty {
+                let placeholderItem = NSMenuItem()
+                placeholderItem.title = "No recent devices"
+                placeholderItem.isEnabled = false
+                recentDevicesMenu.addItem(placeholderItem)
+            } else {
+                for device in recentDevices {
+                    let deviceItem = NSMenuItem()
+                    let statusIcon = device.isOnline ? "🟢" : "🔴"
+                    deviceItem.title = "\(statusIcon) \(device.name) (\(device.ip))"
+                    deviceItem.isEnabled = false
+                    recentDevicesMenu.addItem(deviceItem)
+                }
+            }
 
             menu.addItem(NSMenuItem.separator())
         }
@@ -192,7 +212,7 @@ class MenuBarAgent: ObservableObject {
     }
 
     /// Show notification in menu bar
-    func showNotification(title: String, message: String) {
+    func showNotification(title: String, message: String, isCritical: Bool = false) {
         // Flash the menu bar icon
         if let button = statusItem?.button {
             let originalImage = button.image
@@ -205,13 +225,50 @@ class MenuBarAgent: ObservableObject {
             }
         }
 
-        // Post system notification
-        let notification = NSUserNotification()
-        notification.title = title
-        notification.informativeText = message
-        notification.soundName = NSUserNotificationDefaultSoundName
+        // Post system notification using modern UNUserNotificationCenter
+        let content = UNMutableNotificationContent()
+        content.title = title
+        content.body = message
+        content.sound = isCritical ? .defaultCritical : .default
 
-        NSUserNotificationCenter.default.deliver(notification)
+        // Add category for actionable notifications
+        if isCritical {
+            content.categoryIdentifier = "THREAT_DETECTED"
+        }
+
+        let request = UNNotificationRequest(
+            identifier: UUID().uuidString,
+            content: content,
+            trigger: nil // Deliver immediately
+        )
+
+        UNUserNotificationCenter.current().add(request) { error in
+            if let error = error {
+                SecureLogger.log("Notification error: \(error.localizedDescription)", level: .warning)
+            }
+        }
+    }
+
+    /// Show threat notification with critical priority
+    func showThreatNotification(threatCount: Int, details: String) {
+        showNotification(
+            title: "⚠️ \(threatCount) Threat\(threatCount == 1 ? "" : "s") Detected",
+            message: details,
+            isCritical: true
+        )
+    }
+
+    /// Show scan complete notification
+    func showScanCompleteNotification(deviceCount: Int, threatCount: Int) {
+        let message = threatCount > 0
+            ? "Found \(deviceCount) devices with \(threatCount) potential threat\(threatCount == 1 ? "" : "s")"
+            : "Found \(deviceCount) devices - Network secure"
+
+        showNotification(
+            title: "Network Scan Complete",
+            message: message,
+            isCritical: threatCount > 0
+        )
     }
 
     /// Remove menu bar item
