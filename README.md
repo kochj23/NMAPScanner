@@ -6,6 +6,9 @@ Comprehensive network scanning, vulnerability detection, and device action contr
 
 ---
 
+![NMAPScanner Dashboard](Screenshots/main-window.png)
+
+
 ## What is NMAPScanner?
 
 NMAPScanner is a native macOS application that wraps nmap with an intuitive GUI, adding AI-powered threat detection, device management actions, and real-time network monitoring. It provides professional security scanning capabilities with the ease of a native Mac app.
