@@ -288,3 +288,7 @@ MIT License - Copyright © 2026 Jordan Koch
 | [TopGUI](https://github.com/kochj23/TopGUI) | macOS system monitor with real-time metrics |
 
 > **[View all projects](https://github.com/kochj23?tab=repositories)**
+
+---
+
+> **Disclaimer:** This is a personal project created on my own time. It is not affiliated with, endorsed by, or representative of my employer.
