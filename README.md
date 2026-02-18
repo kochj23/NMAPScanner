@@ -1,5 +1,7 @@
 # NMAPScanner v8.6.0
 
+![Build](https://github.com/kochj23/NMAPScanner/actions/workflows/build.yml/badge.svg)
+
 **Advanced network security scanner with AI-powered threat detection and device management**
 
 Comprehensive network scanning, vulnerability detection, and device action controls—all with local AI processing on Apple Silicon.
