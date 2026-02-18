@@ -272,3 +272,17 @@ MIT License - Copyright © 2026 Jordan Koch
 
 **Last Updated:** January 27, 2026
 **Status:** ✅ Production Ready
+
+---
+
+## More Apps by Jordan Koch
+
+| App | Description |
+|-----|-------------|
+| [Bastion](https://github.com/kochj23/Bastion) | Authorized security testing and penetration toolkit |
+| [URL-Analysis](https://github.com/kochj23/URL-Analysis) | Network traffic analysis and URL monitoring |
+| [rtsp-rotator](https://github.com/kochj23/rtsp-rotator) | RTSP camera stream rotation and monitoring |
+| [MLXCode](https://github.com/kochj23/MLXCode) | Local AI coding assistant for Apple Silicon |
+| [TopGUI](https://github.com/kochj23/TopGUI) | macOS system monitor with real-time metrics |
+
+> **[View all projects](https://github.com/kochj23?tab=repositories)**
