@@ -69,3 +69,8 @@ build*.log
 # Temporary files
 *.tmp
 *.temp
+
+# Provisioning profiles and certificates
+*.mobileprovision
+*.p12
+*.cer
