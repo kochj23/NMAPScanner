@@ -124,6 +124,11 @@ private func handleBlock() {
 
 ## Security
 
+### Security Hardening (February 2026)
+- **Command Injection Prevention**: All IP addresses validated against strict IPv4 format before passing to pfctl shell commands, preventing injection via spoofed network discovery
+- **Safe Type Casting**: SecKey metadata uses conditional casting (`as? SecKey`) instead of force casts to prevent runtime crashes on unexpected certificate data
+- **Input Validation**: Network-sourced data (IP addresses, hostnames) sanitized before use in shell commands or system calls
+
 ### Privacy & Data Protection
 - **Local Scanning**: All scanning happens on your network
 - **No Cloud Upload**: Scan results stay on your Mac
