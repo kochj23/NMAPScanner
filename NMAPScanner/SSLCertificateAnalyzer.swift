@@ -286,7 +286,8 @@ class SSLCertificateAnalyzer: ObservableObject {
                     }
 
                     // Estimate key size from public key data
-                    if let pubKeyData = SecKeyCopyExternalRepresentation(secMetadata as! SecKey, nil) as Data? {
+                    if let secKey = secMetadata as? SecKey,
+                       let pubKeyData = SecKeyCopyExternalRepresentation(secKey, nil) as Data? {
                         keySize = pubKeyData.count * 8
                     }
 
