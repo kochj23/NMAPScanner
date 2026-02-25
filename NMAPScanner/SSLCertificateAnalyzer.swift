@@ -286,8 +286,11 @@ class SSLCertificateAnalyzer: ObservableObject {
                     }
 
                     // Estimate key size from public key data
-                    if let secKey = secMetadata as? SecKey,
-                       let pubKeyData = SecKeyCopyExternalRepresentation(secKey, nil) as Data? {
+                    // Safely verify the object is actually a SecKey before using it,
+                    // since secMetadata is typed as Any and may not be a SecKey.
+                    let cfObject = secMetadata as CFTypeRef
+                    if CFGetTypeID(cfObject) == SecKeyGetTypeID(),
+                       let pubKeyData = SecKeyCopyExternalRepresentation(cfObject as! SecKey, nil) as Data? {
                         keySize = pubKeyData.count * 8
                     }
 
