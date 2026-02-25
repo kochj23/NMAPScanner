@@ -233,6 +233,15 @@ struct EnhancedDeviceCard: View {
         return "F"
     }
 
+    // MARK: - IP Validation
+
+    /// Validates that a string is a legitimate IPv4 address to prevent command injection.
+    /// IP addresses from network discovery could be spoofed with shell metacharacters.
+    private func isValidIPv4Address(_ ip: String) -> Bool {
+        let parts = ip.split(separator: ".").compactMap { Int($0) }
+        return parts.count == 4 && parts.allSatisfy { $0 >= 0 && $0 <= 255 }
+    }
+
     // MARK: - Actions
 
     private func handleWhitelist() {
@@ -268,6 +277,13 @@ struct EnhancedDeviceCard: View {
             UserDefaults.standard.set(blocklist, forKey: "DeviceBlocklist")
 
             print("[DeviceCard] ✅ Device \(device.ipAddress) added to blocklist")
+
+            // Validate IP address before passing to shell command to prevent command injection.
+            // The IP comes from network discovery and could be spoofed with shell metacharacters.
+            guard isValidIPv4Address(device.ipAddress) else {
+                print("[DeviceCard] ⚠️ Invalid IP address format, refusing to execute firewall command: \(device.ipAddress)")
+                return
+            }
 
             // Try to add firewall rule (requires admin)
             let script = """
