@@ -428,25 +428,39 @@ class AIBackendManager: ObservableObject {
         }
         fullPrompt += "User: \(prompt)\n\nAssistant:"
 
-        // Create Python MLX invocation
+        // Pass prompt safely via JSON file to avoid code injection
+        let tempDir = FileManager.default.temporaryDirectory
+        let promptFile = tempDir.appendingPathComponent("mlx_prompt_\(UUID().uuidString).json")
+        let promptData: [String: Any] = [
+            "prompt": fullPrompt,
+            "max_tokens": maxTokens,
+            "temperature": temperature
+        ]
+        let jsonData = try JSONSerialization.data(withJSONObject: promptData)
+        try jsonData.write(to: promptFile)
+
+        defer {
+            try? FileManager.default.removeItem(at: promptFile)
+        }
+
+        // Python script reads prompt from JSON file instead of string interpolation
         let script = """
         import sys
         import json
         try:
             import mlx_lm
 
-            prompt = '''
-            \(fullPrompt)
-            '''
+            with open(sys.argv[1], 'r') as f:
+                config = json.load(f)
 
             model, tokenizer = mlx_lm.load("mlx-community/Llama-3.2-1B-Instruct-4bit")
 
             response = mlx_lm.generate(
                 model,
                 tokenizer,
-                prompt=prompt,
-                max_tokens=\(maxTokens),
-                temp=\(temperature),
+                prompt=config['prompt'],
+                max_tokens=config['max_tokens'],
+                temp=config['temperature'],
                 verbose=False
             )
 
@@ -456,8 +470,6 @@ class AIBackendManager: ObservableObject {
             sys.exit(1)
         """
 
-        // Write script to temp file
-        let tempDir = FileManager.default.temporaryDirectory
         let scriptFile = tempDir.appendingPathComponent("mlx_generate_\(UUID().uuidString).py")
         try script.write(to: scriptFile, atomically: true, encoding: .utf8)
 
@@ -465,10 +477,10 @@ class AIBackendManager: ObservableObject {
             try? FileManager.default.removeItem(at: scriptFile)
         }
 
-        // Execute Python script
+        // Execute Python script with prompt file as argument
         let task = Process()
         task.executableURL = URL(fileURLWithPath: pythonPath)
-        task.arguments = [scriptFile.path]
+        task.arguments = [scriptFile.path, promptFile.path]
 
         let outputPipe = Pipe()
         let errorPipe = Pipe()
