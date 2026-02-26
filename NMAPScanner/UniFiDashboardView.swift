@@ -188,10 +188,10 @@ struct UniFiDashboardView: View {
             GridItem(.flexible()),
             GridItem(.flexible())
         ], spacing: 16) {
-            StatCard(title: "Access Points", count: stats.accessPoints, icon: "wifi.router", color: .blue)
-            StatCard(title: "Switches", count: stats.switches, icon: "network", color: .green)
-            StatCard(title: "Gateways", count: stats.gateways, icon: "server.rack", color: .purple)
-            StatCard(title: "Cameras", count: stats.cameras, icon: "video", color: .orange)
+            UniFiStatCard(title: "Access Points", count: stats.accessPoints, icon: "wifi.router", color: .blue)
+            UniFiStatCard(title: "Switches", count: stats.switches, icon: "network", color: .green)
+            UniFiStatCard(title: "Gateways", count: stats.gateways, icon: "server.rack", color: .purple)
+            UniFiStatCard(title: "Cameras", count: stats.cameras, icon: "video", color: .orange)
         }
     }
     
@@ -358,21 +358,21 @@ struct UniFiDashboardView: View {
 
 // MARK: - Support Views
 
-struct StatCard: View {
+struct UniFiStatCard: View {
     let title: String
     let count: Int
     let icon: String
     let color: Color
-    
+
     var body: some View {
         VStack(spacing: 8) {
             Image(systemName: icon)
                 .font(.system(size: 32))
                 .foregroundColor(color)
-            
+
             Text("\(count)")
                 .font(.system(size: 28, weight: .bold))
-            
+
             Text(title)
                 .font(.system(size: 13))
                 .foregroundColor(.secondary)

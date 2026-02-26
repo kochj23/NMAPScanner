@@ -341,12 +341,12 @@ struct HomeKitTabView: View {
                         timedOut = true
                     }
                 }
+                defer { timer.invalidate() }
                 RunLoop.current.add(timer, forMode: .common)
 
                 do {
                     try process.run()
                     process.waitUntilExit()
-                    timer.invalidate()
 
                     let data = pipe.fileHandleForReading.readDataToEndOfFile()
                     if let output = String(data: data, encoding: .utf8) {
@@ -404,11 +404,11 @@ struct HomeKitTabView: View {
                 timedOut = true
             }
         }
+        defer { timer.invalidate() }
 
         do {
             try process.run()
             process.waitUntilExit()
-            timer.invalidate()
 
             guard !timedOut else { return nil }
 

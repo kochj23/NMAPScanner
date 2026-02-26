@@ -13,6 +13,7 @@ struct SecurityDashboardView: View {
     @StateObject private var vulnerabilityScanner = VulnerabilityScanner()
     @StateObject private var anomalyManager = AnomalyDetectionManager.shared
     @StateObject private var insecurePortDetector = InsecurePortDetector.shared
+    @StateObject private var aiSecurityAnalyzer = AISecurityAnalyzer.shared
     @StateObject private var scanner = IntegratedScannerV3.shared
 
     @State private var selectedTimeRange: TimeRange = .last15Minutes
@@ -33,6 +34,8 @@ struct SecurityDashboardView: View {
     @State private var showNetworkAnomaliesDetails = false
     @State private var showNewDevicesDetails = false
     @State private var showOfflineDevicesDetails = false
+    @State private var showAISecurityReport = false
+    @State private var showAISecurityWarnings = false
 
     enum TimeRange: String, CaseIterable {
         case last15Minutes = "Last 15 Min"
@@ -55,6 +58,28 @@ struct SecurityDashboardView: View {
                     }
 
                     Spacer()
+
+                    // AI Security Report Button
+                    Button(action: { showAISecurityReport = true }) {
+                        HStack(spacing: 8) {
+                            Image(systemName: "wand.and.stars")
+                            Text("AI Report")
+                        }
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 20)
+                        .padding(.vertical, 12)
+                        .background(
+                            LinearGradient(
+                                colors: [.blue, .purple],
+                                startPoint: .leading,
+                                endPoint: .trailing
+                            )
+                        )
+                        .cornerRadius(10)
+                    }
+                    .buttonStyle(.plain)
+                    .help("Generate AI-powered security report")
 
                     // Time range picker
                     Picker("Time Range", selection: $selectedTimeRange) {
@@ -287,8 +312,52 @@ struct SecurityDashboardView: View {
                         .onTapGesture {
                             showOfflineDevicesDetails = true
                         }
+
+                        SecurityStatCard(
+                            title: "AI/ML Services",
+                            value: "\(aiSecurityAnalyzer.warnings.count)",
+                            critical: aiSecurityAnalyzer.stats.critical,
+                            high: aiSecurityAnalyzer.stats.high,
+                            icon: "brain.head.profile",
+                            color: .purple
+                        )
+                        .onTapGesture {
+                            showAISecurityWarnings = true
+                        }
                     }
                     .padding(.horizontal, 40)
+
+                    // AI/ML Security Warnings - Critical Findings
+                    let criticalAIWarnings = aiSecurityAnalyzer.warnings.filter { $0.severity == .critical }
+                    if !criticalAIWarnings.isEmpty {
+                        VStack(alignment: .leading, spacing: 16) {
+                            HStack {
+                                Image(systemName: "brain.head.profile")
+                                    .font(.system(size: 20))
+                                    .foregroundColor(.purple)
+                                Text("Critical AI/ML Security Vulnerabilities")
+                                    .font(.system(size: 24, weight: .semibold))
+                            }
+                            .padding(.horizontal, 40)
+
+                            VStack(spacing: 12) {
+                                ForEach(criticalAIWarnings.prefix(3)) { warning in
+                                    AIWarningRowCompact(warning: warning)
+                                }
+                            }
+                            .padding(.horizontal, 40)
+
+                            if criticalAIWarnings.count > 3 {
+                                Button(action: { showAISecurityWarnings = true }) {
+                                    Text("View all \(criticalAIWarnings.count) critical AI warnings...")
+                                        .font(.system(size: 14))
+                                        .foregroundColor(.purple)
+                                }
+                                .buttonStyle(.plain)
+                                .padding(.horizontal, 40)
+                            }
+                        }
+                    }
 
                     // Insecure Ports - Critical Findings
                     let criticalInsecure = insecurePortDetector.insecureFindings.filter { $0.severity == .critical }
@@ -497,6 +566,29 @@ struct SecurityDashboardView: View {
         .sheet(isPresented: $showOfflineDevicesDetails) {
             OfflineDevicesDetailsView(anomalyManager: anomalyManager, scanner: scanner)
         }
+        .sheet(isPresented: $showAISecurityWarnings) {
+            AISecurityWarningsView(analyzer: aiSecurityAnalyzer, scanner: scanner)
+        }
+        .sheet(isPresented: $showAISecurityReport) {
+            // Convert vulnerability findings to ThreatFinding for the AI report
+            let threats = vulnerabilityScanner.vulnerabilities.map { vuln in
+                ThreatFinding(
+                    severity: convertSeverity(vuln.severity),
+                    category: categoryForVulnerabilityType(vuln.type),
+                    title: vuln.type.rawValue,
+                    description: vuln.description,
+                    affectedHost: vuln.host,
+                    affectedPort: vuln.port,
+                    detectedAt: vuln.detectedAt,
+                    cvssScore: cvssScoreForSeverity(vuln.severity),
+                    cveReferences: [],
+                    remediation: vuln.recommendation,
+                    technicalDetails: "Port \(vuln.port ?? 0) - \(vuln.type.rawValue)",
+                    impactAssessment: impactForSeverity(vuln.severity)
+                )
+            }
+            SecurityReportView(devices: scanner.devices, threats: threats)
+        }
     }
 
     private func startMonitoring() {
@@ -529,7 +621,7 @@ struct SecurityDashboardView: View {
 
         for (index, device) in devices.enumerated() {
             scanStatus = "Scanning \(device.hostname ?? device.ipAddress) (\(index + 1)/\(devices.count))..."
-            scanProgress = Double(index) / Double(devices.count)
+            scanProgress = Double(index) / Double(devices.count) * 0.7 // 70% for port scans
 
             // Scan for insecure ports
             insecurePortDetector.scanDevice(device)
@@ -540,14 +632,73 @@ struct SecurityDashboardView: View {
             try? await Task.sleep(nanoseconds: 100_000_000) // 0.1s between devices
         }
 
+        // Analyze AI/ML services (30% of progress)
+        scanStatus = "Analyzing AI/ML services for security vulnerabilities..."
+        scanProgress = 0.7
+        await aiSecurityAnalyzer.analyzeAIServices(devices: devices)
+
         scanProgress = 1.0
-        let totalIssues = vulnerabilityScanner.vulnerabilities.count + insecurePortDetector.insecureFindings.count
-        scanStatus = "Scan complete! Found \(insecurePortDetector.insecureFindings.count) insecure ports and \(vulnerabilityScanner.vulnerabilities.count) vulnerabilities"
+        let totalIssues = vulnerabilityScanner.vulnerabilities.count + insecurePortDetector.insecureFindings.count + aiSecurityAnalyzer.warnings.count
+        scanStatus = "Scan complete! Found \(insecurePortDetector.insecureFindings.count) insecure ports, \(vulnerabilityScanner.vulnerabilities.count) vulnerabilities, and \(aiSecurityAnalyzer.warnings.count) AI service warnings"
 
         // Clear status after 3 seconds
         try? await Task.sleep(nanoseconds: 3_000_000_000)
         isScanning = false
         scanStatus = ""
+    }
+
+    // MARK: - Vulnerability Conversion Helpers for AI Report
+
+    private func convertSeverity(_ severity: Vulnerability.Severity) -> ThreatSeverity {
+        switch severity {
+        case .critical: return .critical
+        case .high: return .high
+        case .medium: return .medium
+        case .low: return .low
+        case .info: return .info
+        }
+    }
+
+    private func categoryForVulnerabilityType(_ type: Vulnerability.VulnerabilityType) -> ThreatCategory {
+        switch type {
+        case .openTelnet, .openFTP, .anonymousFTP:
+            return .weakSecurity
+        case .openSMTP, .openDNS:
+            return .misconfiguration
+        case .exposedDatabase:
+            return .dataExposure
+        case .defaultCredentials, .unauthorizedAccess:
+            return .backdoor
+        case .weakSSL, .missingEncryption:
+            return .weakSecurity
+        case .insecureService, .suspiciousPort:
+            return .exposedService
+        }
+    }
+
+    private func cvssScoreForSeverity(_ severity: Vulnerability.Severity) -> Double? {
+        switch severity {
+        case .critical: return 9.5
+        case .high: return 7.5
+        case .medium: return 5.0
+        case .low: return 3.0
+        case .info: return nil
+        }
+    }
+
+    private func impactForSeverity(_ severity: Vulnerability.Severity) -> String {
+        switch severity {
+        case .critical:
+            return "Critical impact - Immediate exploitation possible. May lead to complete system compromise."
+        case .high:
+            return "High impact - Significant security risk that could lead to data breach or system access."
+        case .medium:
+            return "Medium impact - Security concern that should be addressed in a timely manner."
+        case .low:
+            return "Low impact - Minor security issue with limited exploitation potential."
+        case .info:
+            return "Informational - No direct security impact but worth noting."
+        }
     }
 }
 

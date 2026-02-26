@@ -61,6 +61,10 @@ class NotificationManager: ObservableObject {
             case deviceOnline = "Device Online"
             case portChanged = "Port Change"
             case systemAlert = "System Alert"
+            // Shadow AI Detection
+            case shadowAIDetected = "Shadow AI Detected"
+            case shadowAIOffline = "Shadow AI Offline"
+            case shadowAIModelChanged = "AI Model Changed"
         }
 
         enum Severity: String, Codable {
@@ -83,6 +87,10 @@ class NotificationManager: ObservableObject {
             case .deviceOnline: return "power"
             case .portChanged: return "arrow.left.arrow.right"
             case .systemAlert: return "bell.fill"
+            // Shadow AI Detection
+            case .shadowAIDetected: return "brain.head.profile"
+            case .shadowAIOffline: return "brain"
+            case .shadowAIModelChanged: return "arrow.triangle.2.circlepath"
             }
         }
 

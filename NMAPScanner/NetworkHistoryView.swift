@@ -194,14 +194,14 @@ struct NetworkHistoryDetailView: View {
                     Text("Network Information")
                         .font(.system(size: 36, weight: .semibold))
 
-                    InfoRow(label: "Subnet", value: "\(network.subnet).0\(network.subnetMask)", monospaced: true)
-                    InfoRow(label: "First Scanned", value: formatDateTime(network.firstScanned))
-                    InfoRow(label: "Last Scanned", value: formatDateTime(network.lastScanned))
-                    InfoRow(label: "Total Scans", value: "\(network.scanCount)")
-                    InfoRow(label: "Devices Found", value: "\(network.deviceCount)")
+                    HistoryInfoRow(label: "Subnet", value: "\(network.subnet).0\(network.subnetMask)", monospaced: true)
+                    HistoryInfoRow(label: "First Scanned", value: formatDateTime(network.firstScanned))
+                    HistoryInfoRow(label: "Last Scanned", value: formatDateTime(network.lastScanned))
+                    HistoryInfoRow(label: "Total Scans", value: "\(network.scanCount)")
+                    HistoryInfoRow(label: "Devices Found", value: "\(network.deviceCount)")
 
                     let timeSinceLastScan = Date().timeIntervalSince(network.lastScanned)
-                    InfoRow(label: "Time Since Scan", value: formatTimeInterval(timeSinceLastScan))
+                    HistoryInfoRow(label: "Time Since Scan", value: formatTimeInterval(timeSinceLastScan))
                 }
                 .padding(30)
                 .background(Color.gray.opacity(0.1))
@@ -373,6 +373,25 @@ struct NetworkDeviceRow: View {
             return "\(minutes)m ago"
         } else {
             return "Now"
+        }
+    }
+}
+
+// MARK: - History Info Row
+
+struct HistoryInfoRow: View {
+    let label: String
+    let value: String
+    var monospaced: Bool = false
+
+    var body: some View {
+        HStack {
+            Text(label)
+                .font(.system(size: 22))
+                .foregroundColor(.secondary)
+            Spacer()
+            Text(value)
+                .font(.system(size: 22, weight: .semibold, design: monospaced ? .monospaced : .default))
         }
     }
 }
