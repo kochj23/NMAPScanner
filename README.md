@@ -1,4 +1,4 @@
-# NMAPScanner v8.6.0
+# NMAPScanner v8.7.0
 
 ![Build](https://github.com/kochj23/NMAPScanner/actions/workflows/build.yml/badge.svg)
 
@@ -16,6 +16,7 @@ Comprehensive network scanning, vulnerability detection, and device action contr
 NMAPScanner is a native macOS application that wraps nmap with an intuitive GUI, adding AI-powered threat detection, device management actions, and real-time network monitoring. It provides professional security scanning capabilities with the ease of a native Mac app.
 
 **Key Benefits:**
+- **Comprehensive Security Hardening (v8.7.0)**: 25 security and code quality fixes across all severity levels
 - **Advanced Device Actions (v8.6.0)**: Whitelist, block, deep scan, isolate devices
 - **AI Threat Detection**: MLX-powered security analysis
 - **Real-Time Monitoring**: Live network activity tracking
@@ -27,6 +28,34 @@ NMAPScanner is a native macOS application that wraps nmap with an intuitive GUI,
 - **Security Professionals**: Vulnerability assessment and penetration testing
 - **Home Users**: Identify rogue devices on home network
 - **IT Teams**: Asset discovery and inventory management
+
+---
+
+## What's New in v8.7.0 (February 2026)
+
+### Security Hardening & Code Quality Audit
+**25 findings resolved across CRITICAL, HIGH, MEDIUM, LOW, and INFO severities:**
+
+**Critical & High Fixes:**
+- **Python Code Injection Prevention**: AI backend now passes user prompts via secure JSON file instead of string interpolation into Python source, eliminating code injection vectors
+- **HTML Export XSS Prevention**: Added `escapeHTML()` sanitization to all user-supplied data in HTML/CSV export reports and markdown-to-HTML conversion
+- **DNS Race Condition Fix**: Added NSLock synchronization to prevent double-resume crashes in async DNS resolution
+- **Nmap Input Validation**: IP addresses and port ranges validated before passing to nmap, preventing command injection
+- **Timer Leak Prevention**: Added guaranteed `defer { timer.invalidate() }` cleanup in HomeKit and Bonjour scanner views
+- **Error Handling Improvements**: Replaced silent `try?` with proper `do/catch` blocks and `CancellationError` handling across 6 files
+- **Bundle-Relative Paths**: Replaced hardcoded file paths with `Bundle.main`-relative paths for portability
+
+**Medium Fixes:**
+- **O(n) Performance**: Replaced multiple `.filter()` passes with `Dictionary(grouping:by:)` in security report generation
+- **String Concatenation**: Replaced `+=` string building with array collection + `.joined()` in export manager
+- **Weak Self Safety**: Added `guard let self` pattern to prevent race conditions in closures
+- **Logging Standardization**: Replaced `print()` with `NSLog()` for production-appropriate logging
+
+**Low & Info Fixes:**
+- Cleaned up stale TODOs with descriptive documentation
+- Added error handling for `send()` socket calls in ServiceVersionScanner
+- Added `// MARK:` section comments for Xcode source navigator
+- Documented security implications of certificate auto-trust in UniFi controller
 
 ---
 
@@ -126,8 +155,11 @@ private func handleBlock() {
 
 ### Security Hardening (February 2026)
 - **Command Injection Prevention**: All IP addresses validated against strict IPv4 format before passing to pfctl shell commands, preventing injection via spoofed network discovery
+- **Python Code Injection Prevention (v8.7.0)**: User prompts passed via JSON file to AI backend, eliminating string interpolation into Python source code
+- **XSS Prevention (v8.7.0)**: HTML entity escaping (`&amp;`, `&lt;`, `&gt;`, `&quot;`, `&#x27;`) applied to all user data in export reports
+- **Race Condition Prevention (v8.7.0)**: NSLock synchronization prevents double-resume crashes in async DNS resolution
 - **Safe Type Casting**: SecKey metadata uses conditional casting (`as? SecKey`) instead of force casts to prevent runtime crashes on unexpected certificate data
-- **Input Validation**: Network-sourced data (IP addresses, hostnames) sanitized before use in shell commands or system calls
+- **Input Validation (v8.7.0)**: IP addresses and port ranges validated before nmap execution; all network-sourced data sanitized before use in shell commands
 
 ### Privacy & Data Protection
 - **Local Scanning**: All scanning happens on your network
@@ -259,6 +291,18 @@ open "NMAPScanner.xcodeproj"
 
 ## Version History
 
+### v8.7.0 (February 2026)
+- Comprehensive security audit: 25 findings resolved (1 CRITICAL, 7 HIGH, 7 MEDIUM, 6 LOW, 2 INFO)
+- Python code injection prevention in AI backend
+- XSS prevention in HTML/CSV export and markdown-to-HTML conversion
+- DNS race condition fix with NSLock synchronization
+- Nmap input validation for IP addresses and port ranges
+- Timer leak prevention with guaranteed cleanup
+- O(n) performance optimization in security report generation
+- Bundle-relative paths for portability
+- Production logging standardization (print → NSLog)
+- Stale TODO cleanup and MARK section comments for code navigation
+
 ### v8.6.0 (January 2026)
 - Device actions (whitelist, block, deep scan, isolate)
 - MLX backend integration
@@ -277,7 +321,7 @@ MIT License - Copyright © 2026 Jordan Koch
 
 ---
 
-**Last Updated:** January 27, 2026
+**Last Updated:** February 26, 2026
 **Status:** ✅ Production Ready
 
 ---
