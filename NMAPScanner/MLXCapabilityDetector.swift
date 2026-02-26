@@ -82,30 +82,31 @@ class MLXCapabilityDetector: ObservableObject {
         return false
     }
 
-    /// Check if MLX Python is installed
-    private func checkPythonMLX() async -> Bool {
-        // Check virtual environment relative to the app bundle first
+    /// Centralized list of Python path candidates to check for MLX, in priority order
+    private var pythonPathCandidates: [String] {
         let bundleDir = Bundle.main.bundlePath
-        let appSupportVenvPath = (bundleDir as NSString).deletingLastPathComponent + "/.venv/bin/python3"
-        if FileManager.default.fileExists(atPath: appSupportVenvPath) {
-            if await testMLXImport(pythonPath: appSupportVenvPath) {
+        return [
+            // Virtual environment relative to the app bundle
+            (bundleDir as NSString).deletingLastPathComponent + "/.venv/bin/python3",
+            // Virtual environment relative to current working directory
+            FileManager.default.currentDirectoryPath + "/.venv/bin/python3",
+            // System Python
+            "/usr/bin/python3"
+        ]
+    }
+
+    /// Check if MLX Python is installed by searching candidate paths
+    private func checkPythonMLX() async -> Bool {
+        for candidatePath in pythonPathCandidates {
+            // Skip non-existent paths (except system Python which should always exist)
+            guard candidatePath == "/usr/bin/python3" ||
+                  FileManager.default.fileExists(atPath: candidatePath) else {
+                continue
+            }
+            if await testMLXImport(pythonPath: candidatePath) {
                 return true
             }
         }
-
-        // Check virtual environment relative to current working directory
-        let cwdVenvPath = FileManager.default.currentDirectoryPath + "/.venv/bin/python3"
-        if FileManager.default.fileExists(atPath: cwdVenvPath) {
-            if await testMLXImport(pythonPath: cwdVenvPath) {
-                return true
-            }
-        }
-
-        // Check system Python
-        if await testMLXImport(pythonPath: "/usr/bin/python3") {
-            return true
-        }
-
         return false
     }
 

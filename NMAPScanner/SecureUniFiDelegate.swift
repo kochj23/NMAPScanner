@@ -129,20 +129,30 @@ class SecureUniFiDelegate: NSObject, URLSessionDelegate {
         let status = SecItemCopyMatching(query as CFDictionary, &item)
 
         guard status == errSecSuccess,
-              let data = item as? Data,
-              let fingerprints = try? JSONDecoder().decode([String].self, from: data) else {
+              let data = item as? Data else {
+            if status != errSecItemNotFound {
+                SecureLogger.log("Failed to load trusted certificates from Keychain, status: \(status)", level: .error)
+            }
             return
         }
 
-        trustedCertificates = Set(fingerprints)
-        SecureLogger.log("Loaded \(trustedCertificates.count) trusted certificates", level: .info)
+        do {
+            let fingerprints = try JSONDecoder().decode([String].self, from: data)
+            trustedCertificates = Set(fingerprints)
+            SecureLogger.log("Loaded \(trustedCertificates.count) trusted certificates", level: .info)
+        } catch {
+            SecureLogger.log("Failed to decode trusted certificates: \(error.localizedDescription)", level: .error)
+        }
     }
 
     private func saveTrustedCertificates() {
         let fingerprints = Array(trustedCertificates)
 
-        guard let data = try? JSONEncoder().encode(fingerprints) else {
-            SecureLogger.log("Failed to encode trusted certificates", level: .error)
+        let data: Data
+        do {
+            data = try JSONEncoder().encode(fingerprints)
+        } catch {
+            SecureLogger.log("Failed to encode trusted certificates: \(error.localizedDescription)", level: .error)
             return
         }
 

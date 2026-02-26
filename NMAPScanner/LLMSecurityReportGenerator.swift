@@ -454,36 +454,33 @@ class LLMSecurityReportGenerator: ObservableObject {
     }
 
     private func buildPrioritizedFindings(vulnerabilities: [ThreatFinding]) -> String {
-        let sorted = vulnerabilities.sorted { $0.severity.sortOrder < $1.severity.sortOrder }
+        // Single pass: group all vulnerabilities by severity instead of filtering once per level
+        let grouped = Dictionary(grouping: vulnerabilities, by: { $0.severity })
 
         var findings = ""
 
-        let critical = sorted.filter { $0.severity == .critical }
-        if !critical.isEmpty {
+        if let critical = grouped[.critical], !critical.isEmpty {
             findings += "\nCRITICAL (\(critical.count)):\n"
-            for vuln in critical.prefix(5) {
+            for vuln in critical.sorted(by: { $0.severity.sortOrder < $1.severity.sortOrder }).prefix(5) {
                 findings += "- \(vuln.title) [\(vuln.affectedHost)]: \(vuln.description)\n"
             }
         }
 
-        let high = sorted.filter { $0.severity == .high }
-        if !high.isEmpty {
+        if let high = grouped[.high], !high.isEmpty {
             findings += "\nHIGH (\(high.count)):\n"
-            for vuln in high.prefix(5) {
+            for vuln in high.sorted(by: { $0.severity.sortOrder < $1.severity.sortOrder }).prefix(5) {
                 findings += "- \(vuln.title) [\(vuln.affectedHost)]: \(vuln.description)\n"
             }
         }
 
-        let medium = sorted.filter { $0.severity == .medium }
-        if !medium.isEmpty {
+        if let medium = grouped[.medium], !medium.isEmpty {
             findings += "\nMEDIUM (\(medium.count)):\n"
-            for vuln in medium.prefix(3) {
+            for vuln in medium.sorted(by: { $0.severity.sortOrder < $1.severity.sortOrder }).prefix(3) {
                 findings += "- \(vuln.title) [\(vuln.affectedHost)]\n"
             }
         }
 
-        let low = sorted.filter { $0.severity == .low }
-        if !low.isEmpty {
+        if let low = grouped[.low], !low.isEmpty {
             findings += "\nLOW (\(low.count)):\n"
             findings += "- \(low.count) low-severity issues identified\n"
         }
