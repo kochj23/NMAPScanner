@@ -358,7 +358,9 @@ class ExportManager: ObservableObject {
     }
 
     private func generateDevicesTableHTML(_ devices: [EnhancedDevice]) -> String {
-        var rows = ""
+        var rowParts: [String] = []
+        rowParts.reserveCapacity(devices.count)
+
         for device in devices {
             let statusBadge = device.isOnline ? "<span class='badge badge-online'>Online</span>" : "<span class='badge badge-offline'>Offline</span>"
             let rogueBadge = device.isRogue ? "<span class='badge badge-rogue'>Rogue</span>" : ""
@@ -370,7 +372,7 @@ class ExportManager: ObservableObject {
             let escapedDeviceType = escapeHTML(device.deviceType.rawValue)
             let escapedPorts = escapeHTML(device.openPorts.map { String($0.port) }.joined(separator: ", "))
 
-            rows += """
+            rowParts.append("""
                 <tr>
                     <td>\(escapedIP)</td>
                     <td>\(escapedHostname)</td>
@@ -379,8 +381,10 @@ class ExportManager: ObservableObject {
                     <td>\(escapedPorts)</td>
                     <td>\(statusBadge) \(rogueBadge) \(knownBadge)</td>
                 </tr>
-                """
+                """)
         }
+
+        let rows = rowParts.joined()
 
         return """
             <div class="section">
@@ -407,7 +411,9 @@ class ExportManager: ObservableObject {
     private func generateThreatsTableHTML(_ threats: [ThreatFinding]) -> String {
         guard !threats.isEmpty else { return "" }
 
-        var rows = ""
+        var rowParts: [String] = []
+        rowParts.reserveCapacity(threats.count)
+
         for threat in threats {
             let severityClass: String
             switch threat.severity {
@@ -424,7 +430,7 @@ class ExportManager: ObservableObject {
             let escapedCVSS = escapeHTML(threat.cvssScore.map { String(format: "%.1f", $0) } ?? "—")
             let escapedDescription = escapeHTML(threat.description)
 
-            rows += """
+            rowParts.append("""
                 <tr>
                     <td>\(escapedHost)</td>
                     <td>\(escapedTitle)</td>
@@ -432,8 +438,10 @@ class ExportManager: ObservableObject {
                     <td>\(escapedCVSS)</td>
                     <td>\(escapedDescription)</td>
                 </tr>
-                """
+                """)
         }
+
+        let rows = rowParts.joined()
 
         return """
             <div class="section">
