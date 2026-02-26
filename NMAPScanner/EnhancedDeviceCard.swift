@@ -233,13 +233,30 @@ struct EnhancedDeviceCard: View {
         return "F"
     }
 
-    // MARK: - IP Validation
+    // MARK: - IP & Port Validation
 
     /// Validates that a string is a legitimate IPv4 address to prevent command injection.
     /// IP addresses from network discovery could be spoofed with shell metacharacters.
     private func isValidIPv4Address(_ ip: String) -> Bool {
         let parts = ip.split(separator: ".").compactMap { Int($0) }
         return parts.count == 4 && parts.allSatisfy { $0 >= 0 && $0 <= 255 }
+    }
+
+    /// Validates that a string is a legitimate IPv6 address.
+    private func isValidIPv6Address(_ ip: String) -> Bool {
+        var addr = in6_addr()
+        return ip.withCString { inet_pton(AF_INET6, $0, &addr) == 1 }
+    }
+
+    /// Validates that a string is a legitimate IPv4 or IPv6 address.
+    private func isValidIPAddress(_ ip: String) -> Bool {
+        return isValidIPv4Address(ip) || isValidIPv6Address(ip)
+    }
+
+    /// Validates a port range string matches the expected nmap format (e.g. "80", "1-1024", "22,80,443", "1-100,443").
+    private func isValidPortRange(_ portRange: String) -> Bool {
+        let pattern = #"^\d+(-\d+)?(,\d+(-\d+)?)*$"#
+        return portRange.range(of: pattern, options: .regularExpression) != nil
     }
 
     // MARK: - Actions
@@ -306,6 +323,15 @@ struct EnhancedDeviceCard: View {
     private func handleDeepScan() {
         print("Starting deep scan on: \(device.ipAddress)")
 
+        // Validate IP address format before passing to nmap to prevent command injection.
+        // The IP comes from network discovery and could be spoofed with shell metacharacters.
+        guard isValidIPAddress(device.ipAddress) else {
+            print("[DeviceCard] Invalid IP address format, refusing to execute nmap: \(device.ipAddress)")
+            return
+        }
+
+        let validatedIP = device.ipAddress
+
         // Launch aggressive nmap scan in background
         Task.detached {
             let process = Process()
@@ -315,7 +341,7 @@ struct EnhancedDeviceCard: View {
                 "-T4",          // Aggressive timing
                 "-p-",          // All ports
                 "-sV",          // Service version detection
-                device.ipAddress
+                validatedIP
             ]
 
             let outputPipe = Pipe()
@@ -328,7 +354,7 @@ struct EnhancedDeviceCard: View {
 
                 let outputData = outputPipe.fileHandleForReading.readDataToEndOfFile()
                 if let output = String(data: outputData, encoding: .utf8) {
-                    print("[DeviceCard] Deep scan complete for \(device.ipAddress)")
+                    print("[DeviceCard] Deep scan complete for \(validatedIP)")
                     print(output)
 
                     await MainActor.run {

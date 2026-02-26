@@ -89,7 +89,14 @@ class ScanScheduler: ObservableObject {
                 await checkSchedules(scanner: scanner)
 
                 // Check every minute
-                try? await Task.sleep(nanoseconds: 60_000_000_000)
+                do {
+                    try await Task.sleep(nanoseconds: 60_000_000_000)
+                } catch is CancellationError {
+                    print("ScanScheduler: Monitoring task cancelled")
+                    break
+                } catch {
+                    print("ScanScheduler: Sleep error: \(error.localizedDescription)")
+                }
             }
         }
     }

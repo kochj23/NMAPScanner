@@ -290,6 +290,16 @@ class MLXDocumentationGenerator: ObservableObject {
 
     // MARK: - Format Conversion
 
+    /// Escape user-supplied data for safe insertion into HTML to prevent XSS attacks
+    private func escapeHTML(_ string: String) -> String {
+        return string
+            .replacingOccurrences(of: "&", with: "&amp;")
+            .replacingOccurrences(of: "<", with: "&lt;")
+            .replacingOccurrences(of: ">", with: "&gt;")
+            .replacingOccurrences(of: "\"", with: "&quot;")
+            .replacingOccurrences(of: "'", with: "&#39;")
+    }
+
     private func markdownToHTML(_ markdown: String) -> String {
         var html = "<html><head><style>"
         html += "body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; padding: 40px; max-width: 900px; margin: 0 auto; }"
@@ -300,19 +310,19 @@ class MLXDocumentationGenerator: ObservableObject {
         html += "ul { line-height: 1.6; }"
         html += "</style></head><body>"
 
-        // Simple markdown to HTML conversion
+        // Simple markdown to HTML conversion with HTML escaping to prevent XSS
         let lines = markdown.components(separatedBy: "\n")
         for line in lines {
             if line.hasPrefix("### ") {
-                html += "<h3>\(line.dropFirst(4))</h3>"
+                html += "<h3>\(escapeHTML(String(line.dropFirst(4))))</h3>"
             } else if line.hasPrefix("## ") {
-                html += "<h2>\(line.dropFirst(3))</h2>"
+                html += "<h2>\(escapeHTML(String(line.dropFirst(3))))</h2>"
             } else if line.hasPrefix("# ") {
-                html += "<h1>\(line.dropFirst(2))</h1>"
+                html += "<h1>\(escapeHTML(String(line.dropFirst(2))))</h1>"
             } else if line.hasPrefix("- ") {
-                html += "<li>\(line.dropFirst(2))</li>"
+                html += "<li>\(escapeHTML(String(line.dropFirst(2))))</li>"
             } else if !line.isEmpty {
-                html += "<p>\(line)</p>"
+                html += "<p>\(escapeHTML(line))</p>"
             }
         }
 

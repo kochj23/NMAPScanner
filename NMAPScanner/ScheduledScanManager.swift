@@ -3,30 +3,26 @@
 //  NMAP Scanner - Scheduled Automatic Scanning
 //
 //  Created by Jordan Koch on 2025-11-24.
-//  Updated: 2026-01-31 - Migrated to @Observable (Swift 5.9+)
+//  Updated: 2026-02-02 - Reverted to ObservableObject for view compatibility
 //
 
 import Foundation
 import SwiftUI
-import Observation
+import Combine
 
-/// Scheduled scan manager using the modern @Observable macro
+/// Scheduled scan manager using ObservableObject for SwiftUI view compatibility
 ///
-/// **Migration from ObservableObject:**
-/// - Replaced `ObservableObject` protocol with `@Observable` macro
-/// - Removed `@Published` property wrappers (automatic observation)
-///
-/// **Requirements:** macOS 14+
-@Observable
+/// Uses `ObservableObject` protocol with `@Published` properties
+/// for compatibility with `@StateObject` and `@ObservedObject` in views.
 @MainActor
-final class ScheduledScanManager {
+final class ScheduledScanManager: ObservableObject {
     static let shared = ScheduledScanManager()
 
-    var isEnabled = false
-    var scanInterval: ScanInterval = .hourly
-    var lastScanTime: Date?
-    var nextScanTime: Date?
-    var scanHistory: [ScheduledScanResult] = []
+    @Published var isEnabled = false
+    @Published var scanInterval: ScanInterval = .hourly
+    @Published var lastScanTime: Date?
+    @Published var nextScanTime: Date?
+    @Published var scanHistory: [ScheduledScanResult] = []
 
     private var timer: Timer?
     private let userDefaults = UserDefaults.standard

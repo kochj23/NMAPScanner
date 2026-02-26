@@ -65,6 +65,13 @@ struct MainTabView: View {
                     Label("Topology", systemImage: "point.3.connected.trianglepath.dotted")
                 }
                 .tag(6)
+
+            // Service Dependencies (NEW in v8.3.0)
+            DependencyGraphView(devices: scanner.devices)
+                .tabItem {
+                    Label("Dependencies", systemImage: "arrow.triangle.branch")
+                }
+                .tag(7)
             }
             .frame(minWidth: 1400, minHeight: 900)
         }

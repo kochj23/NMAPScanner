@@ -100,18 +100,18 @@ struct HistoricalComparisonView: View {
                     // Device Information
                     GroupBox(label: Text("Device Information").font(.system(size: 18, weight: .semibold))) {
                         VStack(spacing: 12) {
-                            InfoRow(label: "IP Address", value: device.ipAddress)
+                            HistoricalInfoRow(label: "IP Address", value: device.ipAddress)
                             if let mac = device.macAddress {
-                                InfoRow(label: "MAC Address", value: mac)
+                                HistoricalInfoRow(label: "MAC Address", value: mac)
                             }
                             if let hostname = device.hostname {
-                                InfoRow(label: "Hostname", value: hostname)
+                                HistoricalInfoRow(label: "Hostname", value: hostname)
                             }
                             if let manufacturer = device.manufacturer {
-                                InfoRow(label: "Manufacturer", value: manufacturer)
+                                HistoricalInfoRow(label: "Manufacturer", value: manufacturer)
                             }
-                            InfoRow(label: "Device Type", value: device.deviceType.rawValue.capitalized)
-                            InfoRow(label: "Known Device", value: device.isKnownDevice ? "Yes" : "No")
+                            HistoricalInfoRow(label: "Device Type", value: device.deviceType.rawValue.capitalized)
+                            HistoricalInfoRow(label: "Known Device", value: device.isKnownDevice ? "Yes" : "No")
                         }
                         .padding()
                     }
@@ -146,7 +146,24 @@ struct StatusItem: View {
     }
 }
 
-// InfoRow is defined in DeviceWhitelistView.swift
+// MARK: - Historical Info Row
+
+struct HistoricalInfoRow: View {
+    let label: String
+    let value: String
+    var monospaced: Bool = false
+
+    var body: some View {
+        HStack {
+            Text(label)
+                .font(.system(size: 22))
+                .foregroundColor(.secondary)
+            Spacer()
+            Text(value)
+                .font(.system(size: 22, weight: .semibold, design: monospaced ? .monospaced : .default))
+        }
+    }
+}
 
 #Preview {
     HistoricalComparisonView(device: EnhancedDevice(

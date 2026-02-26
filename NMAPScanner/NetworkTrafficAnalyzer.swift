@@ -38,7 +38,14 @@ class NetworkTrafficAnalyzer: ObservableObject {
         monitoringTask = Task.detached { [weak self] in
             while await self?.isMonitoring == true {
                 await self?.captureTrafficSnapshot()
-                try? await Task.sleep(for: .seconds(5)) // Capture every 5 seconds
+                do {
+                    try await Task.sleep(for: .seconds(5)) // Capture every 5 seconds
+                } catch is CancellationError {
+                    print("NetworkTrafficAnalyzer: Monitoring task cancelled")
+                    break
+                } catch {
+                    print("NetworkTrafficAnalyzer: Sleep error: \(error.localizedDescription)")
+                }
             }
         }
     }

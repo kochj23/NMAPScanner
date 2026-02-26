@@ -13,6 +13,8 @@ struct NetworkTopologyView: View {
     @State private var layoutMode: LayoutMode = .grid
     @State private var zoomLevel: CGFloat = 1.0
     @State private var searchText = ""
+    @State private var showDependencyOverlay = false
+    @StateObject private var dependencyTracker = ServiceDependencyTracker.shared
 
     enum LayoutMode: String, CaseIterable {
         case grid = "Grid"
@@ -97,6 +99,9 @@ struct NetworkTopologyView: View {
                     case .hierarchical:
                         HierarchicalLayoutView(devices: filteredDevices, selectedDevice: $selectedDevice)
                     }
+
+                    // Service Dependencies Summary (NEW in v8.3.0)
+                    ServiceDependencySummaryCard(devices: filteredDevices, tracker: dependencyTracker)
 
                     // Device statistics
                     DeviceStatisticsCard(devices: filteredDevices)
@@ -736,5 +741,224 @@ struct DeviceTypeCard: View {
         .padding(.vertical, 24)
         .background(color.opacity(0.08))
         .cornerRadius(16)
+    }
+}
+
+// MARK: - Service Dependency Summary Card
+
+struct ServiceDependencySummaryCard: View {
+    let devices: [EnhancedDevice]
+    @ObservedObject var tracker: ServiceDependencyTracker
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 20) {
+            HStack {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Service Dependencies")
+                        .font(.system(size: 36, weight: .semibold))
+
+                    Text("AI and infrastructure service connections")
+                        .font(.system(size: 18))
+                        .foregroundColor(.secondary)
+                }
+
+                Spacer()
+
+                Button(action: {
+                    tracker.detectDependencies(devices: devices)
+                }) {
+                    Label("Analyze", systemImage: "arrow.clockwise")
+                }
+                .buttonStyle(.bordered)
+                .disabled(tracker.isAnalyzing)
+            }
+
+            if tracker.isAnalyzing {
+                HStack {
+                    ProgressView()
+                        .scaleEffect(0.8)
+                    Text("Analyzing service dependencies...")
+                        .font(.system(size: 16))
+                        .foregroundColor(.secondary)
+                }
+                .padding()
+            } else if tracker.serviceNodes.isEmpty {
+                VStack(spacing: 12) {
+                    Image(systemName: "arrow.triangle.branch")
+                        .font(.system(size: 40))
+                        .foregroundColor(.gray)
+                    Text("Click Analyze to detect service dependencies")
+                        .font(.system(size: 16))
+                        .foregroundColor(.secondary)
+                }
+                .frame(maxWidth: .infinity)
+                .padding(32)
+            } else {
+                // Stats Row
+                HStack(spacing: 40) {
+                    ServiceDepStatItem(
+                        label: "Services",
+                        value: "\(tracker.serviceNodes.count)",
+                        icon: "server.rack",
+                        color: .blue
+                    )
+                    ServiceDepStatItem(
+                        label: "Connections",
+                        value: "\(tracker.connections.count)",
+                        icon: "arrow.left.arrow.right",
+                        color: .green
+                    )
+                    ServiceDepStatItem(
+                        label: "AI Services",
+                        value: "\(tracker.serviceNodes.filter { $0.category == .aiMl }.count)",
+                        icon: "brain.head.profile",
+                        color: .purple
+                    )
+                    ServiceDepStatItem(
+                        label: "Single Points of Failure",
+                        value: "\(tracker.singlePointsOfFailure.count)",
+                        icon: "exclamationmark.triangle",
+                        color: .red
+                    )
+                }
+
+                // AI Dependencies Preview
+                let aiConnections = tracker.connections.filter { $0.connectionType == .inference }
+                if !aiConnections.isEmpty {
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text("AI Service Dependencies")
+                            .font(.system(size: 24, weight: .semibold))
+
+                        ForEach(aiConnections.prefix(5)) { connection in
+                            HStack {
+                                // Source
+                                HStack(spacing: 8) {
+                                    Image(systemName: "brain.head.profile")
+                                        .foregroundColor(.purple)
+                                    VStack(alignment: .leading) {
+                                        Text(connection.sourceService)
+                                            .font(.system(size: 16, weight: .medium))
+                                        Text("\(connection.sourceHost):\(connection.sourcePort)")
+                                            .font(.system(size: 12, design: .monospaced))
+                                            .foregroundColor(.secondary)
+                                    }
+                                }
+
+                                Spacer()
+
+                                // Arrow
+                                Image(systemName: "arrow.right")
+                                    .foregroundColor(.secondary)
+
+                                Spacer()
+
+                                // Destination
+                                HStack(spacing: 8) {
+                                    VStack(alignment: .trailing) {
+                                        Text(connection.destService)
+                                            .font(.system(size: 16, weight: .medium))
+                                        Text("\(connection.destHost):\(connection.destPort)")
+                                            .font(.system(size: 12, design: .monospaced))
+                                            .foregroundColor(.secondary)
+                                    }
+                                    Image(systemName: connection.connectionType.icon)
+                                        .foregroundColor(connection.connectionType.color)
+                                }
+                            }
+                            .padding(12)
+                            .background(Color.purple.opacity(0.05))
+                            .cornerRadius(8)
+                        }
+
+                        if aiConnections.count > 5 {
+                            Text("+ \(aiConnections.count - 5) more AI dependencies")
+                                .font(.system(size: 14))
+                                .foregroundColor(.secondary)
+                        }
+                    }
+                    .padding(.top, 8)
+                }
+
+                // Single Points of Failure Warning
+                if !tracker.singlePointsOfFailure.isEmpty {
+                    VStack(alignment: .leading, spacing: 12) {
+                        HStack {
+                            Image(systemName: "exclamationmark.triangle.fill")
+                                .foregroundColor(.red)
+                            Text("Single Points of Failure Detected")
+                                .font(.system(size: 20, weight: .semibold))
+                                .foregroundColor(.red)
+                        }
+
+                        ForEach(tracker.singlePointsOfFailure.prefix(3)) { node in
+                            HStack {
+                                Image(systemName: node.category.icon)
+                                    .foregroundColor(node.category.color)
+                                VStack(alignment: .leading) {
+                                    Text(node.serviceName)
+                                        .font(.system(size: 16, weight: .medium))
+                                    Text("\(node.host):\(node.port)")
+                                        .font(.system(size: 12, design: .monospaced))
+                                        .foregroundColor(.secondary)
+                                }
+                                Spacer()
+
+                                let connections = tracker.getConnections(for: node)
+                                Text("\(connections.incoming.count) dependents")
+                                    .font(.system(size: 14))
+                                    .foregroundColor(.orange)
+                            }
+                            .padding(8)
+                            .background(Color.red.opacity(0.05))
+                            .cornerRadius(6)
+                        }
+                    }
+                    .padding()
+                    .background(Color.red.opacity(0.1))
+                    .cornerRadius(12)
+                }
+
+                // Hint to view full dependency graph
+                HStack {
+                    Image(systemName: "info.circle")
+                        .foregroundColor(.blue)
+                    Text("View the Dependencies tab for the full interactive service dependency graph")
+                        .font(.system(size: 14))
+                        .foregroundColor(.secondary)
+                }
+                .padding(.top, 8)
+            }
+        }
+        .padding(24)
+        .background(Color.blue.opacity(0.05))
+        .cornerRadius(16)
+        .onAppear {
+            if tracker.serviceNodes.isEmpty && !devices.isEmpty {
+                tracker.detectDependencies(devices: devices)
+            }
+        }
+    }
+}
+
+struct ServiceDepStatItem: View {
+    let label: String
+    let value: String
+    let icon: String
+    let color: Color
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(spacing: 8) {
+                Image(systemName: icon)
+                    .font(.system(size: 20))
+                    .foregroundColor(color)
+                Text(value)
+                    .font(.system(size: 36, weight: .bold))
+                    .foregroundColor(color)
+            }
+            Text(label)
+                .font(.system(size: 16))
+                .foregroundColor(.secondary)
+        }
     }
 }

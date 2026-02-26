@@ -62,17 +62,32 @@ class DNSResolver: ObservableObject {
             process.standardOutput = pipe
             process.standardError = pipe
 
+            // Use NSLock to ensure the continuation is only resumed once,
+            // preventing a race between process completion and timeout termination
+            let lock = NSLock()
+            var hasResumed = false
+
             do {
                 try process.run()
 
-                // Set timeout
+                // Set timeout with atomic guard to prevent double-resume
                 DispatchQueue.global().asyncAfter(deadline: .now() + 2.0) {
-                    if process.isRunning {
+                    lock.lock()
+                    if !hasResumed && process.isRunning {
                         process.terminate()
                     }
+                    lock.unlock()
                 }
 
                 process.waitUntilExit()
+
+                lock.lock()
+                guard !hasResumed else {
+                    lock.unlock()
+                    return
+                }
+                hasResumed = true
+                lock.unlock()
 
                 let data = pipe.fileHandleForReading.readDataToEndOfFile()
                 if let output = String(data: data, encoding: .utf8) {
@@ -80,11 +95,21 @@ class DNSResolver: ObservableObject {
                     continuation.resume(returning: hostname)
                     return
                 }
+
+                continuation.resume(returning: nil)
             } catch {
                 print("❌ DNS Resolver: Error executing host command: \(error)")
-            }
 
-            continuation.resume(returning: nil)
+                lock.lock()
+                guard !hasResumed else {
+                    lock.unlock()
+                    return
+                }
+                hasResumed = true
+                lock.unlock()
+
+                continuation.resume(returning: nil)
+            }
         }
     }
 

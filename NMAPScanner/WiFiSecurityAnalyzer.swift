@@ -349,28 +349,28 @@ struct WiFiSecurityDashboard: View {
                     GridItem(.flexible()),
                     GridItem(.flexible())
                 ], spacing: 16) {
-                    SummaryCard(
+                    WiFiSummaryCard(
                         title: "Networks",
                         value: "\(analyzer.networks.count)",
                         icon: "wifi",
                         color: .blue
                     )
 
-                    SummaryCard(
+                    WiFiSummaryCard(
                         title: "Total Clients",
                         value: "\(analyzer.totalClients)",
                         icon: "person.3.fill",
                         color: .green
                     )
 
-                    SummaryCard(
+                    WiFiSummaryCard(
                         title: "Security Issues",
                         value: "\(analyzer.securityIssues.count)",
                         icon: "shield.lefthalf.filled",
                         color: analyzer.securityIssues.isEmpty ? .green : .orange
                     )
 
-                    SummaryCard(
+                    WiFiSummaryCard(
                         title: "Critical",
                         value: "\(analyzer.criticalIssues.count)",
                         icon: "exclamationmark.triangle.fill",
@@ -462,7 +462,7 @@ struct WiFiSecurityDashboard: View {
 
 // MARK: - Summary Card
 
-struct SummaryCard: View {
+struct WiFiSummaryCard: View {
     let title: String
     let value: String
     let icon: String

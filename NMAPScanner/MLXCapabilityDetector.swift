@@ -84,10 +84,19 @@ class MLXCapabilityDetector: ObservableObject {
 
     /// Check if MLX Python is installed
     private func checkPythonMLX() async -> Bool {
-        // Check virtual environment first
-        let venvPath = "/Volumes/Data/xcode/NMAPScanner/.venv/bin/python3"
-        if FileManager.default.fileExists(atPath: venvPath) {
-            if await testMLXImport(pythonPath: venvPath) {
+        // Check virtual environment relative to the app bundle first
+        let bundleDir = Bundle.main.bundlePath
+        let appSupportVenvPath = (bundleDir as NSString).deletingLastPathComponent + "/.venv/bin/python3"
+        if FileManager.default.fileExists(atPath: appSupportVenvPath) {
+            if await testMLXImport(pythonPath: appSupportVenvPath) {
+                return true
+            }
+        }
+
+        // Check virtual environment relative to current working directory
+        let cwdVenvPath = FileManager.default.currentDirectoryPath + "/.venv/bin/python3"
+        if FileManager.default.fileExists(atPath: cwdVenvPath) {
+            if await testMLXImport(pythonPath: cwdVenvPath) {
                 return true
             }
         }
@@ -125,12 +134,21 @@ class MLXCapabilityDetector: ObservableObject {
         return false
     }
 
-    /// Get Python path (prioritize venv)
+    /// Get Python path (prioritize venv relative to bundle or cwd)
     func getPythonPath() -> String {
-        let venvPath = "/Volumes/Data/xcode/NMAPScanner/.venv/bin/python3"
-        if FileManager.default.fileExists(atPath: venvPath) {
-            return venvPath
+        // Check relative to app bundle parent directory
+        let bundleDir = Bundle.main.bundlePath
+        let appSupportVenvPath = (bundleDir as NSString).deletingLastPathComponent + "/.venv/bin/python3"
+        if FileManager.default.fileExists(atPath: appSupportVenvPath) {
+            return appSupportVenvPath
         }
+
+        // Check relative to current working directory
+        let cwdVenvPath = FileManager.default.currentDirectoryPath + "/.venv/bin/python3"
+        if FileManager.default.fileExists(atPath: cwdVenvPath) {
+            return cwdVenvPath
+        }
+
         return "/usr/bin/python3"
     }
 

@@ -190,7 +190,26 @@ class PortScanConfiguration {
             7000: "AirPlay",
             49152: "HomeKit",
             32498: "HomeKit Alt",
-            62078: "AirPlay"
+            62078: "AirPlay",
+
+            // AI/LLM Services
+            11434: "Ollama",
+            11435: "Ollama Alt",
+            7860: "Gradio",
+            5001: "TextGen-WebUI",
+            5005: "TextGen-API",
+            8001: "Triton-HTTP",
+            8002: "Triton-gRPC",
+            7861: "Stable-Diffusion",
+            8188: "ComfyUI",
+            6333: "Qdrant",
+            6334: "Weaviate",
+            8765: "Chroma",
+            19530: "Milvus",
+            8501: "TF-Serving",
+            5050: "MLflow",
+            3001: "n8n",
+            4000: "AnythingLLM"
         ]
 
         return services[port] ?? "Port \(port)"

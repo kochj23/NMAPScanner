@@ -486,6 +486,47 @@ struct CommonPorts {
             8884,  // MQTT alternate
         ])
 
+        // === AI/LLM SERVICES (25 ports) ===
+        ports.append(contentsOf: [
+            // Ollama & Local LLM Services
+            11434, // Ollama API
+            11435, // Ollama (alternate)
+
+            // OpenWebUI & Chat Interfaces
+            3000,  // OpenWebUI (default) - also Node.js/Grafana
+            7860,  // Gradio (Hugging Face demos)
+            5000,  // LocalAI, Flask-based AI apps
+
+            // Text Generation & Inference
+            5001,  // text-generation-webui (oobabooga)
+            5005,  // text-generation-webui API
+            8000,  // vLLM, FastAPI AI services
+            8001,  // Triton Inference Server HTTP
+            8002,  // Triton Inference Server gRPC
+
+            // Image Generation
+            7861,  // Automatic1111 Stable Diffusion
+            8188,  // ComfyUI
+            9090,  // SwarmUI - also Prometheus
+
+            // Vector Databases & RAG
+            6333,  // Qdrant
+            8765,  // Chroma
+            19530, // Milvus
+            6334,  // Weaviate
+
+            // MLOps & Model Serving
+            8501,  // TensorFlow Serving REST
+            8500,  // TensorFlow Serving gRPC - also Consul
+            5050,  // MLflow
+            9000,  // MinIO (model storage)
+
+            // Other AI Services
+            8081,  // LangServe, LocalAI alternate
+            3001,  // n8n (AI workflow automation)
+            4000,  // AnythingLLM
+        ])
+
         return Array(Set(ports)).sorted() // Remove duplicates and sort
     }()
 
@@ -531,5 +572,49 @@ struct CommonPorts {
         8080,   // Alternate HTTP (common for HAP)
         8443,   // Alternate HTTPS
         62078   // HAP (HomeKit Accessory Protocol default port)
+    ]
+
+    /// AI/LLM Services - Dedicated scan for local AI infrastructure
+    /// Includes Ollama, text-generation-webui, Stable Diffusion, vector DBs, and MLOps
+    static let aiServices: [Int] = [
+        // Ollama & Local LLM Services
+        11434, // Ollama API (default)
+        11435, // Ollama (alternate)
+
+        // Chat Interfaces & Web UIs
+        3000,  // OpenWebUI (default)
+        7860,  // Gradio (Hugging Face demos)
+        5000,  // LocalAI, Flask-based AI apps
+
+        // Text Generation & Inference
+        5001,  // text-generation-webui (oobabooga)
+        5005,  // text-generation-webui API
+        8000,  // vLLM, FastAPI AI services
+        8001,  // Triton Inference Server HTTP
+        8002,  // Triton Inference Server gRPC
+        8080,  // LM Studio, OpenWebUI alternate
+
+        // Image Generation
+        7861,  // Automatic1111 Stable Diffusion
+        8188,  // ComfyUI
+        9090,  // SwarmUI
+
+        // Vector Databases & RAG
+        6333,  // Qdrant
+        6334,  // Weaviate
+        8765,  // Chroma
+        19530, // Milvus
+
+        // MLOps & Model Serving
+        8501,  // TensorFlow Serving REST
+        8500,  // TensorFlow Serving gRPC
+        5050,  // MLflow
+        9000,  // MinIO (model storage)
+
+        // Other AI Services
+        8081,  // LangServe, LocalAI alternate
+        3001,  // n8n (AI workflow automation)
+        4000,  // AnythingLLM
+        8888,  // Jupyter Notebook
     ]
 }

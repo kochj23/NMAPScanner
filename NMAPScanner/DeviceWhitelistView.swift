@@ -219,19 +219,19 @@ struct DeviceEditView: View {
                     Text("Device Information")
                         .font(.system(size: 36, weight: .semibold))
 
-                    InfoRow(label: "IP Address", value: device.ipAddress, monospaced: true)
+                    WhitelistInfoRow(label: "IP Address", value: device.ipAddress, monospaced: true)
                     if let mac = device.macAddress {
-                        InfoRow(label: "MAC Address", value: mac, monospaced: true)
+                        WhitelistInfoRow(label: "MAC Address", value: mac, monospaced: true)
                     }
                     if let hostname = device.hostname {
-                        InfoRow(label: "Hostname", value: hostname)
+                        WhitelistInfoRow(label: "Hostname", value: hostname)
                     }
                     if let manufacturer = device.manufacturer {
-                        InfoRow(label: "Manufacturer", value: manufacturer)
+                        WhitelistInfoRow(label: "Manufacturer", value: manufacturer)
                     }
-                    InfoRow(label: "Device Type", value: device.deviceType)
-                    InfoRow(label: "First Seen", value: formatDateTime(device.firstSeen))
-                    InfoRow(label: "Last Seen", value: formatDateTime(device.lastSeen))
+                    WhitelistInfoRow(label: "Device Type", value: device.deviceType)
+                    WhitelistInfoRow(label: "First Seen", value: formatDateTime(device.firstSeen))
+                    WhitelistInfoRow(label: "Last Seen", value: formatDateTime(device.lastSeen))
                 }
                 .padding(30)
                 .background(Color.gray.opacity(0.1))
@@ -337,7 +337,7 @@ struct DeviceEditView: View {
 
 // MARK: - Info Row Component
 
-struct InfoRow: View {
+struct WhitelistInfoRow: View {
     let label: String
     let value: String
     var monospaced: Bool = false

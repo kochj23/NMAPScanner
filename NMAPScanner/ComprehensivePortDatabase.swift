@@ -207,6 +207,41 @@ struct ComprehensivePortDatabase {
         51413: PortDefinition(name: "Transmission", description: "Transmission BitTorrent Client", protocols: [.tcp, .udp]),
         54321: PortDefinition(name: "Squid-SNMP", description: "Squid HTTP Proxy SNMP", protocols: [.udp]),
         62078: PortDefinition(name: "Apple-TV-Remote", description: "Apple TV Remote Protocol", protocols: [.tcp]),
+
+        // ============================================================
+        // AI/LLM Services - Local Language Model & ML Infrastructure
+        // ============================================================
+
+        // Ollama & Local LLM Services
+        11434: PortDefinition(name: "Ollama", description: "Ollama AI Model API", protocols: [.tcp]),
+        11435: PortDefinition(name: "Ollama-Alt", description: "Ollama AI Model API (Alternate)", protocols: [.tcp]),
+
+        // OpenWebUI & Chat Interfaces
+        7860: PortDefinition(name: "Gradio", description: "Gradio/Hugging Face Demo Interface", protocols: [.tcp]),
+
+        // Text Generation & Inference Servers
+        5001: PortDefinition(name: "text-generation-webui", description: "Oobabooga Text Generation WebUI", protocols: [.tcp]),
+        5005: PortDefinition(name: "text-generation-webui-API", description: "Oobabooga Text Generation API", protocols: [.tcp]),
+        8001: PortDefinition(name: "Triton-HTTP", description: "NVIDIA Triton Inference Server HTTP", protocols: [.tcp]),
+        8002: PortDefinition(name: "Triton-gRPC", description: "NVIDIA Triton Inference Server gRPC", protocols: [.tcp]),
+
+        // Image Generation AI
+        7861: PortDefinition(name: "Automatic1111-SD", description: "Automatic1111 Stable Diffusion WebUI", protocols: [.tcp]),
+        8188: PortDefinition(name: "ComfyUI", description: "ComfyUI Stable Diffusion Interface", protocols: [.tcp]),
+
+        // Vector Databases & RAG
+        6333: PortDefinition(name: "Qdrant", description: "Qdrant Vector Database", protocols: [.tcp]),
+        6334: PortDefinition(name: "Weaviate", description: "Weaviate Vector Database", protocols: [.tcp]),
+        8765: PortDefinition(name: "Chroma", description: "Chroma Vector Database", protocols: [.tcp]),
+        19530: PortDefinition(name: "Milvus", description: "Milvus Vector Database", protocols: [.tcp]),
+
+        // MLOps & Model Serving
+        8501: PortDefinition(name: "TensorFlow-Serving-REST", description: "TensorFlow Serving REST API", protocols: [.tcp]),
+        5050: PortDefinition(name: "MLflow", description: "MLflow Model Registry & Tracking", protocols: [.tcp]),
+
+        // Other AI Services
+        3001: PortDefinition(name: "n8n", description: "n8n AI Workflow Automation", protocols: [.tcp]),
+        4000: PortDefinition(name: "AnythingLLM", description: "AnythingLLM AI Assistant", protocols: [.tcp]),
     ]
 
     /// Get port definition
