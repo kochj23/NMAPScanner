@@ -76,7 +76,11 @@ class ServiceVersionScanner {
 
                 // Send probes for specific services
                 if let probe = self.getProbeForPort(port) {
-                    let _ = send(sockfd, probe, probe.count, 0)
+                    let bytesSent = send(sockfd, probe, probe.count, 0)
+                    if bytesSent < 0 {
+                        continuation.resume(returning: nil)
+                        return
+                    }
                 }
 
                 // Read response

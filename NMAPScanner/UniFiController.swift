@@ -578,8 +578,10 @@ class UniFiController: ObservableObject {
 
         SecureLogger.log("Certificate trust prompt for \(host): CN=\(commonName), FP=\(fingerprint)", level: .warning)
 
-        // TODO: Show actual user prompt in UI
-        // For now, auto-accept but log it
+        // SECURITY: Auto-trusting certificates bypasses TLS verification.
+        // A proper implementation should present a SwiftUI confirmation dialog showing
+        // the certificate common name and fingerprint, allowing the user to accept or reject.
+        // Until that UI is built, all UniFi controller certificates are auto-trusted.
         SecurityAuditLog.log(event: .certificateTrusted, details: "Auto-trusted certificate for \(host) (pending UI implementation)", level: .security)
 
         return true  // Auto-trust for now (better than blind trust)

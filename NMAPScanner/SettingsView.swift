@@ -263,8 +263,6 @@ struct SettingsView: View {
                     // New Features Section
                     SettingsSection(title: "Advanced Features") {
                         VStack(alignment: .leading, spacing: 24) {
-                            // TODO: Implement these views in future updates
-
                             // Notifications Link
                             NavigationLink(destination: NotificationSettingsView()) {
                                 HStack {
