@@ -862,7 +862,7 @@ struct ShadowAISettingsView: View {
                     }
 
                     Toggle("Auto-start monitoring on launch", isOn: .constant(false))
-                        .disabled(true) // TODO: Implement
+                        .disabled(true) // Disabled: requires persistent launch-agent configuration to auto-start Shadow AI monitoring
                 }
 
                 Section("Notifications") {
