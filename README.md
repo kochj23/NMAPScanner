@@ -36,7 +36,7 @@ NMAPScanner is a native macOS application that wraps nmap with an intuitive GUI,
 **Comprehensive device management:**
 
 **Whitelist Devices:**
-- Add to trusted devices list (UserDefaults + MAC address tracking)
+- Add to trusted devices list (UserDefaults + MAC (Media Access Control) address tracking)
 - Disable security alerts for whitelisted devices
 - Persistent across app restarts
 
@@ -69,7 +69,7 @@ private func handleBlock() {
 }
 ```
 
-### 🚀 MLX Backend Implementation
+### 🚀 MLX (Machine Learning eXtensions) Backend Implementation
 **Apple Silicon native threat analysis:**
 
 - **Local AI**: Security analysis without cloud
@@ -87,14 +87,14 @@ private func handleBlock() {
 - **Port Scanning**: Detect open ports and services
 - **OS Detection**: Identify device operating systems
 - **Service Version**: Detect software versions
-- **Vulnerability Scanning**: Check for known CVEs
+- **Vulnerability Scanning**: Check for known CVEs (Common Vulnerabilities and Exposures)
 - **Live Monitoring**: Real-time network activity
 
 ### Device Management (v8.6.0)
 - **Whitelist**: Trust specific devices
 - **Block**: Prevent network access
 - **Deep Scan**: Aggressive security assessment
-- **Isolate**: VLAN isolation via UniFi
+- **Isolate**: VLAN (Virtual Local Area Network) isolation via UniFi
 - **Device Tracking**: MAC address and IP tracking
 - **History**: Device appearance/disappearance logging
 
@@ -288,7 +288,7 @@ MIT License - Copyright © 2026 Jordan Koch
 |-----|-------------|
 | [Bastion](https://github.com/kochj23/Bastion) | Authorized security testing and penetration toolkit |
 | [URL-Analysis](https://github.com/kochj23/URL-Analysis) | Network traffic analysis and URL monitoring |
-| [rtsp-rotator](https://github.com/kochj23/rtsp-rotator) | RTSP camera stream rotation and monitoring |
+| [rtsp-rotator](https://github.com/kochj23/rtsp-rotator) | RTSP (Real Time Streaming Protocol) camera stream rotation and monitoring |
 | [MLXCode](https://github.com/kochj23/MLXCode) | Local AI coding assistant for Apple Silicon |
 | [TopGUI](https://github.com/kochj23/TopGUI) | macOS system monitor with real-time metrics |
 
