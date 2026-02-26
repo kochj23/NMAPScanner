@@ -46,7 +46,7 @@ struct SecurityDashboardView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 30) {
-                // Header
+                // MARK: - Header & Controls
                 HStack {
                     VStack(alignment: .leading, spacing: 4) {
                         Text("Security & Traffic Dashboard")
@@ -509,6 +509,7 @@ struct SecurityDashboardView: View {
                     .padding(.horizontal, 40)
                 */
 
+                // MARK: - Placeholder
                 // Placeholder for advanced visualizations
                 Text("Advanced security visualizations coming soon!")
                     .font(.title2)
@@ -525,6 +526,7 @@ struct SecurityDashboardView: View {
         .onDisappear {
             stopMonitoring()
         }
+        // MARK: - Sheet Presentations
         .sheet(isPresented: $showProtocolDetails) {
             if let protocolName = selectedProtocol {
                 ProtocolDetailsView(

@@ -68,8 +68,7 @@ class CustomDNSResolver: ObservableObject {
 
     /// Query a specific DNS server for PTR record (reverse DNS)
     private func queryDNS(ipAddress: String, dnsServer: String) async -> String? {
-        // Convert IP to reverse DNS format (e.g., 192.168.1.1 -> 1.1.168.192.in-addr.arpa)
-        let _ = reverseIPAddress(ipAddress)
+        // The dig command with -x handles reverse DNS formatting internally
 
         // Use dig command for custom DNS query
         let task = Process()

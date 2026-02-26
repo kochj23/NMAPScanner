@@ -1527,9 +1527,10 @@ class IntegratedScannerV3: ObservableObject {
         print("🔧 createBasicDevice: Attempting hostname resolution via custom DNS")
         var hostname: String? = nil
 
-        // DNS resolution must be done synchronously here, but we'll do it async later
-        // For now, skip to avoid blocking
-        // TODO: Refactor to async hostname resolution during device creation
+        // NOTE: Hostname resolution is skipped here to avoid blocking the main thread.
+        // The legacy resolveHostname() used DispatchSemaphore which deadlocks on MainActor.
+        // Future optimization: resolve hostnames in a background TaskGroup after device
+        // creation completes, then update devices with resolved names asynchronously.
         // hostname = await dnsResolver.resolveHostname(for: host)
 
         // Get manufacturer from MAC address

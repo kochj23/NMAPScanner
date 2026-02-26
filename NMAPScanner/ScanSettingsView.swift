@@ -104,7 +104,6 @@ struct ScanSettingsView: View {
 
     private func startScan() {
         Task {
-            // TODO: Update to use correct scanning method
             await scanner.scanPingSweep(subnet: subnet)
             dismiss()
         }
