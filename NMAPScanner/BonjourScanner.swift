@@ -467,11 +467,11 @@ class BonjourScanner: ObservableObject {
                 timedOut = true
             }
         }
+        defer { timer.invalidate() }
 
         do {
             try process.run()
             process.waitUntilExit()
-            timer.invalidate()
 
             guard !timedOut else {
                 print("🔍 BonjourScanner: TXT record lookup timed out for \(serviceName)")

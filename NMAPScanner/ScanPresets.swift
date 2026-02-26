@@ -434,10 +434,10 @@ struct PresetCard: View {
                 Divider()
 
                 HStack(spacing: 16) {
-                    StatBadge(icon: "clock", value: statistics.formattedTimePerHost)
-                    StatBadge(icon: "network", value: preset.scanType.rawValue)
+                    PresetStatBadge(icon: "clock", value: statistics.formattedTimePerHost)
+                    PresetStatBadge(icon: "network", value: preset.scanType.rawValue)
                     if preset.isBuiltIn {
-                        StatBadge(icon: "checkmark.seal.fill", value: "Built-in")
+                        PresetStatBadge(icon: "checkmark.seal.fill", value: "Built-in")
                     }
                 }
             }
@@ -454,7 +454,7 @@ struct PresetCard: View {
     }
 }
 
-struct StatBadge: View {
+struct PresetStatBadge: View {
     let icon: String
     let value: String
 

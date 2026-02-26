@@ -66,30 +66,30 @@ struct ComprehensiveDeviceDetailView: View {
                 // Basic Information
                 DetailSection(title: "Basic Information", icon: "info.circle.fill", color: .blue) {
                     VStack(spacing: 16) {
-                        DetailRow(label: "IP Address", value: device.ipAddress, icon: "network")
+                        ComprehensiveDetailRow(label: "IP Address", value: device.ipAddress, icon: "network")
 
                         if let mac = device.macAddress {
-                            DetailRow(label: "MAC Address", value: mac, icon: "cpu")
+                            ComprehensiveDetailRow(label: "MAC Address", value: mac, icon: "cpu")
                         }
 
                         if let hostname = device.hostname {
-                            DetailRow(label: "Hostname", value: hostname, icon: "server.rack")
+                            ComprehensiveDetailRow(label: "Hostname", value: hostname, icon: "server.rack")
                         } else if let resolved = resolvedDNS {
-                            DetailRow(label: "Hostname (DNS)", value: resolved, icon: "server.rack")
+                            ComprehensiveDetailRow(label: "Hostname (DNS)", value: resolved, icon: "server.rack")
                         }
 
                         if let manufacturer = device.manufacturer {
-                            DetailRow(label: "Manufacturer", value: manufacturer, icon: "building.2")
+                            ComprehensiveDetailRow(label: "Manufacturer", value: manufacturer, icon: "building.2")
                         }
 
-                        DetailRow(label: "Device Type", value: device.deviceType.rawValue.capitalized, icon: "desktopcomputer")
+                        ComprehensiveDetailRow(label: "Device Type", value: device.deviceType.rawValue.capitalized, icon: "desktopcomputer")
 
                         if let appleType = device.detectAppleDeviceType() {
-                            DetailRow(label: "Detected As", value: appleType, icon: "applelogo")
+                            ComprehensiveDetailRow(label: "Detected As", value: appleType, icon: "applelogo")
                         }
 
                         if let os = device.operatingSystem {
-                            DetailRow(label: "Operating System", value: os, icon: "square.stack.3d.up")
+                            ComprehensiveDetailRow(label: "Operating System", value: os, icon: "square.stack.3d.up")
                         }
 
                         // SSH Detection
@@ -127,25 +127,25 @@ struct ComprehensiveDeviceDetailView: View {
                 if let trafficStats = trafficAnalyzer.getStats(for: device.ipAddress) {
                     DetailSection(title: "Network Traffic", icon: "chart.line.uptrend.xyaxis", color: .green) {
                         VStack(spacing: 16) {
-                            DetailRow(
+                            ComprehensiveDetailRow(
                                 label: "Bandwidth",
                                 value: NetworkTrafficAnalyzer.formatBandwidth(trafficStats.bytesPerSecond),
                                 icon: "arrow.up.arrow.down"
                             )
 
-                            DetailRow(
+                            ComprehensiveDetailRow(
                                 label: "Total Data Transferred",
                                 value: NetworkTrafficAnalyzer.formatBytes(trafficStats.totalBytes),
                                 icon: "internaldrive"
                             )
 
-                            DetailRow(
+                            ComprehensiveDetailRow(
                                 label: "Active Connections",
                                 value: "\(trafficStats.activeConnections)",
                                 icon: "link"
                             )
 
-                            DetailRow(
+                            ComprehensiveDetailRow(
                                 label: "Last Update",
                                 value: formatDate(trafficStats.lastUpdate),
                                 icon: "clock"
@@ -159,7 +159,7 @@ struct ComprehensiveDeviceDetailView: View {
                     VStack(spacing: 16) {
                         // Protocols supported
                         if !device.openPorts.isEmpty {
-                            DetailRow(
+                            ComprehensiveDetailRow(
                                 label: "Open Ports",
                                 value: "\(device.openPorts.count) detected",
                                 icon: "door.left.hand.open"
@@ -174,19 +174,19 @@ struct ComprehensiveDeviceDetailView: View {
                         let hasMediaServices = device.openPorts.contains(where: { $0.port == 5000 || $0.port == 7000 || $0.port == 32400 })
 
                         if hasWebServices {
-                            DetailRow(label: "Web Services", value: "Available", icon: "globe")
+                            ComprehensiveDetailRow(label: "Web Services", value: "Available", icon: "globe")
                         }
                         if hasRemoteAccess {
-                            DetailRow(label: "Remote Access", value: "Enabled", icon: "terminal")
+                            ComprehensiveDetailRow(label: "Remote Access", value: "Enabled", icon: "terminal")
                         }
                         if hasFileSharing {
-                            DetailRow(label: "File Sharing", value: "Active", icon: "folder.badge.gearshape")
+                            ComprehensiveDetailRow(label: "File Sharing", value: "Active", icon: "folder.badge.gearshape")
                         }
                         if hasDatabaseServices {
-                            DetailRow(label: "Database Services", value: "Running", icon: "cylinder.split.1x2")
+                            ComprehensiveDetailRow(label: "Database Services", value: "Running", icon: "cylinder.split.1x2")
                         }
                         if hasMediaServices {
-                            DetailRow(label: "Media Services", value: "Available", icon: "play.rectangle.fill")
+                            ComprehensiveDetailRow(label: "Media Services", value: "Available", icon: "play.rectangle.fill")
                         }
                     }
                 }
@@ -206,14 +206,14 @@ struct ComprehensiveDeviceDetailView: View {
                 if HomeKitPortDefinitions.isLikelyHomeKitAccessory(ports: device.openPorts.map { $0.port }) {
                     DetailSection(title: "HomeKit Features", icon: "homekit", color: .purple) {
                         VStack(spacing: 16) {
-                            DetailRow(
+                            ComprehensiveDetailRow(
                                 label: "Features",
                                 value: "HomeKit Accessory Detected",
                                 icon: "house.fill"
                             )
 
                             if HomeKitPortDefinitions.isLikelyHomePod(ports: device.openPorts.map { $0.port }) {
-                                DetailRow(
+                                ComprehensiveDetailRow(
                                     label: "Device Type",
                                     value: "HomePod / HomePod mini",
                                     icon: "hifispeaker.fill"
@@ -221,7 +221,7 @@ struct ComprehensiveDeviceDetailView: View {
                             }
 
                             if HomeKitPortDefinitions.isLikelyAppleTV(ports: device.openPorts.map { $0.port }) {
-                                DetailRow(
+                                ComprehensiveDetailRow(
                                     label: "Device Type",
                                     value: "Apple TV",
                                     icon: "appletv.fill"
@@ -246,13 +246,13 @@ struct ComprehensiveDeviceDetailView: View {
                 // Device History
                 DetailSection(title: "Device History", icon: "clock.arrow.circlepath", color: .cyan) {
                     VStack(spacing: 16) {
-                        DetailRow(
+                        ComprehensiveDetailRow(
                             label: "First Seen",
                             value: formatFullDate(device.firstSeen),
                             icon: "calendar.badge.plus"
                         )
 
-                        DetailRow(
+                        ComprehensiveDetailRow(
                             label: "Last Seen",
                             value: formatFullDate(device.lastSeen),
                             icon: "calendar.badge.clock"
@@ -260,7 +260,7 @@ struct ComprehensiveDeviceDetailView: View {
 
                         let uptime = device.lastSeen.timeIntervalSince(device.firstSeen)
                         let days = Int(uptime / 86400)
-                        DetailRow(
+                        ComprehensiveDetailRow(
                             label: "Tracked For",
                             value: days > 0 ? "\(days) days" : "< 1 day",
                             icon: "chart.line.uptrend.xyaxis.circle"
@@ -327,7 +327,7 @@ struct DetailSection<Content: View>: View {
 
 // MARK: - Detail Row
 
-struct DetailRow: View {
+struct ComprehensiveDetailRow: View {
     let label: String
     let value: String
     let icon: String

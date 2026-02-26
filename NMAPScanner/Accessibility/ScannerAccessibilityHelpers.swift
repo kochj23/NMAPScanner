@@ -202,14 +202,14 @@ struct AccessibleScanProgress: View {
 
             // Stats
             HStack(spacing: 16) {
-                StatBadge(
+                AccessibilityStatBadge(
                     icon: "desktopcomputer",
                     value: "\(devicesFound)",
                     label: "Devices",
                     color: .blue
                 )
 
-                StatBadge(
+                AccessibilityStatBadge(
                     icon: threatsFound > 0 ? "exclamationmark.triangle.fill" : "checkmark.shield.fill",
                     value: "\(threatsFound)",
                     label: "Threats",
@@ -256,7 +256,7 @@ struct AccessibleScanProgress: View {
 
 // MARK: - Stat Badge
 
-struct StatBadge: View {
+struct AccessibilityStatBadge: View {
     let icon: String
     let value: String
     let label: String

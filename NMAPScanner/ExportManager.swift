@@ -106,6 +106,16 @@ class ExportManager: ObservableObject {
         return field
     }
 
+    /// Escape user-supplied data for safe insertion into HTML to prevent XSS attacks
+    private func escapeHTML(_ string: String) -> String {
+        return string
+            .replacingOccurrences(of: "&", with: "&amp;")
+            .replacingOccurrences(of: "<", with: "&lt;")
+            .replacingOccurrences(of: ">", with: "&gt;")
+            .replacingOccurrences(of: "\"", with: "&quot;")
+            .replacingOccurrences(of: "'", with: "&#39;")
+    }
+
     // MARK: - JSON Export
 
     struct ExportData: Codable {
@@ -354,13 +364,19 @@ class ExportManager: ObservableObject {
             let rogueBadge = device.isRogue ? "<span class='badge badge-rogue'>Rogue</span>" : ""
             let knownBadge = device.isKnownDevice ? "<span class='badge badge-known'>Known</span>" : ""
 
+            let escapedIP = escapeHTML(device.ipAddress)
+            let escapedHostname = escapeHTML(device.hostname ?? "—")
+            let escapedManufacturer = escapeHTML(device.manufacturer ?? "—")
+            let escapedDeviceType = escapeHTML(device.deviceType.rawValue)
+            let escapedPorts = escapeHTML(device.openPorts.map { String($0.port) }.joined(separator: ", "))
+
             rows += """
                 <tr>
-                    <td>\(device.ipAddress)</td>
-                    <td>\(device.hostname ?? "—")</td>
-                    <td>\(device.manufacturer ?? "—")</td>
-                    <td>\(device.deviceType.rawValue)</td>
-                    <td>\(device.openPorts.map { String($0.port) }.joined(separator: ", "))</td>
+                    <td>\(escapedIP)</td>
+                    <td>\(escapedHostname)</td>
+                    <td>\(escapedManufacturer)</td>
+                    <td>\(escapedDeviceType)</td>
+                    <td>\(escapedPorts)</td>
                     <td>\(statusBadge) \(rogueBadge) \(knownBadge)</td>
                 </tr>
                 """
@@ -402,13 +418,19 @@ class ExportManager: ObservableObject {
             case .info: severityClass = "badge-low"
             }
 
+            let escapedHost = escapeHTML(threat.affectedHost)
+            let escapedTitle = escapeHTML(threat.title)
+            let escapedSeverity = escapeHTML(threat.severity.rawValue.uppercased())
+            let escapedCVSS = escapeHTML(threat.cvssScore.map { String(format: "%.1f", $0) } ?? "—")
+            let escapedDescription = escapeHTML(threat.description)
+
             rows += """
                 <tr>
-                    <td>\(threat.affectedHost)</td>
-                    <td>\(threat.title)</td>
-                    <td><span class='badge \(severityClass)'>\(threat.severity.rawValue.uppercased())</span></td>
-                    <td>\(threat.cvssScore.map { String(format: "%.1f", $0) } ?? "—")</td>
-                    <td>\(threat.description)</td>
+                    <td>\(escapedHost)</td>
+                    <td>\(escapedTitle)</td>
+                    <td><span class='badge \(severityClass)'>\(escapedSeverity)</span></td>
+                    <td>\(escapedCVSS)</td>
+                    <td>\(escapedDescription)</td>
                 </tr>
                 """
         }
