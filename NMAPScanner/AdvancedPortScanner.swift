@@ -116,7 +116,7 @@ class AdvancedPortScanner: ObservableObject {
         progress = 1.0
         isScanning = false
 
-        print("🔍 AdvancedPortScanner: Scan complete for \(device.ipAddress)")
+        NSLog("[AdvancedPortScanner] Scan complete for %@", device.ipAddress)
     }
 
     // MARK: - TCP Port Scanning
@@ -150,7 +150,7 @@ class AdvancedPortScanner: ObservableObject {
                 openPorts = parseNmapPorts(output)
             }
         } catch {
-            print("❌ AdvancedPortScanner: TCP scan failed: \(error)")
+            NSLog("[AdvancedPortScanner] TCP scan failed: %@", error.localizedDescription)
         }
 
         return openPorts
@@ -188,7 +188,7 @@ class AdvancedPortScanner: ObservableObject {
                 openPorts = parseNmapPorts(output)
             }
         } catch {
-            print("❌ AdvancedPortScanner: UDP scan failed (may require root): \(error)")
+            NSLog("[AdvancedPortScanner] UDP scan failed (may require root): %@", error.localizedDescription)
         }
 
         return openPorts
@@ -219,7 +219,7 @@ class AdvancedPortScanner: ObservableObject {
                 (osName, osFamily, accuracy) = parseOSDetection(output)
             }
         } catch {
-            print("❌ AdvancedPortScanner: OS detection failed: \(error)")
+            NSLog("[AdvancedPortScanner] OS detection failed: %@", error.localizedDescription)
         }
 
         return OSDetectionResult(osName: osName, osFamily: osFamily, accuracy: accuracy)
@@ -277,7 +277,7 @@ class AdvancedPortScanner: ObservableObject {
                 versions = parseServiceVersions(output)
             }
         } catch {
-            print("❌ AdvancedPortScanner: Service version detection failed: \(error)")
+            NSLog("[AdvancedPortScanner] Service version detection failed: %@", error.localizedDescription)
         }
 
         return versions
@@ -339,7 +339,7 @@ class AdvancedPortScanner: ObservableObject {
                     allResults.append(contentsOf: results)
                 }
             } catch {
-                print("❌ AdvancedPortScanner: NSE script \(script) failed: \(error)")
+                NSLog("[AdvancedPortScanner] NSE script %@ failed: %@", script, error.localizedDescription)
             }
         }
 
