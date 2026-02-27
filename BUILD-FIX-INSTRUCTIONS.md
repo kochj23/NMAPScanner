@@ -53,7 +53,7 @@ If you see "No devices registered" or "Register Mac":
 #### Scenario C: Manual Device Addition
 If registration doesn't work automatically:
 1. Go to https://developer.apple.com/account/
-2. Sign in with **kochj@digitalnoise.net**
+2. Sign in with **[REDACTED]**
 3. Go to **Certificates, Identifiers & Profiles**
 4. Click **Devices**
 5. Click **"+"** to add new device

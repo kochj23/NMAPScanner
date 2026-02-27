@@ -5,7 +5,7 @@
 If you discover a security vulnerability, please report it responsibly:
 
 1. **Do NOT open a public issue**
-2. Email: kochj@digitalnoise.net
+2. Email: [REDACTED]
 3. Include steps to reproduce and impact assessment
 
 ## Response Timeline

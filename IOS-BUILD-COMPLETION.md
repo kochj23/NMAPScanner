@@ -233,7 +233,7 @@ xcodebuild -exportArchive \
 ```
 
 ### Code Signing
-- **Identity:** Apple Development: kochj@digitalnoise.net (N7M8354PAA)
+- **Identity:** Apple Development: [REDACTED] ([REDACTED])
 - **Team ID:** QRRCB8HB3W
 - **Provisioning Profile:** iOS Team Provisioning Profile
 - **Bundle ID:** com.digitalnoise.homekitadopter

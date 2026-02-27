@@ -98,7 +98,7 @@ This means:
 **Fix:**
 1. Xcode menu → **Settings** (or Preferences)
 2. Click **"Accounts"** tab
-3. Verify your Apple ID (**kochj@digitalnoise.net**) is listed
+3. Verify your Apple ID (**[REDACTED]**) is listed
 4. If not, click **"+"** and sign in
 5. Close Settings and try Step 2 again
 
