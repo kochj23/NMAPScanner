@@ -754,7 +754,7 @@ Text(displayName)
 
 ## 📞 SUPPORT & CONTRIBUTIONS
 
-**Primary Developer:** Jordan Koch (kochj@digitalnoise.net)
+**Primary Developer:** Jordan Koch ([REDACTED])
 **AI Assistant:** Claude Code (Anthropic)
 **Repository:** `/Volumes/Data/xcode/NMAPScanner/`
 **Documentation:** See `IMPLEMENTATION_ROADMAP.md` for detailed technical specs

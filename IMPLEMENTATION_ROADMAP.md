@@ -534,4 +534,4 @@ Maintain support for existing whitelists and device persistence data.
 4. Gather user feedback
 5. Prioritize v3.1 features based on usage
 
-**For questions or contributions:** kochj@digitalnoise.net
+**For questions or contributions:** [REDACTED]

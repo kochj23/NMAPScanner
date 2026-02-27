@@ -81,7 +81,7 @@ This takes 5-10 seconds.
 
 1. Xcode menu → **Settings** (or Preferences)
 2. Click **"Accounts"** tab
-3. Verify you see: **kochj@digitalnoise.net**
+3. Verify you see: **[REDACTED]**
 4. If not there, click **"+"** and sign in
 5. Close Settings
 6. Go back to Signing & Capabilities and try Step 2 again

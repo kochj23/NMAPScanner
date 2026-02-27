@@ -265,7 +265,7 @@ hdiutil create -volname "HomeKit Adopter" \
 
 # Notarize
 xcrun notarytool submit HomeKitAdopter-v2.0.0.dmg \
-  --apple-id kochj@digitalnoise.net \
+  --apple-id [REDACTED] \
   --team-id QRRCB8HB3W \
   --wait
 

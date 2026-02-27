@@ -86,7 +86,7 @@
 - **Archive Path**: /tmp/NMAPScanner.xcarchive
 - **Export Path**: /Volumes/Data/xcode/binaries/NMAPScanner-2025-11-29-1840/
 - **App Size**: 4.2 MB
-- **Signing**: Apple Development (kochj@digitalnoise.net)
+- **Signing**: Apple Development ([REDACTED])
 - **Team ID**: ZU5X76C98X
 
 ### Testing Recommendations
