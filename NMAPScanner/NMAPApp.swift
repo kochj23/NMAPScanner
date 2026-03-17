@@ -51,7 +51,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
         // Initialize menu bar agent
         Task { @MainActor in
             MenuBarAgent.shared.setup()
+            NovaAPIServer.shared.start()
             SecureLogger.log("Menu bar agent initialized on app launch", level: .info)
+            SecureLogger.log("NovaAPIServer started on port \(NovaAPIServer.shared.port)", level: .info)
         }
 
         // Request notification permissions
