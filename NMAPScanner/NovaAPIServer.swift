@@ -65,10 +65,10 @@ class NovaAPIServer {
                 "scanResultCount": portScanner.scanResults.count,
                 "securityWarningCount": AISecurityAnalyzer.shared.warnings.count,
                 "uptimeSeconds": Int(Date().timeIntervalSince(startTime))
-            ])
+            ] as [String: Any])
 
         case ("GET", "/api/ping"):
-            return json(200, ["pong": true])
+            return json(200, ["pong": "true"] as [String: Any])
 
         case ("GET", "/api/scan/results"):
             let results = AdvancedPortScanner.shared.scanResults.map { r -> [String: Any] in
@@ -88,7 +88,7 @@ class NovaAPIServer {
 
         case ("POST", "/api/scan/start"):
             guard let body = req.bodyJSON(), let ip = body["ip"] as? String else {
-                return json(400, ["error": "'ip' required"])
+                return json(400, ["error": "'ip' required"] as [String: Any])
             }
             // Scan via nmap subprocess
             Task {
@@ -97,7 +97,7 @@ class NovaAPIServer {
                 result.arguments = ["nmap", "-sV", "--open", ip]
                 try? result.run()
             }
-            return json(200, ["status": "scan_started", "ip": ip])
+            return json(200, ["status": "scan_started", "ip": ip] as [String: Any])
 
         case ("GET", "/api/security/warnings"):
             let warnings = AISecurityAnalyzer.shared.warnings.map { w -> [String: Any] in
@@ -132,7 +132,7 @@ class NovaAPIServer {
             return jsonArray(200, devices)
 
         default:
-            return json(404, ["error": "Not found: \(req.method) \(req.path)"])
+            return json(404, ["error": "Not found: \(req.method) \(req.path)"] as [String: Any])
         }
     }
 
