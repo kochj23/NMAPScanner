@@ -942,7 +942,7 @@
 					"@executable_path/../../../../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
-				MARKETING_VERSION = 8.0.0;
+				MARKETING_VERSION = 8.8.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.digitalnoise.nmapscanner.widget;
 				PRODUCT_NAME = "NMAPScanner Widget";
 				SDKROOT = macosx;
@@ -971,7 +971,7 @@
 					"@executable_path/../../../../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
-				MARKETING_VERSION = 8.0.0;
+				MARKETING_VERSION = 8.8.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.digitalnoise.nmapscanner.widget;
 				PRODUCT_NAME = "NMAPScanner Widget";
 				SDKROOT = macosx;
