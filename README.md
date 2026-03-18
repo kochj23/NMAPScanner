@@ -1,4 +1,4 @@
-# NMAPScanner v8.7.0
+# NMAPScanner v8.8.0
 
 ![Build](https://github.com/kochj23/NMAPScanner/actions/workflows/build.yml/badge.svg)
 
@@ -16,6 +16,7 @@ Comprehensive network scanning, vulnerability detection, and device action contr
 NMAPScanner is a native macOS application that wraps nmap with an intuitive GUI, adding AI-powered threat detection, device management actions, and real-time network monitoring. It provides professional security scanning capabilities with the ease of a native Mac app.
 
 **Key Benefits:**
+- **macOS Widget (v8.8.0)**: Security score, device counts, threat status, and last scan time in Notification Center
 - **Comprehensive Security Hardening (v8.7.0)**: 25 security and code quality fixes across all severity levels
 - **Advanced Device Actions (v8.6.0)**: Whitelist, block, deep scan, isolate devices
 - **AI Threat Detection**: MLX-powered security analysis
@@ -28,6 +29,17 @@ NMAPScanner is a native macOS application that wraps nmap with an intuitive GUI,
 - **Security Professionals**: Vulnerability assessment and penetration testing
 - **Home Users**: Identify rogue devices on home network
 - **IT Teams**: Asset discovery and inventory management
+
+---
+
+## What's New in v8.8.0 (March 2026)
+
+### macOS Widget Support
+- **Small widget**: Security score ring, healthy/total device count, threat indicator
+- **Medium widget**: Score ring + severity breakdown (Critical/High/Medium/Low) + last scan time
+- **Large widget**: Full device list, overdue vulnerabilities, scan schedule, SLA compliance
+- Widget refreshes automatically on every scan completion
+- Deep links to open the scanner directly from the widget
 
 ---
 
