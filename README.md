@@ -1,8 +1,11 @@
-# NMAPScanner v8.8.0
+# NMAPScanner v8.9.0
 
 ![Build](https://github.com/kochj23/NMAPScanner/actions/workflows/build.yml/badge.svg)
+![Platform](https://img.shields.io/badge/platform-macOS%2014.0%2B-blue)
+![License](https://img.shields.io/badge/license-MIT-green)
+![Version](https://img.shields.io/badge/version-8.9.0-purple)
 
-**Advanced network security scanner with AI-powered threat detection and device management**
+**Advanced network security scanner with AI-powered threat detection, device management, and STIX 2.1 threat intelligence sharing.**
 
 Comprehensive network scanning, vulnerability detection, and device action controls—all with local AI processing on Apple Silicon.
 
@@ -29,6 +32,48 @@ NMAPScanner is a native macOS application that wraps nmap with an intuitive GUI,
 - **Security Professionals**: Vulnerability assessment and penetration testing
 - **Home Users**: Identify rogue devices on home network
 - **IT Teams**: Asset discovery and inventory management
+
+---
+
+## What's New in v8.9.0 (April 2026)
+
+### Threat Intelligence Sharing (STIX 2.1)
+
+Export and share threat findings in industry-standard formats for SIEM integration, threat feeds, and cross-tool correlation.
+
+**New API endpoints** (port 37423):
+
+```bash
+# Export findings as STIX 2.1 bundle (machine-readable IoC format)
+curl http://127.0.0.1:37423/api/threats/ioc
+
+# Full structured export for dashboards/SIEM
+curl http://127.0.0.1:37423/api/threats/export
+
+# Import an external threat feed (STIX 2.1 bundle)
+curl -X POST http://127.0.0.1:37423/api/threats/import \
+  -H "Content-Type: application/json" \
+  -d @threat_feed.json
+```
+
+**STIX 2.1 bundle format** — each finding becomes a STIX `indicator` object with:
+- `id` — `indicator--{uuid}`
+- `indicator_types` — mapped from severity (`malicious-activity`, `anomalous-activity`, `benign`)
+- `pattern` — STIX pattern matching host/port: `[network-traffic:dst_port = 22 AND ...]`
+- `x-nova-scanner` extension — host, port, service, remediation, CVE references, isVerified
+
+**Bug Fixes (compiler warnings resolved)**
+
+~40 Swift compiler warnings fixed across 20+ files — this release includes significant code quality improvements:
+- `hasResumed`/`hasReturned` concurrent capture → `_ResumeFlag: @unchecked Sendable` class wrapper (7 files)
+- `onChange(of:perform:)` deprecation → two-parameter `{ _, newValue in }` form (6 files)
+- `NSUserNotification` → `UNUserNotificationCenter` (AnomalyDetectionManager)
+- `SecTrustGetCertificateAtIndex` / `SecTrustEvaluate` → `SecTrustCopyCertificateChain` / `SecTrustEvaluateWithError` (SecureUniFiDelegate)
+- Non-optional `??` on `PortInfo.service: String` removed across 5 MLX analysis files
+- `let id = UUID()` in `Codable` structs → `var id = UUID()` (9 files)
+- `NetworkIntegration` struct marked `@MainActor` for isolation correctness
+- `DNSResolver` extension fixed — `@MainActor` default parameter no longer references `shared` from nonisolated context
+- Unused `var`→`let` conversions, removed dead assignments across SecurityDashboardView, Enhanced3DTopologyView, IntegratedDashboardViewV3, DeviceUptimeTracker, DependencyGraphView, ShadowAIDetector
 
 ---
 
