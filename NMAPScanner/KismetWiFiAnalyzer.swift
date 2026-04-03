@@ -22,7 +22,7 @@ import SwiftUI
 
 /// Represents a client device connected to a WiFi network
 struct WiFiClient: Identifiable, Codable {
-    let id = UUID()
+    var id = UUID()
     let macAddress: String
     let ipAddress: String?
     let hostname: String?
@@ -43,7 +43,7 @@ struct WiFiClient: Identifiable, Codable {
 
 /// Represents a detected rogue access point
 struct RogueAccessPoint: Identifiable {
-    let id = UUID()
+    var id = UUID()
     let ssid: String
     let bssid: String
     let detectionReason: RogueReason
@@ -91,7 +91,7 @@ struct ChannelUtilization {
 
 /// Security vulnerabilities detected in WiFi networks
 struct WiFiSecurityVulnerability: Identifiable {
-    let id = UUID()
+    var id = UUID()
     let ssid: String
     let bssid: String
     let vulnerability: VulnerabilityType
@@ -117,7 +117,7 @@ struct WiFiSecurityVulnerability: Identifiable {
 
 /// Historical tracking of WiFi network observations
 struct WiFiNetworkHistory: Codable, Identifiable {
-    let id = UUID()
+    var id = UUID()
     let ssid: String
     let bssid: String
     let firstSeen: Date
