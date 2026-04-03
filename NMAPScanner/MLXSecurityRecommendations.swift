@@ -189,7 +189,7 @@ class MLXSecurityRecommendations: ObservableObject {
         if !device.openPorts.isEmpty {
             context += "\nOpen Ports:\n"
             for port in device.openPorts {
-                context += "- Port \(port.port): \(port.service ?? "unknown")\n"
+                context += "- Port \(port.port): \(port.service)\n"
                 if let version = port.version {
                     context += "  Version: \(version)\n"
                 }
@@ -208,22 +208,16 @@ class MLXSecurityRecommendations: ObservableObject {
         var low: [SecurityRecommendation] = []
 
         let sections = response.components(separatedBy: "\n\n")
-        var currentPriority: SecurityPriority = .medium
-
         for section in sections {
             let sectionLower = section.lowercased()
 
             if sectionLower.contains("critical") || sectionLower.contains("immediate") {
-                currentPriority = .critical
                 critical.append(contentsOf: extractRecommendations(from: section, priority: .critical))
             } else if sectionLower.contains("high priority") || sectionLower.contains("address this week") {
-                currentPriority = .high
                 high.append(contentsOf: extractRecommendations(from: section, priority: .high))
             } else if sectionLower.contains("medium priority") || sectionLower.contains("address this month") {
-                currentPriority = .medium
                 medium.append(contentsOf: extractRecommendations(from: section, priority: .medium))
             } else if sectionLower.contains("low priority") || sectionLower.contains("future") {
-                currentPriority = .low
                 low.append(contentsOf: extractRecommendations(from: section, priority: .low))
             }
         }

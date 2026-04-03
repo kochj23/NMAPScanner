@@ -70,7 +70,7 @@ class PingScanner: ObservableObject {
     /// Send ICMP echo request using BSD sockets
     private func sendICMPPing(to host: String, timeout: TimeInterval) async -> Bool {
         await withCheckedContinuation { continuation in
-            var resolved = false
+            _ = false  // resolved flag (unused — ping fallback uses CFHost timeout instead)
 
             // Resolve hostname to IP address
             var hints = addrinfo()
@@ -220,30 +220,31 @@ class PortScanner: ObservableObject {
             )
 
             let queue = DispatchQueue(label: "port-scan-\(host)-\(port)")
-            var hasResumed = false
+            final class _ResumeFlag: @unchecked Sendable { var value = false }
+            let resumed = _ResumeFlag()
             let lock = NSLock()
 
             connection.stateUpdateHandler = { state in
                 lock.lock()
                 defer { lock.unlock() }
 
-                guard !hasResumed else { return }
+                guard !resumed.value else { return }
 
                 switch state {
                 case .ready:
                     print("🔌 PortScanner.testPort: Port \(port) on \(host) is OPEN")
-                    hasResumed = true
+                    resumed.value = true
                     connection.cancel()
                     continuation.resume(returning: true)
                 case .failed(let error):
                     print("🔌 PortScanner.testPort: Port \(port) on \(host) FAILED: \(error.localizedDescription)")
-                    hasResumed = true
+                    resumed.value = true
                     connection.cancel()
                     continuation.resume(returning: false)
                 case .cancelled:
-                    if !hasResumed {
+                    if !resumed.value {
                         print("🔌 PortScanner.testPort: Port \(port) on \(host) CANCELLED")
-                        hasResumed = true
+                        resumed.value = true
                         continuation.resume(returning: false)
                     }
                 default:
@@ -258,9 +259,9 @@ class PortScanner: ObservableObject {
                 lock.lock()
                 defer { lock.unlock() }
 
-                if !hasResumed {
+                if !resumed.value {
                     print("🔌 PortScanner.testPort: Port \(port) on \(host) TIMEOUT")
-                    hasResumed = true
+                    resumed.value = true
                     connection.cancel()
                     continuation.resume(returning: false)
                 }

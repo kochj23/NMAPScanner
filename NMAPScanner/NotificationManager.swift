@@ -696,7 +696,7 @@ struct NotificationSettingsView: View {
                 }
             }
             .navigationTitle("Notification Settings")
-            .onChange(of: notificationManager.settings) { _ in
+            .onChange(of: notificationManager.settings) { _, _ in
                 notificationManager.saveSettings()
             }
         }

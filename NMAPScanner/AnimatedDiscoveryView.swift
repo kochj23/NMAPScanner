@@ -156,7 +156,7 @@ struct DeviceIconView: View {
     }
 
     private var deviceType: DeviceType {
-        DeviceType.from(serviceType: device.serviceType ?? "")
+        DeviceType.from(serviceType: device.serviceType)
     }
 
     private var deviceColor: Color {

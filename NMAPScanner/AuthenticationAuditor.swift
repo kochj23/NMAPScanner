@@ -10,7 +10,7 @@ import Network
 
 /// Authentication audit finding
 struct AuthFinding: Identifiable, Codable {
-    let id = UUID()
+    var id = UUID()
     let host: String
     let port: Int
     let service: String
@@ -422,7 +422,8 @@ class AuthenticationAuditor: ObservableObject {
             )
 
             let queue = DispatchQueue(label: "auth-audit")
-            var hasResumed = false
+            final class _ResumeFlag: @unchecked Sendable { var value = false }
+            let resumed = _ResumeFlag()
             let lock = NSLock()
             var receivedData = Data()
 
@@ -444,8 +445,8 @@ class AuthenticationAuditor: ObservableObject {
                         }
 
                         if isComplete || error != nil || receivedData.count > 0 {
-                            if !hasResumed {
-                                hasResumed = true
+                            if !resumed.value {
+                                resumed.value = true
                                 connection.cancel()
                                 let result = String(data: receivedData, encoding: .utf8) ?? ""
                                 continuation.resume(returning: result)
@@ -456,8 +457,8 @@ class AuthenticationAuditor: ObservableObject {
                 } else if case .failed = state {
                     lock.lock()
                     defer { lock.unlock() }
-                    if !hasResumed {
-                        hasResumed = true
+                    if !resumed.value {
+                        resumed.value = true
                         connection.cancel()
                         continuation.resume(returning: "")
                     }
@@ -470,8 +471,8 @@ class AuthenticationAuditor: ObservableObject {
                 lock.lock()
                 defer { lock.unlock() }
 
-                if !hasResumed {
-                    hasResumed = true
+                if !resumed.value {
+                    resumed.value = true
                     connection.cancel()
                     let result = String(data: receivedData, encoding: .utf8) ?? ""
                     continuation.resume(returning: result)

@@ -8,7 +8,7 @@
 import Foundation
 
 struct RogueDevice: Identifiable, Codable {
-    let id = UUID()
+    var id = UUID()
     let ipAddress: String
     let macAddress: String?
     let hostname: String?

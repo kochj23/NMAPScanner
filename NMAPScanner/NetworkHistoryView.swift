@@ -276,7 +276,7 @@ struct NetworkHistoryDetailView: View {
                 .padding(30)
                 .background(Color.gray.opacity(0.1))
                 .cornerRadius(20)
-                .onChange(of: notes) { _ in
+                .onChange(of: notes) { _, _ in
                     // Save notes when changed
                     // Note: In production, would update network record
                 }

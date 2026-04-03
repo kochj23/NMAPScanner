@@ -8,7 +8,7 @@
 import Foundation
 
 struct EnhancedAnomaly: Identifiable, Codable {
-    let id = UUID()
+    var id = UUID()
     let type: AnomalyType
     let severity: Severity
     let source: String

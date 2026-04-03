@@ -153,10 +153,11 @@ class DNSResolver: ObservableObject {
 extension EnhancedDevice {
     /// Get display name with DNS if available
     @MainActor
-    func displayNameWithDNS(resolver: DNSResolver = .shared) -> String {
+    func displayNameWithDNS(resolver: DNSResolver? = nil) -> String {
+        let r = resolver ?? DNSResolver.shared
         if let hostname = hostname {
             return hostname
-        } else if let dnsName = resolver.getHostname(for: ipAddress) {
+        } else if let dnsName = r.getHostname(for: ipAddress) {
             return dnsName
         } else {
             return ipAddress
@@ -165,10 +166,11 @@ extension EnhancedDevice {
 
     /// Get full display string with both IP and DNS
     @MainActor
-    func fullDisplayString(resolver: DNSResolver = .shared) -> String {
+    func fullDisplayString(resolver: DNSResolver? = nil) -> String {
+        let r = resolver ?? DNSResolver.shared
         if let hostname = hostname {
             return "\(hostname) (\(ipAddress))"
-        } else if let dnsName = resolver.getHostname(for: ipAddress) {
+        } else if let dnsName = r.getHostname(for: ipAddress) {
             return "\(dnsName) (\(ipAddress))"
         } else {
             return ipAddress

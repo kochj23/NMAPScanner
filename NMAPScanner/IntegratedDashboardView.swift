@@ -746,22 +746,23 @@ class IntegratedScanner: ObservableObject {
             )
 
             let queue = DispatchQueue(label: "port-scan-\(host)-\(port)")
-            var hasResumed = false
+            final class _ResumeFlag: @unchecked Sendable { var value = false }
+            let resumed = _ResumeFlag()
             let lock = NSLock()
 
             connection.stateUpdateHandler = { state in
                 lock.lock()
                 defer { lock.unlock() }
 
-                guard !hasResumed else { return }
+                guard !resumed.value else { return }
 
                 switch state {
                 case .ready:
-                    hasResumed = true
+                    resumed.value = true
                     connection.cancel()
                     continuation.resume(returning: true)
                 case .failed, .cancelled:
-                    hasResumed = true
+                    resumed.value = true
                     connection.cancel()
                     continuation.resume(returning: false)
                 default:
@@ -776,8 +777,8 @@ class IntegratedScanner: ObservableObject {
                 lock.lock()
                 defer { lock.unlock() }
 
-                if !hasResumed {
-                    hasResumed = true
+                if !resumed.value {
+                    resumed.value = true
                     connection.cancel()
                     continuation.resume(returning: false)
                 }

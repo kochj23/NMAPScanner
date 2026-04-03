@@ -153,14 +153,15 @@ class NetworkTrafficManager: ObservableObject {
 
         return await withCheckedContinuation { continuation in
             let queue = DispatchQueue(label: "connection-test-\(connectionId)")
-            var hasResumed = false
+            final class _ResumeFlag: @unchecked Sendable { var value = false }
+            let resumed = _ResumeFlag()
             let lock = NSLock()
 
             connection.stateUpdateHandler = { [weak self] state in
                 lock.lock()
                 defer { lock.unlock() }
 
-                guard !hasResumed else { return }
+                guard !resumed.value else { return }
 
                 Task { @MainActor in
                     // Determine protocol type
@@ -168,7 +169,7 @@ class NetworkTrafficManager: ObservableObject {
 
                     switch state {
                     case .ready:
-                        hasResumed = true
+                        resumed.value = true
 
                         let conn = NetworkConnection(
                             localEndpoint: "Apple TV",
@@ -188,7 +189,7 @@ class NetworkTrafficManager: ObservableObject {
                         continuation.resume(returning: conn)
 
                     case .failed(let error):
-                        hasResumed = true
+                        resumed.value = true
 
                         self?.logActivity("Connection failed: \(host):\(port) - \(error.localizedDescription)")
                         self?.statistics.failedConnections += 1
@@ -197,8 +198,8 @@ class NetworkTrafficManager: ObservableObject {
                         continuation.resume(returning: nil)
 
                     case .cancelled:
-                        if !hasResumed {
-                            hasResumed = true
+                        if !resumed.value {
+                            resumed.value = true
                             continuation.resume(returning: nil)
                         }
 
@@ -215,8 +216,8 @@ class NetworkTrafficManager: ObservableObject {
                 lock.lock()
                 defer { lock.unlock() }
 
-                if !hasResumed {
-                    hasResumed = true
+                if !resumed.value {
+                    resumed.value = true
                     connection.cancel()
                     continuation.resume(returning: nil)
                 }

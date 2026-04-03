@@ -408,8 +408,6 @@ struct CircularLayoutView: View {
 
                     // Devices arranged in multiple rings if needed
                     let devicesPerRing = 12
-                    let totalRings = max(1, (devices.count + devicesPerRing - 1) / devicesPerRing)
-
                     ForEach(devices.indices, id: \.self) { index in
                         let device = devices[index]
                         let ring = index / devicesPerRing

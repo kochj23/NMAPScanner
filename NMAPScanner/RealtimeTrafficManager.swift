@@ -162,7 +162,7 @@ class RealtimeTrafficManager: ObservableObject {
 
     /// Calculate current bandwidth for all devices
     private func calculateBandwidth() {
-        let oneSecondAgo = Date().addingTimeInterval(-1.0)
+        _ = Date().addingTimeInterval(-1.0) // oneSecondAgo — calculated but not yet used in filtering
         var totalBytes: Double = 0
         var totalPackets: Double = 0
 

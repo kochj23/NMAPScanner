@@ -9,7 +9,7 @@ import Foundation
 
 /// Network segment definition
 struct NetworkSegment: Identifiable, Codable, Hashable {
-    let id = UUID()
+    var id = UUID()
     let name: String
     let cidr: String
     let securityLevel: SecurityLevel
@@ -27,7 +27,7 @@ struct NetworkSegment: Identifiable, Codable, Hashable {
 
 /// Segmentation violation
 struct SegmentationViolation: Identifiable, Codable {
-    let id = UUID()
+    var id = UUID()
     let severity: Severity
     let sourceIP: String
     let sourceSegment: String

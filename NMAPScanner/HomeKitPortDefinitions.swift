@@ -224,7 +224,7 @@ struct HomeKitPortDefinitions {
 
     /// Detect if a device is likely a HomeKit accessory
     static func isLikelyHomeKitAccessory(ports: [Int]) -> Bool {
-        let homeKitPorts: Set<Int> = [49152, 80, 443, 8080]
+        _ = [49152, 80, 443, 8080] as Set<Int> // homeKitPorts — unused, check kept for future use
         let openPortsSet = Set(ports)
 
         // If has HomeKit HAP port

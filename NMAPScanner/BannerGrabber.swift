@@ -10,7 +10,7 @@ import Network
 
 /// Service banner information
 struct ServiceBanner: Identifiable, Codable {
-    let id = UUID()
+    var id = UUID()
     let host: String
     let port: Int
     let service: String
@@ -30,7 +30,7 @@ struct ServiceBanner: Identifiable, Codable {
 
 /// OS fingerprinting result
 struct OSFingerprint: Identifiable, Codable {
-    let id = UUID()
+    var id = UUID()
     let host: String
     let detectedOS: String
     let confidence: Int
@@ -246,7 +246,8 @@ class BannerGrabber: ObservableObject {
             )
 
             let queue = DispatchQueue(label: "banner-grab")
-            var hasResumed = false
+            final class _ResumeFlag: @unchecked Sendable { var value = false }
+            let resumed = _ResumeFlag()
             let lock = NSLock()
             var receivedData = Data()
 
@@ -258,8 +259,8 @@ class BannerGrabber: ObservableObject {
                             if error != nil {
                                 lock.lock()
                                 defer { lock.unlock() }
-                                if !hasResumed {
-                                    hasResumed = true
+                                if !resumed.value {
+                                    resumed.value = true
                                     connection.cancel()
                                     continuation.resume(returning: "")
                                 }
@@ -277,8 +278,8 @@ class BannerGrabber: ObservableObject {
                         }
 
                         if isComplete || error != nil || receivedData.count > 0 {
-                            if !hasResumed {
-                                hasResumed = true
+                            if !resumed.value {
+                                resumed.value = true
                                 connection.cancel()
                                 let result = String(data: receivedData, encoding: .utf8) ?? ""
                                 continuation.resume(returning: result)
@@ -289,8 +290,8 @@ class BannerGrabber: ObservableObject {
                 } else if case .failed = state {
                     lock.lock()
                     defer { lock.unlock() }
-                    if !hasResumed {
-                        hasResumed = true
+                    if !resumed.value {
+                        resumed.value = true
                         connection.cancel()
                         continuation.resume(returning: "")
                     }
@@ -304,8 +305,8 @@ class BannerGrabber: ObservableObject {
                 lock.lock()
                 defer { lock.unlock() }
 
-                if !hasResumed {
-                    hasResumed = true
+                if !resumed.value {
+                    resumed.value = true
                     connection.cancel()
                     let result = String(data: receivedData, encoding: .utf8) ?? ""
                     continuation.resume(returning: result)

@@ -291,7 +291,7 @@ class BonjourScanner: ObservableObject {
 
                     print("🔍 BonjourScanner: Found \(results.count) results for \(serviceType)")
                     for result in results {
-                        if case .service(let name, let type, let domain, let interface) = result.endpoint {
+                        if case .service(let name, let type, _, _) = result.endpoint {
                             // Resolve endpoint to get IP address and TXT records
                             print("🔍 BonjourScanner: Resolving endpoint for \(name)")
                             self.resolveEndpoint(result.endpoint, serviceType: type, serviceName: name)

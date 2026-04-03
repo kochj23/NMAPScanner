@@ -496,7 +496,6 @@ struct EnhancedDeviceDetailView: View {
     }
 
     private func generateHistoricalData() -> [DataPoint] {
-        let now = Date()
         return (0..<24).reversed().map { hour in
             DataPoint(
                 label: "\(hour)h ago",

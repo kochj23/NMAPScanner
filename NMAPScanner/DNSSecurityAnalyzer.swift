@@ -8,7 +8,7 @@
 import Foundation
 
 struct DNSSecurityFinding: Identifiable, Codable {
-    let id = UUID()
+    var id = UUID()
     let severity: Severity
     let type: FindingType
     let domain: String

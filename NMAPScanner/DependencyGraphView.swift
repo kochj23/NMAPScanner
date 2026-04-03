@@ -642,7 +642,7 @@ struct ConnectionLineView: View {
 
     private func arrowHead(from: CGPoint, to: CGPoint) -> Path {
         let arrowLength: CGFloat = 10
-        let arrowWidth: CGFloat = 8
+        _ = CGFloat(8) // arrowWidth
 
         let angle = atan2(to.y - from.y, to.x - from.x)
         let arrowPoint = CGPoint(
