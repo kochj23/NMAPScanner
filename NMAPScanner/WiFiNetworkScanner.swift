@@ -295,14 +295,14 @@ class WiFiNetworkScanner: ObservableObject {
         return WiFiNetworkInfo(
             ssid: ssid,
             bssid: network.bssid ?? "Unknown",
-            rssi: network.rssiValue ?? -100,
+            rssi: network.rssiValue,
             channel: channelNumber,
             channelWidth: channelWidth,
             channelBand: channelBand,
             securityType: security,
             countryCode: network.countryCode,
             beaconInterval: network.beaconInterval,
-            noise: network.noiseMeasurement ?? -100,
+            noise: network.noiseMeasurement,
             supportedRates: [],  // supportedDataRates not available in this API version
             supportedPHYModes: phyModes,
             isIBSS: network.ibss,

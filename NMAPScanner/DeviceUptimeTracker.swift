@@ -187,7 +187,7 @@ class DeviceUptimeTracker: ObservableObject {
 
     /// Record multiple observations (batch processing after scan)
     func recordScanResults(onlineDevices: [String: TimeInterval], allKnownDevices: [String]) {
-        let timestamp = Date()
+        _ = Date() // timestamp
 
         // Record online devices with response times
         for (deviceID, responseTime) in onlineDevices {

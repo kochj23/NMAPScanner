@@ -334,7 +334,7 @@ struct HomeKitTabView: View {
                 process.standardOutput = pipe
 
                 // Run for 10 seconds to collect results
-                var timedOut = false
+                var timedOut = false; _ = timedOut
                 let timer = Timer.scheduledTimer(withTimeInterval: 10.0, repeats: false) { _ in
                     if process.isRunning {
                         process.terminate()
@@ -397,7 +397,7 @@ struct HomeKitTabView: View {
         let pipe = Pipe()
         process.standardOutput = pipe
 
-        var timedOut = false
+        var timedOut = false; _ = timedOut
         let timer = Timer.scheduledTimer(withTimeInterval: 2.0, repeats: false) { _ in
             if process.isRunning {
                 process.terminate()

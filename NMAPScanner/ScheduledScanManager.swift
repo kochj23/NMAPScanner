@@ -187,7 +187,7 @@ final class ScheduledScanManager: ObservableObject {
 // MARK: - Scan Result Model
 
 struct ScheduledScanResult: Identifiable, Codable {
-    let id = UUID()
+    var id = UUID()
     let timestamp: Date
     let deviceCount: Int
     let duration: TimeInterval

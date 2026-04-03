@@ -8,7 +8,7 @@
 import Foundation
 
 struct ComplianceCheck: Identifiable, Codable {
-    let id = UUID()
+    var id = UUID()
     let standard: ComplianceStandard
     let checkID: String
     let name: String

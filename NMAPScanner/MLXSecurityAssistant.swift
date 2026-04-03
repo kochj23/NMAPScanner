@@ -312,7 +312,7 @@ struct SecurityAssistantView: View {
                     }
                     .padding(20)
                 }
-                .onChange(of: assistant.messages.count) { _ in
+                .onChange(of: assistant.messages.count) { _, _ in
                     if let lastMessage = assistant.messages.last {
                         withAnimation {
                             proxy.scrollTo(lastMessage.id, anchor: .bottom)

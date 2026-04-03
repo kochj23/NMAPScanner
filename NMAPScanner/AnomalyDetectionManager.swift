@@ -8,6 +8,7 @@
 import Foundation
 import SwiftUI
 import Combine
+import UserNotifications
 
 /// Detects and reports network anomalies
 @MainActor
@@ -245,13 +246,15 @@ extension NotificationManager {
         let title = "⚠️ Network Anomaly Detected"
         let message = "\(anomaly.type.rawValue): \(anomaly.description)"
 
-        // macOS notification
-        let notification = NSUserNotification()
-        notification.title = title
-        notification.informativeText = message
-        notification.soundName = NSUserNotificationDefaultSoundName
-
-        NSUserNotificationCenter.default.deliver(notification)
+        // macOS notification (UserNotifications framework)
+        let content = UNMutableNotificationContent()
+        content.title = title
+        content.body  = message
+        content.sound = .default
+        let request = UNNotificationRequest(
+            identifier: UUID().uuidString,
+            content: content, trigger: nil)
+        UNUserNotificationCenter.current().add(request)
 
         print("🔔 NotificationManager: Anomaly notification sent - \(anomaly.type.rawValue)")
     }

@@ -147,7 +147,7 @@ class MLXDeviceClassifier: ObservableObject {
         if !device.openPorts.isEmpty {
             context += "\nOpen Ports:\n"
             for port in device.openPorts.prefix(10) {
-                context += "- Port \(port.port): \(port.service ?? "unknown")"
+                context += "- Port \(port.port): \(port.service)"
                 if let version = port.version {
                     context += " (\(version))"
                 }

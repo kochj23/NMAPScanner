@@ -8,7 +8,7 @@
 import Foundation
 
 struct ShadowITFinding: Identifiable, Codable {
-    let id = UUID()
+    var id = UUID()
     let sourceIP: String
     let service: CloudService
     let destination: String

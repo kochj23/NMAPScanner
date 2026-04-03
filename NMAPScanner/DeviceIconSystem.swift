@@ -22,7 +22,7 @@ class DeviceIconManager {
 
     /// Get SF Symbol name for device
     func iconName(for device: HomeKitDevice) -> String {
-        let serviceType = (device.serviceType ?? "").lowercased()
+        let serviceType = (device.serviceType).lowercased()
         let name = device.name.lowercased()
 
         // HomeKit devices
@@ -218,7 +218,7 @@ struct DeviceIconWithGradient: View {
     }
 
     private var deviceType: DeviceType {
-        DeviceType.from(serviceType: device.serviceType ?? "")
+        DeviceType.from(serviceType: device.serviceType)
     }
 
     private var deviceColor: Color {
@@ -350,7 +350,7 @@ struct MiniDeviceCard: View {
                     .lineLimit(1)
 
                 HStack(spacing: 6) {
-                    DeviceTypeBadge(type: DeviceType.from(serviceType: device.serviceType ?? ""))
+                    DeviceTypeBadge(type: DeviceType.from(serviceType: device.serviceType))
 
                     if let ipAddress = device.ipAddress {
                         Text(ipAddress)
@@ -409,7 +409,7 @@ struct LargeDeviceCard: View {
 
             // Device info
             VStack(spacing: 8) {
-                DeviceTypeBadge(type: DeviceType.from(serviceType: device.serviceType ?? ""))
+                DeviceTypeBadge(type: DeviceType.from(serviceType: device.serviceType))
 
                 if let ipAddress = device.ipAddress {
                     Text(ipAddress)
@@ -439,8 +439,8 @@ struct LargeDeviceCard: View {
                         .stroke(
                             isHovered ? LinearGradient(
                                 colors: [
-                                    Color.deviceColor(for: DeviceType.from(serviceType: device.serviceType ?? "")).opacity(0.6),
-                                    Color.deviceColor(for: DeviceType.from(serviceType: device.serviceType ?? "")).opacity(0.2)
+                                    Color.deviceColor(for: DeviceType.from(serviceType: device.serviceType)).opacity(0.6),
+                                    Color.deviceColor(for: DeviceType.from(serviceType: device.serviceType)).opacity(0.2)
                                 ],
                                 startPoint: .topLeading,
                                 endPoint: .bottomTrailing

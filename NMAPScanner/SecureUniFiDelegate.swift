@@ -36,7 +36,8 @@ class SecureUniFiDelegate: NSObject, URLSessionDelegate {
         // Get certificate chain
         let certificateCount = SecTrustGetCertificateCount(serverTrust)
         guard certificateCount > 0,
-              let certificate = SecTrustGetCertificateAtIndex(serverTrust, 0) else {
+              let certChain = SecTrustCopyCertificateChain(serverTrust) as? [SecCertificate],
+              let certificate = certChain.first else {
             SecureLogger.log("No certificate in chain", level: .error)
             SecurityAuditLog.log(event: .certificateRejected, details: "No certificate in chain", level: .error)
             completionHandler(.cancelAuthenticationChallenge, nil)
@@ -65,10 +66,8 @@ class SecureUniFiDelegate: NSObject, URLSessionDelegate {
         }
 
         // New certificate - evaluate trust
-        var trustResult: SecTrustResultType = .invalid
-        SecTrustEvaluate(serverTrust, &trustResult)
-
-        let isTrustedBySystem = (trustResult == .unspecified || trustResult == .proceed)
+        var evalError: CFError?
+        let isTrustedBySystem = SecTrustEvaluateWithError(serverTrust, &evalError)
 
         if isTrustedBySystem {
             // Certificate is trusted by system (valid CA chain)

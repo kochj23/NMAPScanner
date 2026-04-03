@@ -169,26 +169,28 @@ class SSLCertificateAnalyzer: ObservableObject {
     private func testTLSConnection(_ connection: NWConnection) async -> (connected: Bool, metadata: NWProtocolMetadata?) {
         await withCheckedContinuation { continuation in
             let queue = DispatchQueue(label: "tls-test")
-            var hasResumed = false
+            final class _TLSState: @unchecked Sendable {
+                var resumed = false
+                var metadata: NWProtocolMetadata?
+            }
+            let state = _TLSState()
             let lock = NSLock()
-            var capturedMetadata: NWProtocolMetadata?
 
-            connection.stateUpdateHandler = { state in
+            connection.stateUpdateHandler = { _ in
                 lock.lock()
                 defer { lock.unlock() }
 
-                guard !hasResumed else { return }
+                guard !state.resumed else { return }
 
-                switch state {
+                switch connection.state {
                 case .ready:
-                    // Capture TLS metadata
-                    capturedMetadata = connection.metadata(definition: NWProtocolTLS.definition)
-                    hasResumed = true
+                    state.metadata = connection.metadata(definition: NWProtocolTLS.definition)
+                    state.resumed = true
                     connection.cancel()
-                    continuation.resume(returning: (true, capturedMetadata))
+                    continuation.resume(returning: (true, state.metadata))
 
                 case .failed, .cancelled:
-                    hasResumed = true
+                    state.resumed = true
                     connection.cancel()
                     continuation.resume(returning: (false, nil))
 
@@ -204,8 +206,8 @@ class SSLCertificateAnalyzer: ObservableObject {
                 lock.lock()
                 defer { lock.unlock() }
 
-                if !hasResumed {
-                    hasResumed = true
+                if !state.resumed {
+                    state.resumed = true
                     connection.cancel()
                     continuation.resume(returning: (false, nil))
                 }
@@ -230,8 +232,7 @@ class SSLCertificateAnalyzer: ObservableObject {
             let certificate = sec_certificate_copy_ref(chain).takeRetainedValue() as SecCertificate
 
             // Extract certificate details
-            if let subject = SecCertificateCopySubjectSummary(certificate) as String?,
-               let data = SecCertificateCopyData(certificate) as Data? {
+            if let subject = SecCertificateCopySubjectSummary(certificate) as String? {
 
                 var validFrom = Date()
                 var validTo = Date()

@@ -584,7 +584,7 @@ class IntegratedScannerV3: ObservableObject {
         devices = []
 
         for host in sortIPAddresses(Array(ipAddresses)) {
-            let services = bonjourScanner.getServices(for: host)
+            _ = bonjourScanner.getServices(for: host)
 
             // Create basic device with Bonjour info
             let device = createBasicDevice(host: host, macAddress: nil)
@@ -785,7 +785,7 @@ class IntegratedScannerV3: ObservableObject {
     /// Merge multiple device instances into single best representation
     private func mergeDevices(_ devices: [EnhancedDevice], baseIP: String) -> EnhancedDevice {
         // Start with first device as base
-        var merged = devices[0]
+        let merged = devices[0]
 
         // Merge data from all versions
         var allPorts: [PortInfo] = []
@@ -1525,7 +1525,7 @@ class IntegratedScannerV3: ObservableObject {
         // Use custom DNS resolver if enabled, otherwise skip hostname resolution
         // (Old resolveHostname() blocks main thread with DispatchSemaphore)
         print("🔧 createBasicDevice: Attempting hostname resolution via custom DNS")
-        var hostname: String? = nil
+        let hostname: String? = nil
 
         // NOTE: Hostname resolution is skipped here to avoid blocking the main thread.
         // The legacy resolveHostname() used DispatchSemaphore which deadlocks on MainActor.

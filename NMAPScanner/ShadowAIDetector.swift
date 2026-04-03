@@ -28,7 +28,7 @@ struct AIServiceInfo: Identifiable, Codable, Hashable {
     var lastSeen: Date
     var isOnline: Bool
     var responseTime: TimeInterval?
-    var additionalInfo: [String: String]
+    let additionalInfo: [String: String]
 
     init(
         host: String,
@@ -481,7 +481,7 @@ class ShadowAIDetector: ObservableObject {
         // Try to get additional info based on service type
         var modelInfo: String?
         var version: String?
-        var additionalInfo: [String: String] = [:]
+        let additionalInfo: [String: String] = [:]
 
         // Query Ollama API for model info
         if serviceType == .ollama {

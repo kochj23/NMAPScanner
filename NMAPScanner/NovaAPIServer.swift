@@ -131,6 +131,77 @@ class NovaAPIServer {
             }
             return jsonArray(200, devices)
 
+        // ── Threat Intelligence ───────────────────────────────────────────────
+
+        case ("GET", "/api/threats/ioc"):
+            // STIX 2.1 Bundle — machine-readable IoC export
+            let warnings = AISecurityAnalyzer.shared.warnings
+            let iso = ISO8601DateFormatter()
+            let objects: [[String: Any]] = warnings.map { w -> [String: Any] in [
+                "type": "indicator",
+                "spec_version": "2.1",
+                "id": "indicator--\(w.id.uuidString.lowercased())",
+                "created": iso.string(from: w.detectedAt),
+                "modified": iso.string(from: w.detectedAt),
+                "name": w.title,
+                "description": w.description,
+                "indicator_types": [stixType(w.severity.rawValue)],
+                "pattern_type": "stix",
+                "pattern": "[network-traffic:dst_port = \(w.port) AND network-traffic:dst_ref.value = '\(w.host)']",
+                "valid_from": iso.string(from: w.detectedAt),
+                "labels": [w.severity.rawValue.lowercased()],
+                "extensions": ["x-nova-scanner": [
+                    "host": w.host, "port": w.port, "service": w.service,
+                    "remediation": w.remediation, "isVerified": w.isVerified,
+                    "cveReferences": w.cveReferences ?? []
+                ] as [String: Any]]
+            ]}
+            return json(200, [
+                "type": "bundle",
+                "id": "bundle--\(UUID().uuidString.lowercased())",
+                "spec_version": "2.1",
+                "objects": objects
+            ] as [String: Any])
+
+        case ("GET", "/api/threats/export"):
+            // Full structured export for SIEM / dashboards
+            let warnings = AISecurityAnalyzer.shared.warnings
+            let iso = ISO8601DateFormatter()
+            let scanResults = AdvancedPortScanner.shared.scanResults
+            let severityCount = { (sev: String) in warnings.filter { $0.severity.rawValue.lowercased() == sev }.count }
+            let findings = warnings.map { w -> [String: Any] in [
+                "id": w.id.uuidString, "severity": w.severity.rawValue,
+                "title": w.title, "description": w.description,
+                "host": w.host, "port": w.port, "service": w.service,
+                "isVerified": w.isVerified, "remediation": w.remediation,
+                "cveReferences": w.cveReferences ?? [],
+                "detectedAt": iso.string(from: w.detectedAt)
+            ]}
+            let devices = scanResults.map { r -> [String: Any] in [
+                "ip": r.ipAddress, "hostname": r.hostname ?? "",
+                "openPorts": r.tcpPorts, "os": r.osDetection.osName ?? "unknown"
+            ]}
+            return json(200, [
+                "exportedAt": iso.string(from: Date()),
+                "source": "NMAPScanner", "host": ProcessInfo.processInfo.hostName,
+                "summary": ["total": warnings.count, "critical": severityCount("critical"),
+                            "high": severityCount("high"), "medium": severityCount("medium"),
+                            "low": severityCount("low"), "devicesScanned": scanResults.count],
+                "findings": findings, "devices": devices
+            ] as [String: Any])
+
+        case ("POST", "/api/threats/import"):
+            // Accept STIX 2.1 bundle from external threat feed
+            guard let body = req.bodyJSON(),
+                  (body["type"] as? String) == "bundle",
+                  let objects = body["objects"] as? [[String: Any]] else {
+                return json(400, ["error": "Expected STIX 2.1 bundle {\"type\":\"bundle\",\"objects\":[...]}"])
+            }
+            let count = objects.filter { ($0["type"] as? String) == "indicator" }.count
+            print("[NMAPScanner] Imported \(count) IoC indicators")
+            return json(200, ["imported": count, "status": "accepted",
+                              "note": "Indicators accepted. Live scan correlation is a planned feature."])
+
         default:
             return json(404, ["error": "Not found: \(req.method) \(req.path)"] as [String: Any])
         }
@@ -149,6 +220,15 @@ class NovaAPIServer {
             method = tokens[0]; path = tokens[1].components(separatedBy: "?").first ?? tokens[1]; body = rawBody
         }
     }
+    // Map severity to STIX 2.1 indicator type
+    private func stixType(_ severity: String) -> String {
+        switch severity.lowercased() {
+        case "critical", "high": return "malicious-activity"
+        case "medium":           return "anomalous-activity"
+        default:                 return "benign"
+        }
+    }
+
     private func json(_ s: Int, _ d: [String: Any]) -> String { guard let data = try? JSONSerialization.data(withJSONObject: d, options: .prettyPrinted), let body = String(data: data, encoding: .utf8) else { return http(500, "") }; return http(s, body, "application/json") }
     private func jsonArray(_ s: Int, _ a: [[String: Any]]) -> String { guard let data = try? JSONSerialization.data(withJSONObject: a, options: .prettyPrinted), let body = String(data: data, encoding: .utf8) else { return http(500, "") }; return http(s, body, "application/json") }
     private func http(_ s: Int, _ body: String, _ ct: String = "text/plain") -> String { let st = [200:"OK",201:"Created",400:"Bad Request",404:"Not Found",500:"Internal Server Error"][s] ?? "Unknown"; return "HTTP/1.1 \(s) \(st)\r\nContent-Type: \(ct); charset=utf-8\r\nContent-Length: \(body.utf8.count)\r\nAccess-Control-Allow-Origin: *\r\nConnection: close\r\n\r\n\(body)" }

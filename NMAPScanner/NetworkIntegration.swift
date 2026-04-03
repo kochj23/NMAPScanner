@@ -9,6 +9,7 @@ import Foundation
 
 /// Network integration module - ensures all network components are available
 /// This file serves as an entry point to load UniFi and DNS integration modules
+@MainActor
 struct NetworkIntegration {
     // Reference the singletons to ensure they're initialized
     static let unifi = UniFiController.shared

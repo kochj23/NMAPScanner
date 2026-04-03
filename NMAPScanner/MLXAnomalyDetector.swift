@@ -161,7 +161,7 @@ class MLXAnomalyDetector: ObservableObject {
         - Device: \(device.displayName)
         - IP: \(device.ipAddress)
         - Open Ports: \(device.openPorts.count) (network average: \(baseline.averageOpenPorts))
-        - Ports: \(device.openPorts.map { "\($0.port) (\($0.service ?? "unknown"))" }.joined(separator: ", "))
+        - Ports: \(device.openPorts.map { "\($0.port) (\($0.service))" }.joined(separator: ", "))
         """
 
         let systemPrompt = """

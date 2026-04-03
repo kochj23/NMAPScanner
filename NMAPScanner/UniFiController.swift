@@ -514,7 +514,7 @@ class UniFiController: ObservableObject {
 
         guard status == errSecSuccess,
               let existingItem = item as? [String: Any],
-              let host = existingItem[kSecAttrAccount as String] as? String,
+              let _ = existingItem[kSecAttrAccount as String] as? String,
               let data = existingItem[kSecValueData as String] as? Data,
               let credentials = try? JSONDecoder().decode(UniFiCredentials.self, from: data) else {
             return nil

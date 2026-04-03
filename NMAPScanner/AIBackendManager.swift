@@ -854,7 +854,7 @@ struct AIBackendSettingsView: View {
                         .tag(backend)
                     }
                 }
-                .onChange(of: manager.selectedBackend) { _ in
+                .onChange(of: manager.selectedBackend) { _, _ in
                     manager.saveSettings()
                     Task {
                         await manager.checkBackendAvailability()
@@ -938,7 +938,7 @@ struct AIBackendSettingsView: View {
                             Text(model).tag(model)
                         }
                     }
-                    .onChange(of: manager.selectedOllamaModel) { _ in
+                    .onChange(of: manager.selectedOllamaModel) { _, _ in
                         manager.saveSettings()
                     }
 
@@ -954,13 +954,13 @@ struct AIBackendSettingsView: View {
                 Section(header: Text("MLX Configuration")) {
                     TextField("Python Path", text: $manager.pythonPath)
                         .textFieldStyle(RoundedBorderTextFieldStyle())
-                        .onChange(of: manager.pythonPath) { _ in
+                        .onChange(of: manager.pythonPath) { _, _ in
                             manager.saveSettings()
                         }
 
                     TextField("MLX Script Path (optional)", text: $manager.mlxScriptPath)
                         .textFieldStyle(RoundedBorderTextFieldStyle())
-                        .onChange(of: manager.mlxScriptPath) { _ in
+                        .onChange(of: manager.mlxScriptPath) { _, _ in
                             manager.saveSettings()
                         }
                 }
@@ -970,7 +970,7 @@ struct AIBackendSettingsView: View {
                 Section(header: Text("TinyLLM Configuration")) {
                     TextField("Server URL", text: $manager.tinyLLMServerURL)
                         .textFieldStyle(RoundedBorderTextFieldStyle())
-                        .onChange(of: manager.tinyLLMServerURL) { _ in
+                        .onChange(of: manager.tinyLLMServerURL) { _, _ in
                             manager.saveSettings()
                         }
 
@@ -990,7 +990,7 @@ struct AIBackendSettingsView: View {
                 Section(header: Text("TinyChat Configuration")) {
                     TextField("Server URL", text: $manager.tinyChatServerURL)
                         .textFieldStyle(RoundedBorderTextFieldStyle())
-                        .onChange(of: manager.tinyChatServerURL) { _ in
+                        .onChange(of: manager.tinyChatServerURL) { _, _ in
                             manager.saveSettings()
                         }
 
@@ -1014,7 +1014,7 @@ struct AIBackendSettingsView: View {
                 Section(header: Text("OpenWebUI Configuration")) {
                     TextField("Server URL", text: $manager.openWebUIServerURL)
                         .textFieldStyle(RoundedBorderTextFieldStyle())
-                        .onChange(of: manager.openWebUIServerURL) { _ in
+                        .onChange(of: manager.openWebUIServerURL) { _, _ in
                             manager.saveSettings()
                         }
 

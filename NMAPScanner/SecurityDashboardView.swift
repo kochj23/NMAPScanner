@@ -640,7 +640,7 @@ struct SecurityDashboardView: View {
         await aiSecurityAnalyzer.analyzeAIServices(devices: devices)
 
         scanProgress = 1.0
-        let totalIssues = vulnerabilityScanner.vulnerabilities.count + insecurePortDetector.insecureFindings.count + aiSecurityAnalyzer.warnings.count
+        _ = vulnerabilityScanner.vulnerabilities.count + insecurePortDetector.insecureFindings.count + aiSecurityAnalyzer.warnings.count
         scanStatus = "Scan complete! Found \(insecurePortDetector.insecureFindings.count) insecure ports, \(vulnerabilityScanner.vulnerabilities.count) vulnerabilities, and \(aiSecurityAnalyzer.warnings.count) AI service warnings"
 
         // Clear status after 3 seconds
@@ -2573,7 +2573,6 @@ struct PortVulnerabilitiesDetailsView: View {
                     let criticalCount = vulnerabilityScanner.vulnerabilities.filter { $0.severity == .critical }.count
                     let highCount = vulnerabilityScanner.vulnerabilities.filter { $0.severity == .high }.count
                     let mediumCount = vulnerabilityScanner.vulnerabilities.filter { $0.severity == .medium }.count
-                    let lowCount = vulnerabilityScanner.vulnerabilities.filter { $0.severity == .low }.count
 
                     HStack(spacing: 32) {
                         SecurityStatBox(
@@ -2767,7 +2766,6 @@ struct NetworkAnomaliesDetailsView: View {
                     let criticalCount = anomalyManager.anomalies.filter { $0.severity == .critical }.count
                     let highCount = anomalyManager.anomalies.filter { $0.severity == .high }.count
                     let mediumCount = anomalyManager.anomalies.filter { $0.severity == .medium }.count
-                    let lowCount = anomalyManager.anomalies.filter { $0.severity == .low }.count
 
                     HStack(spacing: 32) {
                         SecurityStatBox(

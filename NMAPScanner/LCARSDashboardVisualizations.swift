@@ -763,7 +763,7 @@ struct RealTimeBandwidthMeter: View {
                 animatedValue = percentage
             }
         }
-        .onChange(of: currentBandwidth) { newValue in
+        .onChange(of: currentBandwidth) { _, newValue in
             withAnimation(.easeInOut(duration: 0.5)) {
                 animatedValue = min(Double(newValue) / Double(maxBandwidth), 1.0)
             }

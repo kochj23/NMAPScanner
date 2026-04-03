@@ -131,7 +131,7 @@ class MLXThreatAnalyzer: ObservableObject {
             context += "- Status: \(device.isOnline ? "Online" : "Offline")\n"
 
             if !device.openPorts.isEmpty {
-                context += "- Open ports: \(device.openPorts.map { "\($0.port) (\($0.service ?? "unknown"))" }.joined(separator: ", "))\n"
+                context += "- Open ports: \(device.openPorts.map { "\($0.port) (\($0.service))" }.joined(separator: ", "))\n"
             }
 
             if device.isRogue {
@@ -161,7 +161,7 @@ class MLXThreatAnalyzer: ObservableObject {
         if !device.openPorts.isEmpty {
             context += "\nOpen Ports:\n"
             for port in device.openPorts {
-                context += "- Port \(port.port): \(port.service ?? "unknown service")\n"
+                context += "- Port \(port.port): \(port.service)\n"
                 if let version = port.version {
                     context += "  Version: \(version)\n"
                 }

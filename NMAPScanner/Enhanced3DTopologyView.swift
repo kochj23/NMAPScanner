@@ -111,7 +111,7 @@ struct Enhanced3DTopologyView: View {
                 TextField("Search devices...", text: $searchText)
                     .textFieldStyle(.roundedBorder)
                     .frame(width: 200)
-                    .onChange(of: searchText) { newValue in
+                    .onChange(of: searchText) { _, newValue in
                         searchAndHighlight(newValue)
                     }
             }
@@ -342,13 +342,13 @@ struct Enhanced3DTopologyView: View {
 
         // Start periodic snapshot recording (every 30 seconds)
         Timer.scheduledTimer(withTimeInterval: 30.0, repeats: true) { [weak historyManager] _ in
-            historyManager?.recordSnapshot(devices)
+            DispatchQueue.main.async { historyManager?.recordSnapshot(devices) }
         }
 
         // Start physics engine updates (60 FPS for smooth animation)
         if viewMode == .force2D {
             Timer.scheduledTimer(withTimeInterval: 1.0 / 60.0, repeats: true) { [weak physicsEngine] _ in
-                physicsEngine?.update()
+                DispatchQueue.main.async { physicsEngine?.update() }
             }
         }
     }
@@ -809,7 +809,7 @@ class PacketFlowAnimator: ObservableObject {
 
     func start() {
         timer = Timer.scheduledTimer(withTimeInterval: 0.05, repeats: true) { [weak self] _ in
-            self?.updatePackets()
+            DispatchQueue.main.async { self?.updatePackets() }
         }
     }
 
@@ -822,7 +822,7 @@ class PacketFlowAnimator: ObservableObject {
         // Animate packet positions
         for (key, packets) in activePackets {
             activePackets[key] = packets.map { packet in
-                var newPacket = packet
+                let newPacket = packet
                 // Update position along path
                 return newPacket
             }
