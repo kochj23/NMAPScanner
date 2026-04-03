@@ -281,28 +281,29 @@ class UniFiDeviceIdentifier: ObservableObject {
             let endpoint = NWEndpoint.hostPort(host: host, port: portEndpoint)
 
             let connection = NWConnection(to: endpoint, using: .tcp)
-            var hasReturned = false
+            final class _ResumeFlag: @unchecked Sendable { var value = false }
+            let returned = _ResumeFlag()
 
             // Set timeout
             Task {
                 try? await Task.sleep(nanoseconds: UInt64(timeout * 1_000_000_000))
-                if !hasReturned {
-                    hasReturned = true
+                if !returned.value {
+                    returned.value = true
                     connection.cancel()
                     continuation.resume(returning: false)
                 }
             }
 
             connection.stateUpdateHandler = { state in
-                guard !hasReturned else { return }
+                guard !returned.value else { return }
 
                 switch state {
                 case .ready:
-                    hasReturned = true
+                    returned.value = true
                     connection.cancel()
                     continuation.resume(returning: true)
                 case .failed, .cancelled:
-                    hasReturned = true
+                    returned.value = true
                     continuation.resume(returning: false)
                 default:
                     break
