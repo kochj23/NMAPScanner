@@ -1,385 +1,472 @@
-# NMAPScanner v8.9.0
+# NMAPScanner
 
 ![Build](https://github.com/kochj23/NMAPScanner/actions/workflows/build.yml/badge.svg)
 ![Platform](https://img.shields.io/badge/platform-macOS%2014.0%2B-blue)
+![Swift](https://img.shields.io/badge/Swift-5.9%2B-orange)
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![Version](https://img.shields.io/badge/version-8.9.0-purple)
+![Architecture](https://img.shields.io/badge/arch-Apple%20Silicon%20%2B%20Intel-lightgrey)
 
-**Advanced network security scanner with AI-powered threat detection, device management, and STIX 2.1 threat intelligence sharing.**
-
-Comprehensive network scanning, vulnerability detection, and device action controls—all with local AI processing on Apple Silicon.
-
----
+A native macOS network security scanner that wraps nmap in a modern SwiftUI interface, adding AI-powered threat detection, device management, UniFi controller integration, compliance reporting, and a local REST API for automation. All AI inference runs on-device using Apple Silicon -- no data leaves your machine.
 
 ![NMAPScanner Dashboard](Screenshots/main-window.png)
 
+---
 
-## What is NMAPScanner?
+## Table of Contents
 
-NMAPScanner is a native macOS application that wraps nmap with an intuitive GUI, adding AI-powered threat detection, device management actions, and real-time network monitoring. It provides professional security scanning capabilities with the ease of a native Mac app.
-
-**Key Benefits:**
-- **macOS Widget (v8.8.0)**: Security score, device counts, threat status, and last scan time in Notification Center
-- **Comprehensive Security Hardening (v8.7.0)**: 25 security and code quality fixes across all severity levels
-- **Advanced Device Actions (v8.6.0)**: Whitelist, block, deep scan, isolate devices
-- **AI Threat Detection**: MLX-powered security analysis
-- **Real-Time Monitoring**: Live network activity tracking
-- **UniFi Integration**: Control network devices via UniFi Controller
-- **Professional Reports**: Detailed security audit reports
-
-**Perfect For:**
-- **Network Administrators**: Monitor and secure networks
-- **Security Professionals**: Vulnerability assessment and penetration testing
-- **Home Users**: Identify rogue devices on home network
-- **IT Teams**: Asset discovery and inventory management
+- [Architecture](#architecture)
+- [Features](#features)
+- [Nova API Server](#nova-api-server)
+- [Screenshots](#screenshots)
+- [Requirements](#requirements)
+- [Installation](#installation)
+- [Build from Source](#build-from-source)
+- [Usage](#usage)
+- [Security](#security)
+- [Version History](#version-history)
+- [License](#license)
+- [More Apps](#more-apps-by-jordan-koch)
 
 ---
 
-## What's New in v8.9.0 (April 2026)
+## Architecture
 
-### Threat Intelligence Sharing (STIX 2.1)
-
-Export and share threat findings in industry-standard formats for SIEM integration, threat feeds, and cross-tool correlation.
-
-**New API endpoints** (port 37423):
-
-```bash
-# Export findings as STIX 2.1 bundle (machine-readable IoC format)
-curl http://127.0.0.1:37423/api/threats/ioc
-
-# Full structured export for dashboards/SIEM
-curl http://127.0.0.1:37423/api/threats/export
-
-# Import an external threat feed (STIX 2.1 bundle)
-curl -X POST http://127.0.0.1:37423/api/threats/import \
-  -H "Content-Type: application/json" \
-  -d @threat_feed.json
 ```
-
-**STIX 2.1 bundle format** — each finding becomes a STIX `indicator` object with:
-- `id` — `indicator--{uuid}`
-- `indicator_types` — mapped from severity (`malicious-activity`, `anomalous-activity`, `benign`)
-- `pattern` — STIX pattern matching host/port: `[network-traffic:dst_port = 22 AND ...]`
-- `x-nova-scanner` extension — host, port, service, remediation, CVE references, isVerified
-
-**Bug Fixes (compiler warnings resolved)**
-
-~40 Swift compiler warnings fixed across 20+ files — this release includes significant code quality improvements:
-- `hasResumed`/`hasReturned` concurrent capture → `_ResumeFlag: @unchecked Sendable` class wrapper (7 files)
-- `onChange(of:perform:)` deprecation → two-parameter `{ _, newValue in }` form (6 files)
-- `NSUserNotification` → `UNUserNotificationCenter` (AnomalyDetectionManager)
-- `SecTrustGetCertificateAtIndex` / `SecTrustEvaluate` → `SecTrustCopyCertificateChain` / `SecTrustEvaluateWithError` (SecureUniFiDelegate)
-- Non-optional `??` on `PortInfo.service: String` removed across 5 MLX analysis files
-- `let id = UUID()` in `Codable` structs → `var id = UUID()` (9 files)
-- `NetworkIntegration` struct marked `@MainActor` for isolation correctness
-- `DNSResolver` extension fixed — `@MainActor` default parameter no longer references `shared` from nonisolated context
-- Unused `var`→`let` conversions, removed dead assignments across SecurityDashboardView, Enhanced3DTopologyView, IntegratedDashboardViewV3, DeviceUptimeTracker, DependencyGraphView, ShadowAIDetector
-
----
-
-## What's New in v8.8.0 (March 2026)
-
-### macOS Widget Support
-- **Small widget**: Security score ring, healthy/total device count, threat indicator
-- **Medium widget**: Score ring + severity breakdown (Critical/High/Medium/Low) + last scan time
-- **Large widget**: Full device list, overdue vulnerabilities, scan schedule, SLA compliance
-- Widget refreshes automatically on every scan completion
-- Deep links to open the scanner directly from the widget
-
----
-
-## What's New in v8.7.0 (February 2026)
-
-### Security Hardening & Code Quality Audit
-**25 findings resolved across CRITICAL, HIGH, MEDIUM, LOW, and INFO severities:**
-
-**Critical & High Fixes:**
-- **Python Code Injection Prevention**: AI backend now passes user prompts via secure JSON file instead of string interpolation into Python source, eliminating code injection vectors
-- **HTML Export XSS Prevention**: Added `escapeHTML()` sanitization to all user-supplied data in HTML/CSV export reports and markdown-to-HTML conversion
-- **DNS Race Condition Fix**: Added NSLock synchronization to prevent double-resume crashes in async DNS resolution
-- **Nmap Input Validation**: IP addresses and port ranges validated before passing to nmap, preventing command injection
-- **Timer Leak Prevention**: Added guaranteed `defer { timer.invalidate() }` cleanup in HomeKit and Bonjour scanner views
-- **Error Handling Improvements**: Replaced silent `try?` with proper `do/catch` blocks and `CancellationError` handling across 6 files
-- **Bundle-Relative Paths**: Replaced hardcoded file paths with `Bundle.main`-relative paths for portability
-
-**Medium Fixes:**
-- **O(n) Performance**: Replaced multiple `.filter()` passes with `Dictionary(grouping:by:)` in security report generation
-- **String Concatenation**: Replaced `+=` string building with array collection + `.joined()` in export manager
-- **Weak Self Safety**: Added `guard let self` pattern to prevent race conditions in closures
-- **Logging Standardization**: Replaced `print()` with `NSLog()` for production-appropriate logging
-
-**Low & Info Fixes:**
-- Cleaned up stale TODOs with descriptive documentation
-- Added error handling for `send()` socket calls in ServiceVersionScanner
-- Added `// MARK:` section comments for Xcode source navigator
-- Documented security implications of certificate auto-trust in UniFi controller
-
----
-
-## What's New in v8.6.0 (January 2026)
-
-### 🛡️ Advanced Device Actions
-**Comprehensive device management:**
-
-**Whitelist Devices:**
-- Add to trusted devices list (UserDefaults + MAC (Media Access Control) address tracking)
-- Disable security alerts for whitelisted devices
-- Persistent across app restarts
-
-**Block Devices:**
-- Add to blocklist
-- Optional firewall rules via pfctl (requires admin)
-- System notifications on block actions
-
-**Deep Scan:**
-- Launch aggressive nmap scan (-A -T4 -p-)
-- All ports, OS detection, service version detection
-- Background processing with completion notifications
-
-**Isolate Devices:**
-- Mark as isolated in app
-- Integration with UniFi Controller for VLAN isolation
-- Persistent isolation tracking
-
-**Implementation:**
-```swift
-private func handleBlock() {
-    // Add to blocklist
-    var blocklist = UserDefaults.standard.stringArray(forKey: "DeviceBlocklist") ?? []
-    blocklist.append(device.ipAddress)
-    UserDefaults.standard.set(blocklist, forKey: "DeviceBlocklist")
-
-    // Add firewall rule (requires admin)
-    let script = "do shell script \"pfctl -t blocklist -T add \(device.ipAddress)\" with administrator privileges"
-    // Execute AppleScript
-}
++====================================================================+
+|                     NMAPScanner  (macOS App)                       |
+|                         SwiftUI + AppKit                           |
++====================================================================+
+|                                                                    |
+|  +--------------------+   +---------------------+   +------------+ |
+|  |   ContentView      |   |   MenuBarAgent      |   |  Widgets   | |
+|  |   (MainTabView)    |   |   (NSStatusItem)    |   | (WidgetKit)| |
+|  +--------+-----------+   +----------+----------+   +------+-----+ |
+|           |                          |                     |       |
+|  +--------v---------------------------------------------------+    |
+|  |                    8-Tab Navigation                         |    |
+|  |                                                             |    |
+|  | +------------+ +----------------+ +-----------+ +--------+  |   |
+|  | | Dashboard  | | Security &     | |    AI     | |HomeKit |  |   |
+|  | |   (V3)     | | Traffic        | | Assistant | |  Tab   |  |   |
+|  | +------------+ +----------------+ +-----------+ +--------+  |   |
+|  | +------------+ +----------------+ +-----------+ +--------+  |   |
+|  | |   WiFi     | | Network Tools  | | Topology  | | Deps   |  |   |
+|  | | Networks   | | (Ping/Trace/   | |   Graph   | | Graph  |  |   |
+|  | |            | |  DNS/ARP)      | |           | |        |  |   |
+|  | +------------+ +----------------+ +-----------+ +--------+  |   |
+|  +-------------------------------------------------------------+   |
+|                                                                    |
++--------------------------------------------------------------------+
+|                         Core Engine Layer                           |
++--------------------------------------------------------------------+
+|                                                                    |
+|  +-----------------------+     +-----------------------------+     |
+|  |  Scanning Subsystem   |     |    AI / ML Subsystem        |     |
+|  |-----------------------|     |-----------------------------|     |
+|  | IntegratedScannerV3   |     | MLXInferenceEngine          |     |
+|  | AdvancedPortScanner   |     | AIBackendManager            |     |
+|  |   - Quick Scan        |     |   (Ollama / MLX / TinyLLM)  |     |
+|  |   - Standard Scan     |     | AISecurityAnalyzer          |     |
+|  |   - Comprehensive     |     | MLXThreatAnalyzer           |     |
+|  |   - Aggressive        |     | MLXDeviceClassifier         |     |
+|  |   - Stealth           |     | MLXAnomalyDetector          |     |
+|  | PingScanner (115      |     | ShadowAIDetector            |     |
+|  |   ports parallel)     |     | LLMSecurityReportGenerator  |     |
+|  | BonjourScanner        |     | EthicalAIGuardian           |     |
+|  | ARPScanner            |     +-----------------------------+     |
+|  | WiFiNetworkScanner    |                                         |
+|  | ServiceVersionScanner |     +-----------------------------+     |
+|  | BannerGrabber         |     |    Security Subsystem        |     |
+|  +-----------------------+     |-----------------------------|     |
+|                                | VulnerabilityScanner         |     |
+|  +-----------------------+     | SSLCertificateAnalyzer       |     |
+|  |  Network Subsystem    |     | DNSSecurityAnalyzer          |     |
+|  |-----------------------|     | InsecurePortDetector         |     |
+|  | NetworkTrafficAnalyzer|     | ProtocolVulnerabilityScanner |     |
+|  | PacketCaptureManager  |     | AuthenticationAuditor        |     |
+|  | RealtimeTrafficManager|     | MalwarePatternDetector       |     |
+|  | LocalNetworkMonitor   |     | RogueDeviceDetector          |     |
+|  | DNSResolver           |     | IoTSecurityScorer            |     |
+|  | NetworkSegmentation-  |     | ComplianceFramework          |     |
+|  |   Analyzer            |     |   (NIST/CIS/PCI/HIPAA/SOC2) |     |
+|  +-----------------------+     | SecurityAuditManager         |     |
+|                                +-----------------------------+     |
++--------------------------------------------------------------------+
+|                       Integration Layer                            |
++--------------------------------------------------------------------+
+|                                                                    |
+|  +---------------------+  +------------------+  +---------------+  |
+|  |  UniFi Controller   |  |  HomeKit         |  | Nova API      |  |
+|  |---------------------|  |  Discovery       |  | Server        |  |
+|  | UniFiController     |  |------------------|  |  (port 37423) |  |
+|  | SecureUniFiDelegate |  | HomeKitDiscovery |  |---------------|  |
+|  | UniFiDeviceIdentify |  | HomeKitPort-     |  | /api/status   |  |
+|  | UniFiDiscovery-     |  |   Definitions    |  | /api/scan/*   |  |
+|  |   Scanner           |  | BonjourScanner   |  | /api/security |  |
+|  | WiFiSecurityAnalyzer|  +------------------+  | /api/wifi     |  |
+|  +---------------------+                        | /api/unifi    |  |
+|                                                  | /api/threats  |  |
+|  +---------------------+  +------------------+  |   (STIX 2.1)  |  |
+|  |  Export / Reporting  |  | Device Mgmt      |  +---------------+  |
+|  |---------------------|  |------------------|                     |
+|  | ExportManager       |  | DevicePersistence|  +---------------+  |
+|  |  (PDF/CSV/JSON/HTML)|  | DeviceGrouping-  |  | Scheduled     |  |
+|  | MarkdownExporter    |  |   Manager        |  | Scans         |  |
+|  | DeviceExportManager |  | DeviceReputation |  |---------------|  |
+|  | ComplianceChecker   |  |   Scorer         |  | ScheduledScan |  |
+|  +---------------------+  | DeviceUptime-    |  |   Manager     |  |
+|                            |   Tracker        |  | ScanScheduler |  |
+|                            | DeviceWhitelist  |  | ScanWatchdog  |  |
+|                            +------------------+  +---------------+  |
+|                                                                    |
++--------------------------------------------------------------------+
+|                       System Layer                                 |
++--------------------------------------------------------------------+
+|                                                                    |
+|  /usr/local/bin/nmap          macOS Keychain (UniFi credentials)   |
+|  Network.framework (NWListener, NWConnection)                      |
+|  UserNotifications.framework  WidgetKit.framework                  |
+|  Security.framework           HomeKit entitlement                  |
+|  Swift Structured Concurrency (async/await, TaskGroup, actors)     |
+|                                                                    |
++--------------------------------------------------------------------+
 ```
-
-### 🚀 MLX (Machine Learning eXtensions) Backend Implementation
-**Apple Silicon native threat analysis:**
-
-- **Local AI**: Security analysis without cloud
-- **Model Support**: mlx-community security models
-- **Vulnerability Detection**: AI-powered pattern recognition
-- **Threat Scoring**: Intelligent risk assessment
-- **Neural Engine**: Fast inference on Apple Silicon
 
 ---
 
 ## Features
 
-### Core Scanning
-- **Network Discovery**: Identify all devices on network
-- **Port Scanning**: Detect open ports and services
-- **OS Detection**: Identify device operating systems
-- **Service Version**: Detect software versions
-- **Vulnerability Scanning**: Check for known CVEs (Common Vulnerabilities and Exposures)
-- **Live Monitoring**: Real-time network activity
+### Scanning Engine
 
-### Device Management (v8.6.0)
-- **Whitelist**: Trust specific devices
-- **Block**: Prevent network access
-- **Deep Scan**: Aggressive security assessment
-- **Isolate**: VLAN (Virtual Local Area Network) isolation via UniFi
-- **Device Tracking**: MAC address and IP tracking
-- **History**: Device appearance/disappearance logging
+| Capability | Details |
+|---|---|
+| Network Discovery | ARP, ping, Bonjour, and nmap-based host detection |
+| Port Scanning | 115 ports scanned in parallel (10 concurrent hosts), 5 scan profiles (Quick/Standard/Comprehensive/Aggressive/Stealth) |
+| OS Detection | nmap OS fingerprinting for all discovered devices |
+| Service Versions | Banner grabbing and nmap service version probes |
+| WiFi Networks | Discover and analyze nearby wireless networks |
+| HomeKit Discovery | Correlate HomeKit accessories with network hosts via Bonjour |
 
-### Security Features
-- **Threat Detection**: AI-powered anomaly detection
-- **Rogue Device Alerts**: Identify unauthorized devices
-- **Vulnerability Database**: Known exploit checking
-- **Security Dashboard**: Visual risk assessment
-- **Audit Reports**: Comprehensive security reports
-- **Compliance Checking**: Security policy verification
+### AI / Machine Learning (Apple Silicon)
+
+- **On-device inference** via MLX, Ollama, or TinyLLM backends -- no cloud required
+- **Threat analysis** -- AI-powered severity scoring and remediation recommendations
+- **Anomaly detection** -- baseline learning with deviation alerts
+- **Device classification** -- automatic categorization of discovered hosts
+- **Shadow AI detection** -- find unauthorized LLM/AI services running on your network
+- **Security report generation** -- LLM-authored narrative security reports
+- **Ethical AI guardian** -- enforces responsible scanning policies
+
+### Security Analysis
+
+- Vulnerability scanning with CVE cross-referencing
+- SSL/TLS certificate inspection and grading
+- DNS security analysis (DNSSEC, zone transfer checks)
+- Protocol vulnerability assessment
+- Insecure port detection with remediation guidance
+- Malware port pattern matching (12 known backdoor ports)
+- Authentication auditing
+- IoT device security scoring
+- Rogue device detection and alerting
+
+### Compliance Reporting
+
+Built-in validation against six industry frameworks:
+
+- **NIST** Cybersecurity Framework
+- **CIS** Critical Security Controls
+- **PCI-DSS** (Payment Card Industry)
+- **HIPAA** Security Rule
+- **SOC 2** Type II
+- **ISO 27001**
+
+### Device Management
+
+- **Whitelist** -- trust known devices, suppress alerts
+- **Block** -- add to blocklist with optional pfctl firewall rules
+- **Deep Scan** -- launch aggressive nmap scan (`-A -T4 -p-`) on individual hosts
+- **Isolate** -- VLAN isolation via UniFi Controller API
+- **Reputation Scoring** -- track device trust over time
+- **Uptime Tracking** -- monitor device availability history
+- **Grouping** -- organize devices by type, location, or custom tags
 
 ### UniFi Integration
-- **Controller Connection**: UniFi API integration
-- **Device Identification**: Match UniFi devices to scan results
-- **Firewall Rules**: Create rules via UniFi
-- **VLAN Management**: Isolate devices to specific VLANs
-- **Real-Time Status**: Live UniFi device status
 
-### Reporting
-- **PDF Reports**: Professional security audit documents
-- **CSV Export**: Data for further analysis
-- **Timeline View**: Historical network changes
-- **Statistics**: Network health metrics
-- **Compliance Reports**: Regulatory compliance documentation
+- Authenticate to UniFi OS / UDM Pro controllers
+- List managed clients and infrastructure devices
+- Identify UniFi Protect cameras
+- Create firewall rules and VLAN assignments remotely
+- Secure certificate handling with user-confirmed trust (SecureUniFiDelegate)
+- WiFi network security analysis from controller data
+
+### Reporting and Export
+
+- **PDF** -- professional security audit documents
+- **CSV** -- spreadsheet-ready data export
+- **JSON** -- structured data for automation pipelines
+- **HTML** -- styled reports with XSS-safe output
+- **Markdown** -- lightweight export for documentation
+- **STIX 2.1** -- machine-readable IoC bundles for SIEM integration
+
+### Threat Intelligence (STIX 2.1)
+
+Export, import, and share threat findings in the industry-standard STIX 2.1 format:
+
+```bash
+# Export findings as STIX 2.1 bundle
+curl http://127.0.0.1:37423/api/threats/ioc
+
+# Full structured export for SIEM dashboards
+curl http://127.0.0.1:37423/api/threats/export
+
+# Import an external threat feed
+curl -X POST http://127.0.0.1:37423/api/threats/import \
+  -H "Content-Type: application/json" \
+  -d @threat_feed.json
+```
+
+### macOS Integration
+
+- **Menu bar agent** -- persistent status icon with quick scan, device list, and threat count
+- **WidgetKit widgets** -- small, medium, and large widgets showing security score, device counts, threat status, and scan schedule
+- **Notification Center** -- alerts for new devices, threats, and scan completions
+- **Scheduled scans** -- configurable intervals with scan history and watchdog
+- **Runs in background** -- optional "close window, keep scanning" mode
 
 ---
 
-## Security
+## Nova API Server
 
-### Security Hardening (February 2026)
-- **Command Injection Prevention**: All IP addresses validated against strict IPv4 format before passing to pfctl shell commands, preventing injection via spoofed network discovery
-- **Python Code Injection Prevention (v8.7.0)**: User prompts passed via JSON file to AI backend, eliminating string interpolation into Python source code
-- **XSS Prevention (v8.7.0)**: HTML entity escaping (`&amp;`, `&lt;`, `&gt;`, `&quot;`, `&#x27;`) applied to all user data in export reports
-- **Race Condition Prevention (v8.7.0)**: NSLock synchronization prevents double-resume crashes in async DNS resolution
-- **Safe Type Casting**: SecKey metadata uses conditional casting (`as? SecKey`) instead of force casts to prevent runtime crashes on unexpected certificate data
-- **Input Validation (v8.7.0)**: IP addresses and port ranges validated before nmap execution; all network-sourced data sanitized before use in shell commands
+NMAPScanner includes a built-in REST API on port **37423** (loopback only) for integration with [Nova](https://github.com/kochj23) (OpenClaw AI) and other local automation tools.
 
-### Privacy & Data Protection
-- **Local Scanning**: All scanning happens on your network
-- **No Cloud Upload**: Scan results stay on your Mac
-- **MLX AI**: Threat analysis runs locally
-- **Encrypted Storage**: Sensitive data encrypted at rest
-- **Keychain Integration**: UniFi credentials in Keychain
+**No authentication required** -- the server binds exclusively to `127.0.0.1` and is not reachable from the network.
 
-### Ethical Use
-- **Authorized Networks Only**: Only scan networks you own/manage
-- **Legal Compliance**: Follow local computer security laws
-- **No Attack Tools**: Defensive security only
-- **Audit Logging**: All operations logged for accountability
+### Endpoints
 
-### Best Practices
-- Only scan authorized networks
-- Get written permission for client networks
-- Use whitelist to reduce false positives
-- Review firewall rules before applying
-- Keep nmap and app updated
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `/api/status` | App status, version, device/warning counts, uptime |
+| `GET` | `/api/ping` | Health check |
+| `GET` | `/api/scan/results` | Port scan results (IP, hostname, ports, OS, services) |
+| `POST` | `/api/scan/start` | Start a scan (`{"ip":"192.168.1.0/24"}`) |
+| `GET` | `/api/security/warnings` | AI security warnings with severity, remediation, CVE refs |
+| `GET` | `/api/wifi` | Discovered WiFi networks (SSID, BSSID, RSSI, security) |
+| `GET` | `/api/unifi/devices` | UniFi managed devices (MAC, IP, name, wired/wireless) |
+| `GET` | `/api/threats/ioc` | STIX 2.1 indicator bundle |
+| `GET` | `/api/threats/export` | Full structured threat export |
+| `POST` | `/api/threats/import` | Import external STIX 2.1 threat feed |
+
+### Example
+
+```bash
+# Check status
+curl -s http://127.0.0.1:37423/api/status | python3 -m json.tool
+
+# Get all security warnings
+curl -s http://127.0.0.1:37423/api/security/warnings | python3 -m json.tool
+
+# Start a targeted scan
+curl -X POST http://127.0.0.1:37423/api/scan/start \
+  -H "Content-Type: application/json" \
+  -d '{"ip":"192.168.1.1"}'
+```
+
+The API server starts automatically on launch and stops on app termination.
+
+---
+
+## Screenshots
+
+<!-- Replace with actual screenshots as they become available -->
+
+| View | Description |
+|------|-------------|
+| ![Dashboard](Screenshots/main-window.png) | Main dashboard with device grid, scan controls, and threat summary |
+
+> Additional screenshots for the Security Dashboard, AI Assistant, Topology Graph, and Widget views will be added in a future release.
 
 ---
 
 ## Requirements
 
-### System Requirements
-- **macOS 13.0 (Ventura) or later**
-- **Architecture**: Universal (Apple Silicon recommended)
-- **nmap**: `brew install nmap`
+### System
 
-### For MLX Backend
-- **Apple Silicon**: M1/M2/M3/M4
-- **Python 3.9+**
-- **mlx-lm**: `pip install mlx-lm`
-- **8GB+ RAM**
+| Requirement | Minimum |
+|---|---|
+| macOS | 14.0 (Sonoma) or later |
+| Architecture | Universal (Apple Silicon recommended for AI features) |
+| nmap | Required -- install via Homebrew |
 
-### Network Requirements
-- **Admin Access**: For deep scanning and firewall rules
-- **Network Access**: Must be on network to scan
-- **UniFi Controller** (Optional): For isolation features
+### For AI Features (Optional)
 
-### Dependencies
-**Required:**
-- nmap: `brew install nmap`
+| Requirement | Details |
+|---|---|
+| Apple Silicon | M1 / M2 / M3 / M4 |
+| RAM | 8 GB or more recommended |
+| AI Backend | One of: [Ollama](https://ollama.com), MLX via `mlx-lm`, or [TinyLLM](https://github.com/jasonacox/TinyLLM) |
 
-**Built-in:**
-- SwiftUI, AppKit, Foundation
+### For UniFi Integration (Optional)
 
-**Optional:**
-- mlx-lm (for MLX AI)
-- UniFi Controller (for isolation)
+- UniFi OS controller (UDM Pro, UDM SE, Cloud Key Gen2, etc.)
+- Controller credentials stored in macOS Keychain
 
 ---
 
 ## Installation
 
-### Install nmap
+### 1. Install nmap
 
 ```bash
 brew install nmap
 ```
 
-### Install NMAPScanner
+### 2. Install NMAPScanner
+
+Download the latest DMG from [Releases](https://github.com/kochj23/NMAPScanner/releases), open it, and drag **NMAPScanner** to your Applications folder.
+
+> This app is distributed directly via DMG. It is not available on the Mac App Store.
+
+### 3. (Optional) Install an AI Backend
 
 ```bash
-open "/Volumes/Data/xcode/binaries/20260127-NMAPScanner-v8.6.0/NMAPScanner-v8.6.0-build14.dmg"
+# Option A: Ollama (recommended)
+brew install ollama
+ollama pull llama3
+
+# Option B: MLX
+pip install mlx-lm
+
+# Option C: TinyLLM by Jason Cox
+# See https://github.com/jasonacox/TinyLLM
 ```
 
-### Build from Source
+---
+
+## Build from Source
 
 ```bash
 git clone https://github.com/kochj23/NMAPScanner.git
 cd NMAPScanner
-open "NMAPScanner.xcodeproj"
+open NMAPScanner.xcodeproj
 ```
+
+Select the **NMAPScanner** scheme, choose your Mac as the run destination, and build with Cmd+B. The project requires Xcode 15+ and the macOS 14 SDK.
 
 ---
 
 ## Usage
 
-### Quick Scan
+### Quick Start
 
 1. Launch NMAPScanner
-2. Enter network range (e.g., 192.168.1.0/24)
-3. Click "Scan Network"
-4. View discovered devices
+2. Enter a network range (e.g., `192.168.1.0/24`) or use the auto-detected subnet
+3. Click **Scan Network**
+4. Browse discovered devices in the dashboard grid
 
-### Device Actions
+### Device Actions (Right-Click Menu)
 
-**Whitelist Device:**
-1. Right-click device in list
-2. Select "Whitelist"
-3. Device added to trusted list
+| Action | What It Does |
+|--------|-------------|
+| **Whitelist** | Add to trusted list, suppress future alerts |
+| **Block** | Add to blocklist, optionally create pfctl firewall rule (requires admin) |
+| **Deep Scan** | Run aggressive nmap scan with all ports, OS detection, and scripts |
+| **Isolate** | Mark for VLAN isolation (requires UniFi controller) |
 
-**Block Device:**
-1. Right-click device
-2. Select "Block"
-3. Optionally add firewall rule (requires admin)
+### Scan Profiles
 
-**Deep Scan:**
-1. Right-click device
-2. Select "Deep Scan"
-3. Wait for aggressive scan to complete
+| Profile | nmap Equivalent | Use Case |
+|---------|----------------|----------|
+| Quick | `-sS --top-ports 100` | Fast sweep of common ports |
+| Standard | `-sT -sV` | Service detection on TCP ports |
+| Comprehensive | `-sS -sU -sV -O` | Full TCP + UDP with OS detection |
+| Aggressive | `-A -T4 -p-` | Everything: OS, versions, scripts, traceroute |
+| Stealth | `-sS -T2 -f` | Low-profile scan to avoid IDS detection |
+| Custom | User-defined | Full control over nmap arguments |
 
-**Isolate Device:**
-1. Right-click device
-2. Select "Isolate"
-3. Device marked for VLAN isolation
+### Network Tools Tab
+
+Five built-in diagnostic utilities, no terminal required:
+
+- **Ping** -- test host reachability with quick-access presets
+- **Traceroute** -- visualize packet routing paths
+- **Network Config** -- display TCP/IP settings (ifconfig)
+- **DNS Lookup** -- query DNS servers (nslookup)
+- **ARP Table** -- view IP-to-MAC address mappings
 
 ---
 
-## Troubleshooting
+## Security
 
-**nmap Not Found:**
-- Install: `brew install nmap`
-- Verify: `which nmap`
+### Hardening Measures
 
-**Can't Scan Network:**
-- Check network connectivity
-- Verify IP range format
-- Try with admin privileges
+- **Command injection prevention** -- all IP addresses and port ranges validated against strict patterns before passing to nmap or pfctl
+- **Python code injection prevention** -- AI prompts passed via secure JSON file, never interpolated into source
+- **XSS prevention** -- HTML entity escaping applied to all user-supplied data in export reports
+- **Race condition prevention** -- NSLock synchronization in async DNS resolution
+- **Safe type casting** -- conditional casts throughout; no force unwraps on external data
+- **Secure UniFi TLS** -- certificate validation with user-confirmed trust, not blanket acceptance
+- **Input sanitization** -- all network-sourced data sanitized before shell command use
 
-**Firewall Rules Fail:**
-- Need administrator password
-- Check pfctl is available
-- Verify firewall enabled
+### Privacy
+
+- All scanning happens locally on your network
+- Scan results never leave your Mac
+- AI inference runs on-device (no cloud calls)
+- UniFi credentials stored in macOS Keychain
+- No telemetry, no analytics, no phone-home
+
+### Ethical Use
+
+This tool is for **defensive security only**. Scan only networks you own or have written authorization to test. Follow all applicable computer security laws in your jurisdiction.
 
 ---
 
 ## Version History
 
-### v8.7.0 (February 2026)
-- Comprehensive security audit: 25 findings resolved (1 CRITICAL, 7 HIGH, 7 MEDIUM, 6 LOW, 2 INFO)
-- Python code injection prevention in AI backend
-- XSS prevention in HTML/CSV export and markdown-to-HTML conversion
-- DNS race condition fix with NSLock synchronization
-- Nmap input validation for IP addresses and port ranges
-- Timer leak prevention with guaranteed cleanup
-- O(n) performance optimization in security report generation
-- Bundle-relative paths for portability
-- Production logging standardization (print → NSLog)
-- Stale TODO cleanup and MARK section comments for code navigation
+| Version | Date | Highlights |
+|---------|------|------------|
+| **8.9.0** | April 2026 | STIX 2.1 threat intelligence (export/import/IoC), ~40 compiler warnings resolved |
+| **8.8.0** | March 2026 | macOS WidgetKit support (small/medium/large security widgets) |
+| **8.7.0** | February 2026 | Security hardening audit -- 25 findings resolved (1 Critical, 7 High, 7 Medium, 6 Low, 2 Info) |
+| **8.6.0** | January 2026 | Device actions (whitelist/block/deep scan/isolate), MLX backend integration |
+| **8.5.0** | December 2025 | 115-port comprehensive scanning, expanded device coverage |
+| **8.4.0** | December 2025 | 65-80% scan speed improvement, parallel port scanning, smart Bonjour termination |
+| **8.3.0** | December 2025 | Service dependency graph, removed unstable netstat tool |
+| **8.2.0** | December 2025 | Network Tools tab (ping, traceroute, DNS, ARP, network config) |
+| **8.0.0** | November 2025 | Initial public release -- scanning, AI threat detection, UniFi, reporting |
 
-### v8.6.0 (January 2026)
-- Device actions (whitelist, block, deep scan, isolate)
-- MLX backend integration
-- UniFi improvements
+---
 
-### v8.0.0 (2025)
-- Initial release
-- Network scanning
-- Threat detection
+## Project Structure
+
+```
+NMAPScanner/
+  NMAPScanner/              Main app source (~140 Swift files)
+    AICapabilities/         Unified AI capability modules
+    Accessibility/          VoiceOver and accessibility helpers
+    NMAPApp.swift           App entry point and AppDelegate
+    ContentView.swift       Root view (wraps MainTabView)
+    MainTabView.swift       8-tab navigation controller
+    NovaAPIServer.swift     REST API on port 37423
+    UniFiController.swift   UniFi OS API client
+    MLXInferenceEngine.swift  AI backend abstraction
+    ...
+  NMAPScanner Widgets/      WidgetKit extension
+  NMAPScanner LiveActivity/ Live Activity support
+  NMAPScanner.xcodeproj/    Xcode project
+  Screenshots/              App screenshots for README
+  .github/                  CI workflows, Dependabot, issue templates
+  LICENSE                   MIT License
+```
 
 ---
 
 ## License
 
-MIT License - Copyright © 2026 Jordan Koch
+MIT License -- Copyright 2025-2026 Jordan Koch
 
----
-
-**Last Updated:** February 26, 2026
-**Status:** ✅ Production Ready
+See [LICENSE](LICENSE) for the full text.
 
 ---
 
@@ -387,51 +474,17 @@ MIT License - Copyright © 2026 Jordan Koch
 
 | App | Description |
 |-----|-------------|
-| [Bastion](https://github.com/kochj23/Bastion) | Authorized security testing and penetration toolkit |
-| [URL-Analysis](https://github.com/kochj23/URL-Analysis) | Network traffic analysis and URL monitoring |
-| [rtsp-rotator](https://github.com/kochj23/rtsp-rotator) | RTSP (Real Time Streaming Protocol) camera stream rotation and monitoring |
 | [MLXCode](https://github.com/kochj23/MLXCode) | Local AI coding assistant for Apple Silicon |
+| [Bastion](https://github.com/kochj23/Bastion) | Authorized security testing and penetration toolkit |
+| [RsyncGUI](https://github.com/kochj23/RsyncGUI) | macOS GUI for rsync backup and file synchronization |
+| [URL-Analysis](https://github.com/kochj23/URL-Analysis) | Network traffic analysis and URL monitoring |
 | [TopGUI](https://github.com/kochj23/TopGUI) | macOS system monitor with real-time metrics |
+| [rtsp-rotator](https://github.com/kochj23/rtsp-rotator) | RTSP camera stream rotation and monitoring |
 
 > **[View all projects](https://github.com/kochj23?tab=repositories)**
 
 ---
 
+Written by Jordan Koch
+
 > **Disclaimer:** This is a personal project created on my own time. It is not affiliated with, endorsed by, or representative of my employer.
-
-## Nova / Claude API Integration
-
-This app exposes a local HTTP API on port **37423** for integration with [Nova](https://github.com/kochj23) (OpenClaw AI) and Claude Code.
-
-**Platform:** macOS  
-**Auth:** None (loopback only — macOS apps bind to 127.0.0.1)
-
-### Standard Endpoints
-
-```bash
-curl http://127.0.0.1:37423/api/status   # App status + uptime
-curl http://127.0.0.1:37423/api/ping     # Health check
-```
-
-### App-Specific Endpoints
-
-```
-/api/devices
-/api/scan (POST with {target})
-/api/scan/stop
-/api/security/warnings
-/api/wifi
-```
-
-### Usage Example
-
-```bash
-# Check if running
-curl -s http://127.0.0.1:37423/api/status | python3 -m json.tool
-
-# From Nova (OpenClaw TUI)
-# Nova has this pre-authorized and will use these endpoints automatically
-```
-
-The API server starts automatically when the app launches and binds to loopback only — no external network exposure.
-
