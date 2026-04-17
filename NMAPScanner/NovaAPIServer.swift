@@ -25,6 +25,18 @@ class NovaAPIServer {
     let port: UInt16 = 37423
     private var listener: NWListener?
     private let startTime = Date()
+
+    /// Local-only anti-CSRF bearer token (not a secret — just prevents drive-by POST from browser JS)
+    private let apiToken: String = {
+        let key = "NovaAPIToken"
+        if let existing = UserDefaults.standard.string(forKey: key), !existing.isEmpty {
+            return existing
+        }
+        let token = UUID().uuidString
+        UserDefaults.standard.set(token, forKey: key)
+        return token
+    }()
+
     private init() {}
 
     func start() {
@@ -55,6 +67,13 @@ class NovaAPIServer {
 
     private func route(_ req: NovaRequest) async -> String {
         if req.method == "OPTIONS" { return http(200, "") }
+
+        // Require bearer token for all POST requests (anti-CSRF)
+        if req.method == "POST" {
+            guard let auth = req.headers["authorization"], auth == "Bearer \(apiToken)" else {
+                return json(401, ["error": "Unauthorized — missing or invalid Bearer token"] as [String: Any])
+            }
+        }
 
         switch (req.method, req.path) {
 
@@ -90,12 +109,28 @@ class NovaAPIServer {
             guard let body = req.bodyJSON(), let ip = body["ip"] as? String else {
                 return json(400, ["error": "'ip' required"] as [String: Any])
             }
-            // Scan via nmap subprocess
+            // SECURITY: Validate IP/CIDR format to prevent command injection.
+            // Only allow IPv4 addresses with optional CIDR notation (e.g. 192.168.1.0/24).
+            let ipRegex = /^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}(\/\d{1,2})?$/
+            guard ip.wholeMatch(of: ipRegex) != nil else {
+                return json(400, ["error": "Invalid IP address format. Expected: x.x.x.x or x.x.x.x/n"] as [String: Any])
+            }
+            // Additionally validate each octet is 0-255
+            let octets = ip.components(separatedBy: "/").first!.components(separatedBy: ".")
+            let validOctets = octets.allSatisfy { if let n = Int($0) { return n >= 0 && n <= 255 } else { return false } }
+            guard validOctets else {
+                return json(400, ["error": "Invalid IP address: octets must be 0-255"] as [String: Any])
+            }
+            if let cidrPart = ip.components(separatedBy: "/").last, ip.contains("/"),
+               let cidr = Int(cidrPart), (cidr < 0 || cidr > 32) {
+                return json(400, ["error": "Invalid CIDR prefix: must be 0-32"] as [String: Any])
+            }
+            // Scan via nmap subprocess — arguments passed as array, never through shell
             Task {
-                let result = Process()
-                result.executableURL = URL(fileURLWithPath: "/usr/bin/env")
-                result.arguments = ["nmap", "-sV", "--open", ip]
-                try? result.run()
+                let nmapProcess = Process()
+                nmapProcess.executableURL = URL(fileURLWithPath: "/usr/local/bin/nmap")
+                nmapProcess.arguments = ["-sV", "--open", ip]
+                try? nmapProcess.run()
             }
             return json(200, ["status": "scan_started", "ip": ip] as [String: Any])
 
@@ -208,7 +243,7 @@ class NovaAPIServer {
     }
 
     private struct NovaRequest {
-        let method: String; let path: String; let body: String
+        let method: String; let path: String; let body: String; let headers: [String: String]
         func bodyJSON() -> [String: Any]? { guard let d = body.data(using: .utf8) else { return nil }; return try? JSONSerialization.jsonObject(with: d) as? [String: Any] }
         init?(_ data: Data) {
             guard let raw = String(data: data, encoding: .utf8), raw.contains("\r\n\r\n") else { return nil }
@@ -217,7 +252,7 @@ class NovaAPIServer {
             var hdrs: [String: String] = [:]; for l in lines.dropFirst() { let kv = l.components(separatedBy: ": "); if kv.count >= 2 { hdrs[kv[0].lowercased()] = kv.dropFirst().joined(separator: ": ") } }
             let rawBody = parts.dropFirst().joined(separator: "\r\n\r\n")
             if let cl = hdrs["content-length"], let n = Int(cl), rawBody.utf8.count < n { return nil }
-            method = tokens[0]; path = tokens[1].components(separatedBy: "?").first ?? tokens[1]; body = rawBody
+            method = tokens[0]; path = tokens[1].components(separatedBy: "?").first ?? tokens[1]; body = rawBody; headers = hdrs
         }
     }
     // Map severity to STIX 2.1 indicator type
@@ -231,5 +266,5 @@ class NovaAPIServer {
 
     private func json(_ s: Int, _ d: [String: Any]) -> String { guard let data = try? JSONSerialization.data(withJSONObject: d, options: .prettyPrinted), let body = String(data: data, encoding: .utf8) else { return http(500, "") }; return http(s, body, "application/json") }
     private func jsonArray(_ s: Int, _ a: [[String: Any]]) -> String { guard let data = try? JSONSerialization.data(withJSONObject: a, options: .prettyPrinted), let body = String(data: data, encoding: .utf8) else { return http(500, "") }; return http(s, body, "application/json") }
-    private func http(_ s: Int, _ body: String, _ ct: String = "text/plain") -> String { let st = [200:"OK",201:"Created",400:"Bad Request",404:"Not Found",500:"Internal Server Error"][s] ?? "Unknown"; return "HTTP/1.1 \(s) \(st)\r\nContent-Type: \(ct); charset=utf-8\r\nContent-Length: \(body.utf8.count)\r\nAccess-Control-Allow-Origin: *\r\nConnection: close\r\n\r\n\(body)" }
+    private func http(_ s: Int, _ body: String, _ ct: String = "text/plain") -> String { let st = [200:"OK",201:"Created",400:"Bad Request",401:"Unauthorized",404:"Not Found",500:"Internal Server Error"][s] ?? "Unknown"; return "HTTP/1.1 \(s) \(st)\r\nContent-Type: \(ct); charset=utf-8\r\nContent-Length: \(body.utf8.count)\r\nConnection: close\r\n\r\n\(body)" }
 }

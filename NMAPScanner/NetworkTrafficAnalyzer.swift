@@ -144,8 +144,8 @@ class NetworkTrafficAnalyzer: ObservableObject {
             trafficHistory[ip, default: []].append(dataPoint)
 
             // Limit history size
-            if trafficHistory[ip]!.count > maxHistoryPoints {
-                trafficHistory[ip]!.removeFirst()
+            if let count = trafficHistory[ip]?.count, count > maxHistoryPoints {
+                trafficHistory[ip]?.removeFirst()
             }
 
             stats.history = trafficHistory[ip] ?? []
