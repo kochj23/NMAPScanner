@@ -394,10 +394,25 @@ class HistoricalTracker: ObservableObject {
         let allPorts = Set(deviceSnapshots.flatMap { $0.openPorts })
         let deviceChanges = changes.filter { $0.ipAddress == ipAddress }
 
+        guard let firstSnapshot = deviceSnapshots.first,
+              let lastSnapshot = deviceSnapshots.last else {
+            return DeviceStatistics(
+                ipAddress: ipAddress,
+                firstSeen: Date(),
+                lastSeen: Date(),
+                totalScans: 0,
+                onlineScans: 0,
+                offlineScans: 0,
+                uptimePercentage: 0,
+                uniquePortsSeen: 0,
+                totalChanges: 0
+            )
+        }
+
         return DeviceStatistics(
             ipAddress: ipAddress,
-            firstSeen: deviceSnapshots.first!.timestamp,
-            lastSeen: deviceSnapshots.last!.timestamp,
+            firstSeen: firstSnapshot.timestamp,
+            lastSeen: lastSnapshot.timestamp,
             totalScans: deviceSnapshots.count,
             onlineScans: onlineCount,
             offlineScans: offlineCount,

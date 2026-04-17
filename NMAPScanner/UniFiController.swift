@@ -568,23 +568,37 @@ class UniFiController: ObservableObject {
         }
     }
 
-    // MARK: - Certificate Trust Management
+    // MARK: - Certificate Trust Management (TOFU — Trust On First Use)
 
-    /// Prompt user to trust certificate
+    /// UserDefaults key prefix for stored certificate fingerprints
+    private static let certFingerprintKeyPrefix = "NMAPScanner_TrustedCertFingerprint_"
+
+    /// Prompt user to trust certificate using Trust-On-First-Use (TOFU).
+    /// On first connection to a host, the certificate fingerprint is saved.
+    /// On subsequent connections, the fingerprint is compared — if it changes, trust is DENIED
+    /// and a warning is logged (possible MITM attack).
     private func promptUserToTrustCertificate(host: String, commonName: String, fingerprint: String) async -> Bool {
-        // This will be called from the secure delegate
-        // In a real implementation, you'd show a SwiftUI alert
-        // For now, return true to maintain existing behavior but with tracking
+        let key = Self.certFingerprintKeyPrefix + host
 
-        SecureLogger.log("Certificate trust prompt for \(host): CN=\(commonName), FP=\(fingerprint)", level: .warning)
-
-        // SECURITY: Auto-trusting certificates bypasses TLS verification.
-        // A proper implementation should present a SwiftUI confirmation dialog showing
-        // the certificate common name and fingerprint, allowing the user to accept or reject.
-        // Until that UI is built, all UniFi controller certificates are auto-trusted.
-        SecurityAuditLog.log(event: .certificateTrusted, details: "Auto-trusted certificate for \(host) (pending UI implementation)", level: .security)
-
-        return true  // Auto-trust for now (better than blind trust)
+        if let savedFingerprint = UserDefaults.standard.string(forKey: key) {
+            // We have a previously trusted fingerprint for this host
+            if savedFingerprint == fingerprint {
+                SecureLogger.log("Certificate fingerprint matches stored value for \(host)", level: .info)
+                SecurityAuditLog.log(event: .certificateTrusted, details: "TOFU: Certificate fingerprint verified for \(host)", level: .info)
+                return true
+            } else {
+                // SECURITY: Fingerprint changed — possible MITM attack. Reject and warn.
+                SecureLogger.log("CERTIFICATE FINGERPRINT CHANGED for \(host)! Expected: \(savedFingerprint), Got: \(fingerprint). Possible MITM attack. Connection REJECTED.", level: .error)
+                SecurityAuditLog.log(event: .certificateTrusted, details: "TOFU VIOLATION: Certificate fingerprint changed for \(host). Old=\(savedFingerprint) New=\(fingerprint). Connection rejected.", level: .critical)
+                return false
+            }
+        } else {
+            // First connection to this host — trust and save fingerprint (TOFU)
+            UserDefaults.standard.set(fingerprint, forKey: key)
+            SecureLogger.log("TOFU: First connection to \(host). Saving certificate fingerprint: \(fingerprint), CN=\(commonName)", level: .warning)
+            SecurityAuditLog.log(event: .certificateTrusted, details: "TOFU: First-use trust for \(host), CN=\(commonName), FP=\(fingerprint)", level: .security)
+            return true
+        }
     }
 }
 
