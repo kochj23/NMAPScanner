@@ -107,6 +107,10 @@ class AIBackendManager: ObservableObject {
 
     // OpenWebUI-specific
     @Published var openWebUIServerURL: String = "http://localhost:8080"
+    @Published var availableOllamaModels: [String] = []
+    @Published var selectedOllamaModel: String = ""
+    @Published var availableMLXModels: [String] = []
+    @Published var selectedMLXModel: String = ""
 
     // MARK: - Private Properties
 
@@ -1096,6 +1100,53 @@ struct AIBackendSettingsView: View {
 struct AIBackendSettingsView_Previews: PreviewProvider {
     static var previews: some View {
         AIBackendSettingsView()
+    }
+
+    // MARK: - Dynamic Model Discovery
+
+    /// Fetch available models from local Ollama instance
+    func fetchAvailableModels() async {
+        guard let url = URL(string: "http://127.0.0.1:11434/api/tags") else { return }
+        do {
+            let (data, _) = try await URLSession.shared.data(from: url)
+            struct OllamaModelsResponse: Codable {
+                struct Model: Codable {
+                    let name: String
+                    let size: Int64?
+                }
+                let models: [Model]
+            }
+            let response = try JSONDecoder().decode(OllamaModelsResponse.self, from: data)
+            await MainActor.run {
+                self.availableOllamaModels = response.models.map { $0.name }
+                if self.selectedOllamaModel.isEmpty, let first = self.availableOllamaModels.first {
+                    self.selectedOllamaModel = first
+                }
+            }
+        } catch {
+            NSLog("[AIBackendManager] Failed to fetch Ollama models: \(error)")
+        }
+    }
+
+    /// Fetch available models from local MLX server
+    func fetchMLXModels() async {
+        guard let url = URL(string: "http://127.0.0.1:5050/v1/models") else { return }
+        do {
+            let (data, _) = try await URLSession.shared.data(from: url)
+            struct MLXModelsResponse: Codable {
+                struct Model: Codable { let id: String }
+                let data: [Model]
+            }
+            let response = try JSONDecoder().decode(MLXModelsResponse.self, from: data)
+            await MainActor.run {
+                self.availableMLXModels = response.data.map { $0.id }
+                if self.selectedMLXModel.isEmpty, let first = self.availableMLXModels.first {
+                    self.selectedMLXModel = first
+                }
+            }
+        } catch {
+            NSLog("[AIBackendManager] Failed to fetch MLX models: \(error)")
+        }
     }
 }
 #endif
