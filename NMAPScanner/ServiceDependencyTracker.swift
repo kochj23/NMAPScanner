@@ -251,7 +251,7 @@ class ServiceDependencyTracker: ObservableObject {
         4222: .messaging, // NATS
 
         // Storage
-        9000: .storage,  // MinIO (conflicts with Portainer)
+        // 9000: .storage,  // MinIO — removed: conflicts with Portainer (9000: .devOps above)
         8082: .storage,  // MinIO Console
 
         // Monitoring

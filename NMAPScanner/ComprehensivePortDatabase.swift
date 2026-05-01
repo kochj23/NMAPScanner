@@ -220,7 +220,7 @@ struct ComprehensivePortDatabase {
         7860: PortDefinition(name: "Gradio", description: "Gradio/Hugging Face Demo Interface", protocols: [.tcp]),
 
         // Text Generation & Inference Servers
-        5001: PortDefinition(name: "text-generation-webui", description: "Oobabooga Text Generation WebUI", protocols: [.tcp]),
+        5002: PortDefinition(name: "text-generation-webui", description: "Oobabooga Text Generation WebUI", protocols: [.tcp]),
         5005: PortDefinition(name: "text-generation-webui-API", description: "Oobabooga Text Generation API", protocols: [.tcp]),
         8001: PortDefinition(name: "Triton-HTTP", description: "NVIDIA Triton Inference Server HTTP", protocols: [.tcp]),
         8002: PortDefinition(name: "Triton-gRPC", description: "NVIDIA Triton Inference Server gRPC", protocols: [.tcp]),
@@ -241,7 +241,7 @@ struct ComprehensivePortDatabase {
 
         // Other AI Services
         3001: PortDefinition(name: "n8n", description: "n8n AI Workflow Automation", protocols: [.tcp]),
-        4000: PortDefinition(name: "AnythingLLM", description: "AnythingLLM AI Assistant", protocols: [.tcp]),
+        4001: PortDefinition(name: "AnythingLLM", description: "AnythingLLM AI Assistant", protocols: [.tcp]),
     ]
 
     /// Get port definition

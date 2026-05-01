@@ -288,7 +288,7 @@ struct SecurityStatusCard: View {
                             .foregroundColor(vulnerabilityColor)
                     }
 
-                    Text("\(device.vulnerabilities)")
+                    Text(verbatim: "\(device.vulnerabilities.count)")
                         .font(.system(size: 48, weight: .bold))
                         .foregroundColor(vulnerabilityColor)
 

@@ -258,7 +258,6 @@ class ManufacturerIconManager {
             return "sensor.fill"
         case .printer:
             return "printer.fill"
-            return "homekit"
         case .unknown:
             return "questionmark.circle"
         }

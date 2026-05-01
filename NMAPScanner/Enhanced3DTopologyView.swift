@@ -301,7 +301,7 @@ struct Enhanced3DTopologyView: View {
             Text("IP: \(device.ipAddress)")
                 .font(.system(.body, design: .monospaced))
 
-            Text("MAC: \(device.macAddress)")
+            Text(verbatim: "MAC: \(device.macAddress ?? "Unknown")")
                 .font(.system(.caption, design: .monospaced))
 
             if !device.openPorts.isEmpty {

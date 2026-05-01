@@ -2724,7 +2724,6 @@ class IntegratedScannerV3: ObservableObject {
             "00:17:88": "Philips Lighting",     // Philips Hue
             "EC:B5:FA": "Philips Lighting",     // Philips Hue
             "40:ED:CF": "Sengled",              // Sengled smart bulbs
-            "C0:97:27": "Samsung SmartThings",  // SmartThings IoT hub
             "D0:52:A8": "Samsung SmartThings",  // SmartThings IoT hub
             "28:6D:97": "Amazon",               // Echo devices
             "00:FC:8B": "Amazon",               // Echo/Alexa devices
@@ -2740,8 +2739,6 @@ class IntegratedScannerV3: ObservableObject {
             "00:0E:58": "Sonos",                // Sonos smart speakers
             "54:2A:1B": "TP-Link Kasa",         // Kasa smart plugs/switches
             // "50:C7:BF": "TP-Link Kasa" - duplicate entry, already assigned to TP-Link above
-            "B0:95:75": "TP-Link Kasa",         // Kasa smart devices
-            "C0:06:C3": "TP-Link Kasa",         // Kasa smart devices
             "44:32:C8": "Wyze Labs",            // Wyze cameras, sensors
             "7C:78:B2": "Wyze Labs",            // Wyze devices
             "2C:AA:8E": "Wyze Labs",            // Wyze devices
@@ -2778,12 +2775,7 @@ class IntegratedScannerV3: ObservableObject {
             "30:FD:38": "Google",               // Google WiFi/Nest WiFi
             "CC:D7:86": "Google",               // Google Nest Protect
             "00:1A:11": "Google",               // Google devices
-            "6C:56:97": "Google",               // Google Home/Nest (already listed above)
-            "F4:F5:D8": "Google",               // Google Home/Nest (already listed above)
-            "48:D6:D5": "Google",               // Google Home/Nest (already listed above)
-            "B4:F0:AB": "Google",               // Google Chromecast
             "D0:E7:82": "Google",               // Google Home
-            "A4:77:33": "Google",               // Google Nest
             "18:B4:30": "Google",               // Google devices
             "F4:60:E2": "Google",               // Google Nest Hub
 
@@ -2798,7 +2790,6 @@ class IntegratedScannerV3: ObservableObject {
             "68:D7:9A": "Ubiquiti",             // UniFi Access Points
             "04:18:D6": "Ubiquiti",             // UniFi devices
             "80:2A:A8": "Ubiquiti",             // UniFi devices
-            "F0:9F:C2": "Ubiquiti",             // UniFi devices
             "24:A4:3C": "Ubiquiti",             // UniFi devices
             "18:E8:29": "Ubiquiti",             // UniFi devices
             "DC:9F:DB": "Ubiquiti",             // UniFi devices

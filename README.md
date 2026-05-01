@@ -4,7 +4,8 @@
 ![Platform](https://img.shields.io/badge/platform-macOS%2014.0%2B-blue)
 ![Swift](https://img.shields.io/badge/Swift-5.9%2B-orange)
 ![License](https://img.shields.io/badge/license-MIT-green)
-![Version](https://img.shields.io/badge/version-8.9.0-purple)
+![Version](https://img.shields.io/badge/version-9.0.0-purple)
+![Tests](https://img.shields.io/badge/tests-213%20passing-brightgreen)
 ![Architecture](https://img.shields.io/badge/arch-Apple%20Silicon%20%2B%20Intel-lightgrey)
 
 A native macOS network security scanner that wraps nmap in a modern SwiftUI interface, adding AI-powered threat detection, device management, UniFi controller integration, compliance reporting, and a local REST API for automation. All AI inference runs on-device using Apple Silicon -- no data leaves your machine.
@@ -23,6 +24,7 @@ A native macOS network security scanner that wraps nmap in a modern SwiftUI inte
 - [Installation](#installation)
 - [Build from Source](#build-from-source)
 - [Usage](#usage)
+- [Testing](#testing)
 - [Security](#security)
 - [Version History](#version-history)
 - [License](#license)
@@ -31,6 +33,60 @@ A native macOS network security scanner that wraps nmap in a modern SwiftUI inte
 ---
 
 ## Architecture
+
+```mermaid
+graph TD
+    subgraph UI["SwiftUI Frontend"]
+        A[ContentView / MainTabView] --> B[Dashboard V3]
+        A --> C[Security & Traffic]
+        A --> D[AI Assistant]
+        A --> E[Network Tools]
+        A --> F[Topology Graph]
+        A --> G[HomeKit Tab]
+        A --> H[WiFi Networks]
+        A --> I[Dependency Graph]
+        J[MenuBarAgent] --> A
+    end
+
+    subgraph Engine["Scan Engine"]
+        K[IntegratedScannerV3] --> L[AdvancedPortScanner]
+        K --> M[PingScanner]
+        K --> N[BonjourScanner]
+        K --> O[ARPScanner]
+        L --> P["/usr/local/bin/nmap"]
+        P --> Q[Text Output Parser]
+        Q --> R["AdvancedScanResult (ports, OS, services)"]
+    end
+
+    subgraph AI["AI / ML Subsystem"]
+        S[MLXInferenceEngine] --> T[Ollama / MLX / TinyLLM]
+        U[AISecurityAnalyzer] --> S
+        V[MLXThreatAnalyzer] --> S
+        W[ShadowAIDetector]
+    end
+
+    subgraph Security["Security Subsystem"]
+        X[VulnerabilityScanner]
+        Y[SSLCertificateAnalyzer]
+        Z[InsecurePortDetector]
+        AA[ThreatAnalyzer] --> AB[ThreatFinding / DeviceThreatSummary]
+    end
+
+    subgraph Integration["Integration Layer"]
+        AC[UniFiController] --> AD[macOS Keychain]
+        AE[NovaAPIServer :37423]
+        AF[ExportManager] --> AG["PDF / CSV / JSON / HTML"]
+    end
+
+    UI --> Engine
+    UI --> AI
+    UI --> Security
+    Engine --> Security
+    AI --> Security
+    UI --> Integration
+```
+
+### Detailed Component Map
 
 ```
 +====================================================================+
@@ -396,6 +452,48 @@ Five built-in diagnostic utilities, no terminal required:
 
 ---
 
+## Testing
+
+NMAPScanner includes a comprehensive XCTest suite with **213 tests** across 8 test classes covering unit, functional, security, and integration testing.
+
+### Test Suite Summary
+
+| Test Class | Tests | Category | Coverage |
+|---|---|---|---|
+| `ScanProfileTests` | 32 | Unit | Scan profiles, nmap arguments, scan presets, port modes |
+| `CommandInjectionTests` | 32 | Security | IP validation, shell metachar rejection, URL SSRF, API regex |
+| `ThreatAnalysisTests` | 30 | Unit | Risk scoring, port classification, rogue detection, IoT scoring |
+| `APIContractTests` | 27 | Functional | Codable models, API response shapes, STIX 2.1 format, error types |
+| `NMAPXMLParsingTests` | 19 | Unit | nmap output parsing, OS detection, service versions, ARP parsing |
+| `SecurityHardeningTests` | 25 | Security | Subprocess safety, input validation, log masking, rate limiting |
+| `DeviceModelTests` | 35 | Unit | EnhancedDevice, PortInfo, risk levels, export formats |
+| `IntegrationTests` | 13 | Integration | nmap binary check, threat analyzer workflow, end-to-end models |
+
+### Running Tests
+
+```bash
+# Run all tests
+xcodebuild -project NMAPScanner.xcodeproj -scheme NMAPScanner \
+  -destination 'platform=macOS' test
+
+# Run a specific test class
+xcodebuild -project NMAPScanner.xcodeproj -scheme NMAPScanner \
+  -destination 'platform=macOS' \
+  -only-testing:NMAPScannerTests/CommandInjectionTests test
+```
+
+### Security Test Coverage
+
+The security tests validate:
+
+- **Command injection prevention** -- semicolons, pipes, backticks, `$()`, ampersands, newlines, redirects, null bytes, and Unicode homoglyphs are all rejected by `IPValidator`
+- **SSRF protection** -- cloud metadata endpoints (AWS, GCP, Azure) are blocked by `URLValidator`
+- **Subprocess safety** -- all scan profile arguments verified to contain no shell metacharacters
+- **Log masking** -- passwords, bearer tokens, API keys, session cookies, and UniFi session IDs are masked before logging
+- **User-facing error hygiene** -- no stack traces, file paths, or error codes leak to users
+
+---
+
 ## Security
 
 ### Hardening Measures
@@ -426,6 +524,7 @@ This tool is for **defensive security only**. Scan only networks you own or have
 
 | Version | Date | Highlights |
 |---------|------|------------|
+| **9.0.0** | May 2026 | Comprehensive XCTest suite (213 tests, 8 classes), compiler warning fixes, security hardening, Mermaid architecture diagram |
 | **8.9.0** | April 2026 | STIX 2.1 threat intelligence (export/import/IoC), ~40 compiler warnings resolved |
 | **8.8.0** | March 2026 | macOS WidgetKit support (small/medium/large security widgets) |
 | **8.7.0** | February 2026 | Security hardening audit -- 25 findings resolved (1 Critical, 7 High, 7 Medium, 6 Low, 2 Info) |

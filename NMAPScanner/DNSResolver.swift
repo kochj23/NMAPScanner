@@ -64,30 +64,31 @@ class DNSResolver: ObservableObject {
 
             // Use NSLock to ensure the continuation is only resumed once,
             // preventing a race between process completion and timeout termination
-            let lock = NSLock()
-            var hasResumed = false
+            final class ResumeGuard: @unchecked Sendable {
+                private let lock = NSLock()
+                private var _hasResumed = false
+                var hasResumed: Bool {
+                    get { lock.lock(); defer { lock.unlock() }; return _hasResumed }
+                    set { lock.lock(); defer { lock.unlock() }; _hasResumed = newValue }
+                }
+                /// Attempt to claim the resume slot. Returns true on first call, false thereafter.
+                func claim() -> Bool { lock.lock(); defer { lock.unlock() }; if _hasResumed { return false }; _hasResumed = true; return true }
+            }
+            let guard_ = ResumeGuard()
 
             do {
                 try process.run()
 
                 // Set timeout with atomic guard to prevent double-resume
                 DispatchQueue.global().asyncAfter(deadline: .now() + 2.0) {
-                    lock.lock()
-                    if !hasResumed && process.isRunning {
+                    if !guard_.hasResumed && process.isRunning {
                         process.terminate()
                     }
-                    lock.unlock()
                 }
 
                 process.waitUntilExit()
 
-                lock.lock()
-                guard !hasResumed else {
-                    lock.unlock()
-                    return
-                }
-                hasResumed = true
-                lock.unlock()
+                guard guard_.claim() else { return }
 
                 let data = pipe.fileHandleForReading.readDataToEndOfFile()
                 if let output = String(data: data, encoding: .utf8) {
@@ -98,15 +99,9 @@ class DNSResolver: ObservableObject {
 
                 continuation.resume(returning: nil)
             } catch {
-                print("❌ DNS Resolver: Error executing host command: \(error)")
+                print("DNS Resolver: Error executing host command: \(error)")
 
-                lock.lock()
-                guard !hasResumed else {
-                    lock.unlock()
-                    return
-                }
-                hasResumed = true
-                lock.unlock()
+                guard guard_.claim() else { return }
 
                 continuation.resume(returning: nil)
             }

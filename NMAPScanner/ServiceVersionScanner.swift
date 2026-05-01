@@ -26,6 +26,7 @@ class ServiceVersionScanner {
 
     /// Get banner from service
     private func getBanner(host: String, port: Int) async -> String? {
+        let probe = self.getProbeForPort(port)
         return await withCheckedContinuation { continuation in
             let queue = DispatchQueue(label: "com.nmapscanner.banner")
 
@@ -75,7 +76,7 @@ class ServiceVersionScanner {
                 }
 
                 // Send probes for specific services
-                if let probe = self.getProbeForPort(port) {
+                if let probe = probe {
                     let bytesSent = send(sockfd, probe, probe.count, 0)
                     if bytesSent < 0 {
                         continuation.resume(returning: nil)
