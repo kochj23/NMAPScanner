@@ -63,8 +63,9 @@ class MLXInferenceEngine: ObservableObject {
         }
     }
 
-    /// Stream text generation (for chat interfaces)
-    /// Note: Streaming not yet implemented in AIBackendManager
+    /// Stream text generation (for chat interfaces).
+    /// Uses AIBackendManager's streaming support for real-time token delivery.
+    /// Ollama streams token-by-token; other backends fall back to a single callback.
     func generateStream(
         prompt: String,
         maxTokens: Int = 1000,
@@ -72,18 +73,25 @@ class MLXInferenceEngine: ObservableObject {
         systemPrompt: String? = nil,
         onToken: @escaping (String) -> Void
     ) async throws {
-        // For now, use non-streaming generate and call onToken once
-        let response = try await generate(
-            prompt: prompt,
-            maxTokens: maxTokens,
-            temperature: temperature,
-            systemPrompt: systemPrompt
-        )
+        guard aiBackend.activeBackend != nil else {
+            throw MLXError.notAvailable
+        }
 
-        // Call onToken with full response
-        onToken(response)
+        isInferencing = true
+        defer { isInferencing = false }
 
-        // TODO: Add streaming support to AIBackendManager for real-time tokens
+        do {
+            try await aiBackend.generateStream(
+                prompt: prompt,
+                systemPrompt: systemPrompt,
+                temperature: temperature,
+                maxTokens: maxTokens,
+                onToken: onToken
+            )
+        } catch {
+            lastError = error.localizedDescription
+            throw MLXError.inferenceError(error.localizedDescription)
+        }
     }
 }
 

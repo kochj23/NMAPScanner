@@ -107,8 +107,6 @@ class AIBackendManager: ObservableObject {
 
     // OpenWebUI-specific
     @Published var openWebUIServerURL: String = "http://localhost:8080"
-    @Published var availableOllamaModels: [String] = []
-    @Published var selectedOllamaModel: String = ""
     @Published var availableMLXModels: [String] = []
     @Published var selectedMLXModel: String = ""
 
@@ -368,6 +366,97 @@ class AIBackendManager: ObservableObject {
             )
         case .auto:
             throw AIBackendError.invalidState
+        }
+    }
+
+    // MARK: - Streaming AI Interface
+
+    /// Stream text generation using the active backend, calling onToken for each chunk.
+    /// Currently supports Ollama streaming; other backends fall back to non-streaming.
+    func generateStream(
+        prompt: String,
+        systemPrompt: String? = nil,
+        temperature: Float = 0.7,
+        maxTokens: Int = 2048,
+        onToken: @escaping (String) -> Void
+    ) async throws {
+        guard let backend = activeBackend else {
+            throw AIBackendError.noBackendAvailable
+        }
+
+        isProcessing = true
+        defer { isProcessing = false }
+
+        switch backend {
+        case .ollama:
+            try await streamWithOllama(
+                prompt: prompt,
+                systemPrompt: systemPrompt,
+                temperature: temperature,
+                maxTokens: maxTokens,
+                onToken: onToken
+            )
+        default:
+            // Fall back to non-streaming for other backends
+            let response = try await generate(
+                prompt: prompt,
+                systemPrompt: systemPrompt,
+                temperature: temperature,
+                maxTokens: maxTokens
+            )
+            onToken(response)
+        }
+    }
+
+    /// Stream from Ollama using line-delimited JSON responses.
+    /// Each line is a JSON object with a "response" field containing the next token.
+    private func streamWithOllama(
+        prompt: String,
+        systemPrompt: String?,
+        temperature: Float,
+        maxTokens: Int,
+        onToken: @escaping (String) -> Void
+    ) async throws {
+        guard let url = URL(string: "\(ollamaBaseURL)/api/generate") else {
+            throw AIBackendError.invalidConfiguration
+        }
+
+        var requestBody: [String: Any] = [
+            "model": selectedOllamaModel,
+            "prompt": prompt,
+            "stream": true,
+            "options": [
+                "temperature": temperature,
+                "num_predict": maxTokens
+            ]
+        ]
+
+        if let systemPrompt = systemPrompt {
+            requestBody["system"] = systemPrompt
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.httpBody = try JSONSerialization.data(withJSONObject: requestBody)
+
+        struct OllamaStreamChunk: Codable {
+            let response: String
+            let done: Bool
+        }
+
+        let (bytes, _) = try await URLSession.shared.bytes(for: request)
+
+        for try await line in bytes.lines {
+            guard !line.isEmpty else { continue }
+            guard let lineData = line.data(using: .utf8) else { continue }
+
+            if let chunk = try? JSONDecoder().decode(OllamaStreamChunk.self, from: lineData) {
+                if !chunk.response.isEmpty {
+                    onToken(chunk.response)
+                }
+                if chunk.done { break }
+            }
         }
     }
 
@@ -1100,53 +1189,6 @@ struct AIBackendSettingsView: View {
 struct AIBackendSettingsView_Previews: PreviewProvider {
     static var previews: some View {
         AIBackendSettingsView()
-    }
-
-    // MARK: - Dynamic Model Discovery
-
-    /// Fetch available models from local Ollama instance
-    func fetchAvailableModels() async {
-        guard let url = URL(string: "http://127.0.0.1:11434/api/tags") else { return }
-        do {
-            let (data, _) = try await URLSession.shared.data(from: url)
-            struct OllamaModelsResponse: Codable {
-                struct Model: Codable {
-                    let name: String
-                    let size: Int64?
-                }
-                let models: [Model]
-            }
-            let response = try JSONDecoder().decode(OllamaModelsResponse.self, from: data)
-            await MainActor.run {
-                self.availableOllamaModels = response.models.map { $0.name }
-                if self.selectedOllamaModel.isEmpty, let first = self.availableOllamaModels.first {
-                    self.selectedOllamaModel = first
-                }
-            }
-        } catch {
-            NSLog("[AIBackendManager] Failed to fetch Ollama models: \(error)")
-        }
-    }
-
-    /// Fetch available models from local MLX server
-    func fetchMLXModels() async {
-        guard let url = URL(string: "http://127.0.0.1:5050/v1/models") else { return }
-        do {
-            let (data, _) = try await URLSession.shared.data(from: url)
-            struct MLXModelsResponse: Codable {
-                struct Model: Codable { let id: String }
-                let data: [Model]
-            }
-            let response = try JSONDecoder().decode(MLXModelsResponse.self, from: data)
-            await MainActor.run {
-                self.availableMLXModels = response.data.map { $0.id }
-                if self.selectedMLXModel.isEmpty, let first = self.availableMLXModels.first {
-                    self.selectedMLXModel = first
-                }
-            }
-        } catch {
-            NSLog("[AIBackendManager] Failed to fetch MLX models: \(error)")
-        }
     }
 }
 #endif

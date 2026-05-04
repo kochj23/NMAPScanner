@@ -589,7 +589,7 @@ class UniFiController: ObservableObject {
             } else {
                 // SECURITY: Fingerprint changed — possible MITM attack. Reject and warn.
                 SecureLogger.log("CERTIFICATE FINGERPRINT CHANGED for \(host)! Expected: \(savedFingerprint), Got: \(fingerprint). Possible MITM attack. Connection REJECTED.", level: .error)
-                SecurityAuditLog.log(event: .certificateTrusted, details: "TOFU VIOLATION: Certificate fingerprint changed for \(host). Old=\(savedFingerprint) New=\(fingerprint). Connection rejected.", level: .critical)
+                SecurityAuditLog.log(event: .certificateTrusted, details: "TOFU VIOLATION: Certificate fingerprint changed for \(host). Old=\(savedFingerprint) New=\(fingerprint). Connection rejected.", level: .security)
                 return false
             }
         } else {
