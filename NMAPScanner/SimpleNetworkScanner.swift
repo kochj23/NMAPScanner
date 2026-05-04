@@ -19,49 +19,78 @@ class SimpleNetworkScanner: ObservableObject {
 
     /// Scan using ARP table (instant results!)
     func scanARP() async {
-        print("📡 SimpleNetworkScanner: ========== STARTING ARP SCAN ==========")
-        print("📡 SimpleNetworkScanner: Setting isScanning = true")
+        #if DEBUG
+        print("SimpleNetworkScanner: ========== STARTING ARP SCAN ==========")
+        print("SimpleNetworkScanner: Setting isScanning = true")
+        #endif
         isScanning = true
 
-        print("📡 SimpleNetworkScanner: Setting status message")
+        #if DEBUG
+        print("SimpleNetworkScanner: Setting status message")
+        #endif
         status = "Reading ARP table..."
         progress = 0
-        print("📡 SimpleNetworkScanner: Status set, progress = 0")
+        #if DEBUG
+        print("SimpleNetworkScanner: Status set, progress = 0")
+        #endif
 
         // Start watchdog
-        print("📡 SimpleNetworkScanner: Starting watchdog...")
+        #if DEBUG
+        print("SimpleNetworkScanner: Starting watchdog...")
+        #endif
         ScanWatchdog.shared.startMonitoring(operation: "ARP Scan")
-        print("📡 SimpleNetworkScanner: Watchdog started")
+        #if DEBUG
+        print("SimpleNetworkScanner: Watchdog started")
+        #endif
 
         // Execute arp command
-        print("📡 SimpleNetworkScanner: About to execute /usr/sbin/arp -a")
+        #if DEBUG
+        print("SimpleNetworkScanner: About to execute /usr/sbin/arp -a")
+        #endif
         let arpOutput = await executeCommand("/usr/sbin/arp", arguments: ["-a"])
-        print("📡 SimpleNetworkScanner: ARP command completed, output length = \(arpOutput.count) chars")
+        #if DEBUG
+        print("SimpleNetworkScanner: ARP command completed, output length = \(arpOutput.count) chars")
+        #endif
 
-        print("📡 SimpleNetworkScanner: Updating watchdog progress...")
+        #if DEBUG
+        print("SimpleNetworkScanner: Updating watchdog progress...")
+        #endif
         ScanWatchdog.shared.updateProgress()
-        print("📡 SimpleNetworkScanner: Watchdog updated")
+        #if DEBUG
+        print("SimpleNetworkScanner: Watchdog updated")
+        #endif
 
         // Parse ARP output
-        print("📡 SimpleNetworkScanner: About to parse ARP output...")
+        #if DEBUG
+        print("SimpleNetworkScanner: About to parse ARP output...")
+        #endif
         discoveredIPs = parseARPOutput(arpOutput)
-        print("📡 SimpleNetworkScanner: Parsing complete, found \(discoveredIPs.count) IPs: \(discoveredIPs)")
+        #if DEBUG
+        print("SimpleNetworkScanner: Parsing complete, found \(discoveredIPs.count) IPs: \(discoveredIPs)")
+        #endif
 
-        print("📡 SimpleNetworkScanner: Updating UI status...")
+        #if DEBUG
+        print("SimpleNetworkScanner: Updating UI status...")
+        #endif
         status = "Found \(discoveredIPs.count) devices in ARP table"
         progress = 1.0
         isScanning = false
-        print("📡 SimpleNetworkScanner: UI updated, isScanning = false")
+        #if DEBUG
+        print("SimpleNetworkScanner: UI updated, isScanning = false")
+        #endif
 
         // Stop watchdog
-        print("📡 SimpleNetworkScanner: Stopping watchdog...")
+        #if DEBUG
+        print("SimpleNetworkScanner: Stopping watchdog...")
+        #endif
         ScanWatchdog.shared.stopMonitoring()
-        print("📡 SimpleNetworkScanner: Watchdog stopped")
-
-        print("📡 SimpleNetworkScanner: ========== ARP SCAN COMPLETE ==========")
+        #if DEBUG
+        print("SimpleNetworkScanner: Watchdog stopped")
+        print("SimpleNetworkScanner: ========== ARP SCAN COMPLETE ==========")
+        #endif
     }
 
-    /// Scan using ping sweep (reliable, sequential)
+    /// Scan using ping sweep with concurrent TaskGroup (max 20 in-flight)
     func scanPingSweep(subnet: String) async {
         // Validate subnet
         do {
@@ -83,27 +112,57 @@ class SimpleNetworkScanner: ObservableObject {
         // Start watchdog
         ScanWatchdog.shared.startMonitoring(operation: "Ping Sweep")
 
-        // Ping each host sequentially with short timeout
-        for i in 1...254 {
-            let ip = "\(subnet).\(i)"
+        let maxConcurrency = 20
+        var completed = 0
 
-            // Ping with 0.2 second timeout
-            let result = await executeCommand("/sbin/ping", arguments: ["-c", "1", "-W", "200", ip])
+        // Use TaskGroup with bounded concurrency for parallel pings
+        let foundIPs = await withTaskGroup(of: String?.self) { group in
+            var results: [String] = []
+            var pending = Array(1...254)[...]
+            var inFlight = 0
 
-            if result.contains("1 packets received") {
-                discoveredIPs.append(ip)
-                print("📡 Found: \(ip)")
+            // Seed initial batch
+            while inFlight < maxConcurrency, let i = pending.popFirst() {
+                let ip = "\(subnet).\(i)"
+                inFlight += 1
+                group.addTask {
+                    let result = await self.executeCommand("/sbin/ping", arguments: ["-c", "1", "-W", "200", ip])
+                    return result.contains("1 packets received") ? ip : nil
+                }
             }
 
-            progress = Double(i) / 254.0
-            status = "Scanning \(subnet).\(i)... (\(discoveredIPs.count) found)"
+            // Process results and keep concurrency pool full
+            for await result in group {
+                inFlight -= 1
+                completed += 1
 
-            // Update watchdog every 10 hosts
-            if i % 10 == 0 {
-                ScanWatchdog.shared.updateProgress()
+                if let ip = result {
+                    results.append(ip)
+                }
+
+                // Update UI progress on main actor
+                self.progress = Double(completed) / 254.0
+                self.status = "Scanning \(subnet)... \(completed)/254 (\(results.count) found)"
+
+                if completed % 10 == 0 {
+                    ScanWatchdog.shared.updateProgress()
+                }
+
+                // Launch next ping if hosts remain
+                if let i = pending.popFirst() {
+                    let ip = "\(subnet).\(i)"
+                    inFlight += 1
+                    group.addTask {
+                        let result = await self.executeCommand("/sbin/ping", arguments: ["-c", "1", "-W", "200", ip])
+                        return result.contains("1 packets received") ? ip : nil
+                    }
+                }
             }
+
+            return results
         }
 
+        discoveredIPs = foundIPs.sorted { compareIPs($0, $1) }
         status = "Ping sweep complete - \(discoveredIPs.count) devices found"
         progress = 1.0
         isScanning = false
@@ -111,7 +170,9 @@ class SimpleNetworkScanner: ObservableObject {
         // Stop watchdog
         ScanWatchdog.shared.stopMonitoring()
 
-        print("📡 SimpleNetworkScanner: Ping sweep complete - \(discoveredIPs.count) devices")
+        #if DEBUG
+        print("SimpleNetworkScanner: Ping sweep complete - \(discoveredIPs.count) devices")
+        #endif
     }
 
     /// Execute system command and return output (runs on background thread to avoid blocking main thread)
@@ -135,7 +196,9 @@ class SimpleNetworkScanner: ObservableObject {
                     let output = String(data: data, encoding: .utf8) ?? ""
                     continuation.resume(returning: output)
                 } catch {
-                    print("📡 Error executing \(command): \(error)")
+                    #if DEBUG
+                    print("SimpleNetworkScanner: Error executing \(command): \(error)")
+                    #endif
                     continuation.resume(returning: "")
                 }
             }

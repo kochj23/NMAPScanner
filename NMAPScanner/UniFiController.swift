@@ -570,17 +570,56 @@ class UniFiController: ObservableObject {
 
     // MARK: - Certificate Trust Management (TOFU — Trust On First Use)
 
-    /// UserDefaults key prefix for stored certificate fingerprints
-    private static let certFingerprintKeyPrefix = "NMAPScanner_TrustedCertFingerprint_"
+    /// Keychain service prefix for TOFU certificate fingerprints.
+    /// Each host gets its own Keychain item: service = prefix + host.
+    private static let certFingerprintServicePrefix = "NMAPScanner-TOFU-"
+
+    /// Load a TOFU fingerprint from Keychain for the given host.
+    private func loadTOFUFingerprint(host: String) -> String? {
+        let query: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrService as String: Self.certFingerprintServicePrefix + host,
+            kSecAttrAccount as String: host,
+            kSecReturnData as String: true,
+            kSecMatchLimit as String: kSecMatchLimitOne
+        ]
+        var item: CFTypeRef?
+        let status = SecItemCopyMatching(query as CFDictionary, &item)
+        guard status == errSecSuccess, let data = item as? Data else { return nil }
+        return String(data: data, encoding: .utf8)
+    }
+
+    /// Save a TOFU fingerprint to Keychain for the given host.
+    private func saveTOFUFingerprint(host: String, fingerprint: String) {
+        guard let data = fingerprint.data(using: .utf8) else { return }
+        let service = Self.certFingerprintServicePrefix + host
+
+        // Delete any existing entry first
+        let deleteQuery: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrService as String: service,
+            kSecAttrAccount as String: host
+        ]
+        SecItemDelete(deleteQuery as CFDictionary)
+
+        let addQuery: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrService as String: service,
+            kSecAttrAccount as String: host,
+            kSecValueData as String: data
+        ]
+        let status = SecItemAdd(addQuery as CFDictionary, nil)
+        if status != errSecSuccess {
+            SecureLogger.log("Failed to save TOFU fingerprint to Keychain for \(host): \(status)", level: .error)
+        }
+    }
 
     /// Prompt user to trust certificate using Trust-On-First-Use (TOFU).
-    /// On first connection to a host, the certificate fingerprint is saved.
+    /// On first connection to a host, the certificate fingerprint is saved to Keychain.
     /// On subsequent connections, the fingerprint is compared — if it changes, trust is DENIED
     /// and a warning is logged (possible MITM attack).
     private func promptUserToTrustCertificate(host: String, commonName: String, fingerprint: String) async -> Bool {
-        let key = Self.certFingerprintKeyPrefix + host
-
-        if let savedFingerprint = UserDefaults.standard.string(forKey: key) {
+        if let savedFingerprint = loadTOFUFingerprint(host: host) {
             // We have a previously trusted fingerprint for this host
             if savedFingerprint == fingerprint {
                 SecureLogger.log("Certificate fingerprint matches stored value for \(host)", level: .info)
@@ -593,8 +632,8 @@ class UniFiController: ObservableObject {
                 return false
             }
         } else {
-            // First connection to this host — trust and save fingerprint (TOFU)
-            UserDefaults.standard.set(fingerprint, forKey: key)
+            // First connection to this host — trust and save fingerprint to Keychain (TOFU)
+            saveTOFUFingerprint(host: host, fingerprint: fingerprint)
             SecureLogger.log("TOFU: First connection to \(host). Saving certificate fingerprint: \(fingerprint), CN=\(commonName)", level: .warning)
             SecurityAuditLog.log(event: .certificateTrusted, details: "TOFU: First-use trust for \(host), CN=\(commonName), FP=\(fingerprint)", level: .security)
             return true
