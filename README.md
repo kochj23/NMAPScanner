@@ -101,6 +101,36 @@ graph TD
     NOVA --> Engine
 ```
 
+### Scan Data Flow
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant Dashboard
+    participant IntegratedScannerV3
+    participant AdvancedPortScanner
+    participant nmap
+    participant AISecurityAnalyzer
+    participant DevicePersistence
+    participant WidgetKit
+
+    User->>Dashboard: Start scan (profile + target)
+    Dashboard->>IntegratedScannerV3: scan(target, profile)
+    IntegratedScannerV3->>AdvancedPortScanner: TCP/UDP port scan
+    IntegratedScannerV3->>IntegratedScannerV3: ARP + Ping + Bonjour (parallel)
+    AdvancedPortScanner->>nmap: Process.run(arguments)
+    nmap-->>AdvancedPortScanner: Text output (ports, OS, services)
+    AdvancedPortScanner->>AdvancedPortScanner: Parse results
+    AdvancedPortScanner-->>IntegratedScannerV3: AdvancedScanResult[]
+    IntegratedScannerV3->>AISecurityAnalyzer: Analyze threats
+    AISecurityAnalyzer->>AISecurityAnalyzer: Risk scoring + anomaly detection
+    AISecurityAnalyzer->>AISecurityAnalyzer: CVE cross-reference + compliance check
+    AISecurityAnalyzer-->>IntegratedScannerV3: Severity ratings + recommendations
+    IntegratedScannerV3->>DevicePersistence: Store/update devices
+    IntegratedScannerV3->>WidgetKit: Update timeline
+    IntegratedScannerV3-->>Dashboard: Render results + threat alerts
+```
+
 ---
 
 ## Installation
@@ -209,4 +239,4 @@ See [LICENSE](LICENSE) for the full text.
 
 ---
 
-Written by Jordan Koch
+Written by Jordan Koch ([@kochj23](https://github.com/kochj23))
