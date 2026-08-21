@@ -13,6 +13,11 @@ jobs:
     steps:
     - uses: actions/checkout@v7
 
+    - name: Install nmap
+      # NMAPScanner shells out to the nmap binary; an integration test asserts it is
+      # discoverable on PATH. Install it so the runner mirrors a real host.
+      run: brew install nmap || true
+
     - name: Install Metal Toolchain
       # NMAPScanner links mlx-swift / mlx-swift-lm. Xcode 16 no longer bundles the
       # Metal Toolchain by default; install it (non-fatal) so a compiled Metal
