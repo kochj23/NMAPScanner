@@ -551,7 +551,8 @@ final class APIContractTests: XCTestCase {
     }
 
     func testAIBackendAllCasesCount() {
-        XCTAssertEqual(AIBackend.allCases.count, 6)
+        // ollama, mlx, tinyLLM, tinyChat, openWebUI, openRouter, novaGateway, auto
+        XCTAssertEqual(AIBackend.allCases.count, 8)
     }
 
     func testAIBackendIcons() {

@@ -7,6 +7,11 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		D1A5000000000000000000F2 /* ModelRegistry.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1A5000000000000000000F1 /* ModelRegistry.swift */; };
+		D1A5000000000000000000F4 /* OpenRouterProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1A5000000000000000000F3 /* OpenRouterProvider.swift */; };
+		D1A5000000000000000000F6 /* KeychainStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1A5000000000000000000F5 /* KeychainStore.swift */; };
+		D1A5000000000000000000F8 /* AIBackendManager+LoadBalancer.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1A5000000000000000000F7 /* AIBackendManager+LoadBalancer.swift */; };
+		D1A5000000000000000000FA /* LoadBalancerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1A5000000000000000000F9 /* LoadBalancerTests.swift */; };
 		027BA4CFDE609D111EBD5D92 /* ThreatAnalysisTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6615CBE4E31D7A800384207 /* ThreatAnalysisTests.swift */; };
 		057F0D40EC2537DB80BFE74D /* ScanSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DBAB3AFF7FD7BD1DEF53E630 /* ScanSettingsView.swift */; };
 		0932B0E75621F01331EC71E6 /* ScanScheduler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 217372B1976194D0BB80921D /* ScanScheduler.swift */; };
@@ -182,6 +187,11 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		D1A5000000000000000000F1 /* ModelRegistry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NMAPScanner/Services/ModelRegistry.swift"; sourceTree = "<group>"; };
+		D1A5000000000000000000F3 /* OpenRouterProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NMAPScanner/Services/OpenRouterProvider.swift"; sourceTree = "<group>"; };
+		D1A5000000000000000000F5 /* KeychainStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NMAPScanner/Services/KeychainStore.swift"; sourceTree = "<group>"; };
+		D1A5000000000000000000F7 /* AIBackendManager+LoadBalancer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NMAPScanner/Services/AIBackendManager+LoadBalancer.swift"; sourceTree = "<group>"; };
+		D1A5000000000000000000F9 /* LoadBalancerTests.swift */ = {isa = PBXFileReference; explicitFileType = sourcecode.swift; includeInIndex = 1; path = NMAPScannerTests/LoadBalancerTests.swift; sourceTree = SOURCE_ROOT; };
 		02A02E388B544DA6C8A31173 /* NMAPApp.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = NMAPApp.swift; path = NMAPScanner/NMAPApp.swift; sourceTree = "<group>"; };
 		0337E590D0A5793E85C2BD9D /* MarkdownExporter.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = MarkdownExporter.swift; path = NMAPScanner/MarkdownExporter.swift; sourceTree = "<group>"; };
 		059983D2B98E7CBB9CF127BF /* KismetWiFiAnalyzer.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = KismetWiFiAnalyzer.swift; path = NMAPScanner/KismetWiFiAnalyzer.swift; sourceTree = "<group>"; };
@@ -300,7 +310,7 @@
 		9FA83FF8922C6556E866BC0C /* SecurityDashboardView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = SecurityDashboardView.swift; path = NMAPScanner/SecurityDashboardView.swift; sourceTree = "<group>"; };
 		A061C0245882F38DB2893B69 /* AIAssistantTabView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = AIAssistantTabView.swift; path = NMAPScanner/AIAssistantTabView.swift; sourceTree = "<group>"; };
 		A44502988F1D483F7281ADF4 /* MLXCapabilityDetector.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = MLXCapabilityDetector.swift; path = NMAPScanner/MLXCapabilityDetector.swift; sourceTree = "<group>"; };
-		A48CD708A133678C8B9DC756 /* NovaAPIServer.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = NovaAPIServer.swift; path = NMAPScanner/NovaAPIServer.swift; sourceTree = "<absolute>"; };
+		A48CD708A133678C8B9DC756 /* NovaAPIServer.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = NovaAPIServer.swift; path = NMAPScanner/NovaAPIServer.swift; sourceTree = SOURCE_ROOT; };
 		AA4226364E1D056CFC013082 /* PortScannerView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PortScannerView.swift; sourceTree = "<group>"; };
 		AA91F52445782168B46D26B9 /* HistoricalTracker.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = HistoricalTracker.swift; path = NMAPScanner/HistoricalTracker.swift; sourceTree = "<group>"; };
 		AE606F2832AA9F4D8DE34B84 /* RogueDeviceDetector.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = RogueDeviceDetector.swift; path = NMAPScanner/RogueDeviceDetector.swift; sourceTree = "<group>"; };
@@ -449,6 +459,10 @@
 				0EAAA50FDDE1929C6649B644 /* MLXCapabilityDetector.swift */,
 				45FB1598826B59756C2EE8F6 /* MLXInferenceEngine.swift */,
 				61386533623865632D326561332D343230632D626136612D /* AIBackendManager.swift */,
+				D1A5000000000000000000F1 /* ModelRegistry.swift */,
+				D1A5000000000000000000F3 /* OpenRouterProvider.swift */,
+				D1A5000000000000000000F5 /* KeychainStore.swift */,
+				D1A5000000000000000000F7 /* AIBackendManager+LoadBalancer.swift */,
 				3849E36ACCF8B3949871F0BD /* MLXThreatAnalyzer.swift */,
 				CAB30F70949929514AB60514 /* MLXDeviceClassifier.swift */,
 				7FF57F385653756544121157 /* MLXQueryInterface.swift */,
@@ -598,6 +612,7 @@
 				A0A48B12CDCA42EAA28A9146 /* SecurityHardeningTests.swift */,
 				4E15AE57E7094AA990F942B0 /* DeviceModelTests.swift */,
 				969F0854FB6241DE9DAB7227 /* IntegrationTests.swift */,
+				D1A5000000000000000000F9 /* LoadBalancerTests.swift */,
 );
 			name = NMAPScannerTests;
 			path = NMAPScannerTests;
@@ -851,6 +866,7 @@
 			files = (
 				412FEDA5218DB6B9DDF6AF2B /* CommandInjectionTests.swift in Sources */,
 				F95BAE1F1F71E254DDD01907 /* ScanProfileTests.swift in Sources */,
+				D1A5000000000000000000FA /* LoadBalancerTests.swift in Sources */,
 				027BA4CFDE609D111EBD5D92 /* ThreatAnalysisTests.swift in Sources */,
 				C5CE28D6BC8B437B789FF294 /* APIContractTests.swift in Sources */,
 							5F5D1465E97945B08D4E6975 /* NMAPXMLParsingTests.swift in Sources */,
@@ -897,6 +913,10 @@
 				D27176EC3B2750A056625B07 /* MLXCapabilityDetector.swift in Sources */,
 				DAE44C1BC1F48F3403FD4EB6 /* MLXInferenceEngine.swift in Sources */,
 				62363564316365322D323865372D343763362D613036372D /* AIBackendManager.swift in Sources */,
+				D1A5000000000000000000F2 /* ModelRegistry.swift in Sources */,
+				D1A5000000000000000000F4 /* OpenRouterProvider.swift in Sources */,
+				D1A5000000000000000000F6 /* KeychainStore.swift in Sources */,
+				D1A5000000000000000000F8 /* AIBackendManager+LoadBalancer.swift in Sources */,
 				DB5CF08CE0FE86A9B0E39576 /* MLXThreatAnalyzer.swift in Sources */,
 				3ED0034466AFE759CA95EDE4 /* MLXDeviceClassifier.swift in Sources */,
 				E2FAEA027E6E8F02CE98D7B5 /* MLXQueryInterface.swift in Sources */,
