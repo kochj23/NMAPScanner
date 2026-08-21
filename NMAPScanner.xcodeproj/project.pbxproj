@@ -191,7 +191,7 @@
 		D1A5000000000000000000F3 /* OpenRouterProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NMAPScanner/Services/OpenRouterProvider.swift"; sourceTree = "<group>"; };
 		D1A5000000000000000000F5 /* KeychainStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NMAPScanner/Services/KeychainStore.swift"; sourceTree = "<group>"; };
 		D1A5000000000000000000F7 /* AIBackendManager+LoadBalancer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NMAPScanner/Services/AIBackendManager+LoadBalancer.swift"; sourceTree = "<group>"; };
-		D1A5000000000000000000F9 /* LoadBalancerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NMAPScannerTests/LoadBalancerTests.swift"; sourceTree = "<group>"; };
+		D1A5000000000000000000F9 /* LoadBalancerTests.swift */ = {isa = PBXFileReference; explicitFileType = sourcecode.swift; includeInIndex = 1; path = NMAPScannerTests/LoadBalancerTests.swift; sourceTree = SOURCE_ROOT; };
 		02A02E388B544DA6C8A31173 /* NMAPApp.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = NMAPApp.swift; path = NMAPScanner/NMAPApp.swift; sourceTree = "<group>"; };
 		0337E590D0A5793E85C2BD9D /* MarkdownExporter.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = MarkdownExporter.swift; path = NMAPScanner/MarkdownExporter.swift; sourceTree = "<group>"; };
 		059983D2B98E7CBB9CF127BF /* KismetWiFiAnalyzer.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = KismetWiFiAnalyzer.swift; path = NMAPScanner/KismetWiFiAnalyzer.swift; sourceTree = "<group>"; };

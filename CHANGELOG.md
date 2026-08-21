@@ -1,5 +1,25 @@
 # NMAPScanner Changelog
 
+## Unreleased - Multi-Model LLM Load Balancer
+**Authors:** Jordan Koch
+
+### AI Backend
+- Added the shared multi-model LLM load balancer to the existing `AIBackend` layer:
+  **OpenRouter** frontier models (one Keychain-stored key), an optional **Nova
+  Gateway** backend (never required), and a **LoadBalancer** (round-robin /
+  least-busy, health-gated) that spreads work across all installed local models
+  (Ollama + MLX).
+- Added three settings toggles: all local models / all frontier models / Nova
+  Gateway. Existing Ollama, MLX, TinyLLM, TinyChat, and OpenWebUI paths unchanged.
+- Added a network-free `LoadBalancerTests` suite and upgraded CI (Metal toolchain,
+  pinned scheme, signing disabled).
+
+### Security / Packaging
+- **Disabled the App Sandbox** (`com.apple.security.app-sandbox` → `false`) in the
+  main app entitlements so the network scanner has unrestricted socket/network
+  access. HomeKit and network entitlements are untouched; Hardened Runtime is
+  retained. Not distributed via the App Store.
+
 ## v8.5.0 (December 3, 2025) - Comprehensive Port Coverage
 **Authors:** Jordan Koch
 
