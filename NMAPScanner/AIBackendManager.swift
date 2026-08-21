@@ -29,6 +29,8 @@ enum AIBackend: String, Codable, CaseIterable {
     case tinyLLM = "TinyLLM"
     case tinyChat = "TinyChat"
     case openWebUI = "OpenWebUI"
+    case openRouter = "OpenRouter"
+    case novaGateway = "Nova Gateway"
     case auto = "Auto (Prefer Ollama)"
 
     var icon: String {
@@ -38,6 +40,8 @@ enum AIBackend: String, Codable, CaseIterable {
         case .tinyLLM: return "cube"
         case .tinyChat: return "bubble.left.and.bubble.right.fill"
         case .openWebUI: return "globe"
+        case .openRouter: return "cloud"
+        case .novaGateway: return "sparkle.magnifyingglass"
         case .auto: return "sparkles"
         }
     }
@@ -54,6 +58,10 @@ enum AIBackend: String, Codable, CaseIterable {
             return "TinyChat by Jason Cox - Fast chatbot interface (localhost:8000)"
         case .openWebUI:
             return "OpenWebUI - Self-hosted AI platform (localhost:8080)"
+        case .openRouter:
+            return "Frontier cloud models via OpenRouter (bring your own key)"
+        case .novaGateway:
+            return "Nova's gateway — OpenAI-compatible, inherits Nova's own routing (127.0.0.1:18792). Optional; never required."
         case .auto:
             return "Automatically choose best available backend"
         }
@@ -88,8 +96,33 @@ class AIBackendManager: ObservableObject {
     @Published var isTinyLLMAvailable = false
     @Published var isTinyChatAvailable = false
     @Published var isOpenWebUIAvailable = false
+    @Published var isOpenRouterAvailable = false
+    @Published var isNovaGatewayAvailable = false
     @Published var isProcessing = false
     @Published var lastError: String? = nil
+
+    // MARK: - Multi-model load balancer (ported from AIStudio)
+
+    /// Toggle: balance across ALL installed local models (Ollama + MLX).
+    @Published var useAllLocalModels = false
+    /// Toggle: enable ALL frontier models via OpenRouter (one Keychain key).
+    @Published var enableAllFrontierModels = false
+    /// Toggle: include the optional Nova Gateway backend. Never required.
+    @Published var useNovaGateway = false
+
+    // OpenRouter (API key lives in the Keychain, never UserDefaults)
+    @Published var openRouterModels: [String] = OpenRouterProvider.fallbackModels
+    @Published var selectedOpenRouterModel: String = OpenRouterProvider.defaultModel
+
+    // Nova Gateway (OpenAI-compatible endpoint)
+    @Published var novaGatewayURL: String = ModelRegistry.novaGatewayDefaultURL
+
+    /// Pure, network-free balancer that spreads work across the enabled pool.
+    let balancer = LoadBalancer()
+    /// Balancer policy (least-busy mirrors how Nova's gateway spreads load).
+    var balancerPolicy: BalancerPolicy = .leastBusy
+    /// Keychain-backed store for the OpenRouter API key.
+    let openRouterKeychain = KeychainStore()
 
     // Ollama-specific
     @Published var ollamaModels: [String] = []
@@ -123,6 +156,11 @@ class AIBackendManager: ObservableObject {
         static let tinyLLMServerURL = "AIBackendManager_TinyLLMServerURL"
         static let tinyChatServerURL = "AIBackendManager_TinyChatServerURL"
         static let openWebUIServerURL = "AIBackendManager_OpenWebUIServerURL"
+        static let useAllLocalModels = "AIBackendManager_UseAllLocalModels"
+        static let enableAllFrontierModels = "AIBackendManager_EnableAllFrontierModels"
+        static let useNovaGateway = "AIBackendManager_UseNovaGateway"
+        static let novaGatewayURL = "AIBackendManager_NovaGatewayURL"
+        static let selectedOpenRouterModel = "AIBackendManager_SelectedOpenRouterModel"
     }
 
     // MARK: - Initialization
@@ -148,6 +186,12 @@ class AIBackendManager: ObservableObject {
         tinyLLMServerURL = userDefaults.string(forKey: Keys.tinyLLMServerURL) ?? "http://localhost:8000"
         tinyChatServerURL = userDefaults.string(forKey: Keys.tinyChatServerURL) ?? "http://localhost:8000"
         openWebUIServerURL = userDefaults.string(forKey: Keys.openWebUIServerURL) ?? "http://localhost:8080"
+
+        useAllLocalModels = userDefaults.bool(forKey: Keys.useAllLocalModels)
+        enableAllFrontierModels = userDefaults.bool(forKey: Keys.enableAllFrontierModels)
+        useNovaGateway = userDefaults.bool(forKey: Keys.useNovaGateway)
+        novaGatewayURL = userDefaults.string(forKey: Keys.novaGatewayURL) ?? ModelRegistry.novaGatewayDefaultURL
+        selectedOpenRouterModel = userDefaults.string(forKey: Keys.selectedOpenRouterModel) ?? OpenRouterProvider.defaultModel
     }
 
     func saveSettings() {
@@ -158,6 +202,11 @@ class AIBackendManager: ObservableObject {
         userDefaults.set(tinyLLMServerURL, forKey: Keys.tinyLLMServerURL)
         userDefaults.set(tinyChatServerURL, forKey: Keys.tinyChatServerURL)
         userDefaults.set(openWebUIServerURL, forKey: Keys.openWebUIServerURL)
+        userDefaults.set(useAllLocalModels, forKey: Keys.useAllLocalModels)
+        userDefaults.set(enableAllFrontierModels, forKey: Keys.enableAllFrontierModels)
+        userDefaults.set(useNovaGateway, forKey: Keys.useNovaGateway)
+        userDefaults.set(novaGatewayURL, forKey: Keys.novaGatewayURL)
+        userDefaults.set(selectedOpenRouterModel, forKey: Keys.selectedOpenRouterModel)
     }
 
     // MARK: - Backend Availability Checking
@@ -168,14 +217,19 @@ class AIBackendManager: ObservableObject {
         async let tinyLLMCheck = checkTinyLLMAvailability()
         async let tinyChatCheck = checkTinyChatAvailability()
         async let openWebUICheck = checkOpenWebUIAvailability()
+        async let openRouterCheck = checkOpenRouterAvailability()
+        async let novaGatewayCheck = checkNovaGatewayAvailability()
 
         let (ollama, mlx, tinyLLM, tinyChat, openWebUI) = await (ollamaCheck, mlxCheck, tinyLLMCheck, tinyChatCheck, openWebUICheck)
+        let (openRouter, novaGateway) = await (openRouterCheck, novaGatewayCheck)
 
         isOllamaAvailable = ollama
         isMLXAvailable = mlx
         isTinyLLMAvailable = tinyLLM
         isTinyChatAvailable = tinyChat
         isOpenWebUIAvailable = openWebUI
+        isOpenRouterAvailable = openRouter
+        isNovaGatewayAvailable = novaGateway
 
         // Determine active backend
         determineActiveBackend()
@@ -193,6 +247,10 @@ class AIBackendManager: ObservableObject {
             activeBackend = isTinyChatAvailable ? .tinyChat : nil
         case .openWebUI:
             activeBackend = isOpenWebUIAvailable ? .openWebUI : nil
+        case .openRouter:
+            activeBackend = isOpenRouterAvailable ? .openRouter : nil
+        case .novaGateway:
+            activeBackend = isNovaGatewayAvailable ? .novaGateway : nil
         case .auto:
             // Prefer Ollama, fallback to TinyChat/TinyLLM/OpenWebUI, then MLX
             if isOllamaAvailable {
@@ -321,6 +379,22 @@ class AIBackendManager: ObservableObject {
         temperature: Float = 0.7,
         maxTokens: Int = 2048
     ) async throws -> String {
+        // Load-balanced mode: when any balancing toggle is on, spread work across
+        // the healthy enabled pool (all local models + OpenRouter + Nova Gateway).
+        // Falls back to the single-backend path when the pool is empty/unreachable.
+        if isBalancingEnabled {
+            isProcessing = true
+            defer { isProcessing = false }
+            if let result = try await generateBalanced(
+                prompt: prompt,
+                systemPrompt: systemPrompt,
+                temperature: temperature,
+                maxTokens: maxTokens
+            ) {
+                return result
+            }
+        }
+
         guard let backend = activeBackend else {
             throw AIBackendError.noBackendAvailable
         }
@@ -359,6 +433,20 @@ class AIBackendManager: ObservableObject {
             )
         case .openWebUI:
             return try await generateWithOpenWebUI(
+                prompt: prompt,
+                systemPrompt: systemPrompt,
+                temperature: temperature,
+                maxTokens: maxTokens
+            )
+        case .openRouter:
+            return try await generateWithOpenRouter(
+                prompt: prompt,
+                systemPrompt: systemPrompt,
+                temperature: temperature,
+                maxTokens: maxTokens
+            )
+        case .novaGateway:
+            return try await generateWithNovaGateway(
                 prompt: prompt,
                 systemPrompt: systemPrompt,
                 temperature: temperature,
@@ -462,18 +550,19 @@ class AIBackendManager: ObservableObject {
 
     // MARK: - Ollama Implementation
 
-    private func generateWithOllama(
+    func generateWithOllama(
         prompt: String,
         systemPrompt: String?,
         temperature: Float,
-        maxTokens: Int
+        maxTokens: Int,
+        model: String? = nil
     ) async throws -> String {
         guard let url = URL(string: "\(ollamaBaseURL)/api/generate") else {
             throw AIBackendError.invalidConfiguration
         }
 
         var requestBody: [String: Any] = [
-            "model": selectedOllamaModel,
+            "model": model ?? selectedOllamaModel,
             "prompt": prompt,
             "stream": false,
             "options": [
@@ -504,7 +593,7 @@ class AIBackendManager: ObservableObject {
 
     // MARK: - MLX Implementation
 
-    private func generateWithMLX(
+    func generateWithMLX(
         prompt: String,
         systemPrompt: String?,
         temperature: Float,
@@ -770,6 +859,8 @@ class AIBackendManager: ObservableObject {
             return try await generateEmbeddingsWithTinyChat(text: text)
         case .openWebUI:
             return try await generateEmbeddingsWithOpenWebUI(text: text)
+        case .openRouter, .novaGateway:
+            throw AIBackendError.embeddingsNotSupported
         case .auto:
             throw AIBackendError.invalidState
         }
@@ -910,6 +1001,8 @@ enum AIBackendError: LocalizedError {
     case mlxScriptNotConfigured
     case mlxExecutionFailed(String)
     case embeddingsNotSupported
+    case invalidURL
+    case httpError(Int)
 
     var errorDescription: String? {
         switch self {
@@ -917,6 +1010,10 @@ enum AIBackendError: LocalizedError {
             return "No AI backend available. Install Ollama or configure MLX."
         case .invalidConfiguration:
             return "AI backend configuration is invalid."
+        case .invalidURL:
+            return "The backend endpoint URL is invalid."
+        case .httpError(let code):
+            return "Backend returned HTTP status \(code)."
         case .invalidState:
             return "AI backend is in an invalid state."
         case .mlxScriptNotConfigured:
@@ -934,9 +1031,77 @@ enum AIBackendError: LocalizedError {
 struct AIBackendSettingsView: View {
     @ObservedObject var manager = AIBackendManager.shared
     @State private var isChecking = false
+    @State private var openRouterKeyInput = ""
 
     var body: some View {
         Form {
+            Section(header: Text("Multi-Model Load Balancing")) {
+                Toggle("Use all local models (Ollama + MLX)", isOn: $manager.useAllLocalModels)
+                    .onChange(of: manager.useAllLocalModels) { _, _ in manager.saveSettings() }
+
+                Toggle("Enable all frontier models (OpenRouter)", isOn: $manager.enableAllFrontierModels)
+                    .onChange(of: manager.enableAllFrontierModels) { _, on in
+                        manager.saveSettings()
+                        if on { Task { await manager.fetchOpenRouterModels() } }
+                    }
+
+                Toggle("Use Nova Gateway (optional)", isOn: $manager.useNovaGateway)
+                    .onChange(of: manager.useNovaGateway) { _, _ in
+                        manager.saveSettings()
+                        Task { await manager.checkBackendAvailability() }
+                    }
+
+                Text("When any toggle is on, requests are balanced (least-busy) across every healthy model in the enabled pool. Nova is never required — a failed health check simply drops it from the pool.")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            }
+
+            if manager.enableAllFrontierModels || manager.selectedBackend == .openRouter {
+                Section(header: Text("OpenRouter (Frontier Models)")) {
+                    HStack {
+                        SecureField("API Key", text: $openRouterKeyInput)
+                            .textFieldStyle(RoundedBorderTextFieldStyle())
+                        Button("Save") {
+                            manager.setOpenRouterAPIKey(openRouterKeyInput)
+                            openRouterKeyInput = ""
+                            Task {
+                                await manager.fetchOpenRouterModels()
+                                await manager.checkBackendAvailability()
+                            }
+                        }
+                        .disabled(openRouterKeyInput.isEmpty)
+                    }
+                    Text(manager.hasOpenRouterKey ? "Key stored in Keychain." : "No key stored. Frontier models are unavailable until a key is saved.")
+                        .font(.caption)
+                        .foregroundColor(manager.hasOpenRouterKey ? .green : .orange)
+
+                    if manager.hasOpenRouterKey {
+                        Picker("Default Model", selection: $manager.selectedOpenRouterModel) {
+                            ForEach(manager.openRouterModels, id: \.self) { model in
+                                Text(model).tag(model)
+                            }
+                        }
+                        .onChange(of: manager.selectedOpenRouterModel) { _, _ in manager.saveSettings() }
+                    }
+                }
+            }
+
+            if manager.useNovaGateway || manager.selectedBackend == .novaGateway {
+                Section(header: Text("Nova Gateway")) {
+                    TextField("Gateway URL", text: $manager.novaGatewayURL)
+                        .textFieldStyle(RoundedBorderTextFieldStyle())
+                        .onChange(of: manager.novaGatewayURL) { _, _ in manager.saveSettings() }
+                    HStack {
+                        Circle()
+                            .fill(manager.isNovaGatewayAvailable ? .green : .secondary)
+                            .frame(width: 10, height: 10)
+                        Text(manager.isNovaGatewayAvailable ? "Reachable" : "Unreachable (optional — everything else still works)")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                }
+            }
+
             Section(header: Text("AI Backend Selection")) {
                 Picker("Backend", selection: $manager.selectedBackend) {
                     ForEach(AIBackend.allCases, id: \.self) { backend in
