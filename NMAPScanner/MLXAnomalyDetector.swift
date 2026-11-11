@@ -21,8 +21,6 @@ class MLXAnomalyDetector: ObservableObject {
     @Published var isAnalyzing: Bool = false
     @Published var baselineEstablished: Bool = false
 
-    private let inference = MLXInferenceEngine.shared
-    private let capability = MLXCapabilityDetector.shared
 
     // Baseline network state
     private var baseline: NetworkBaseline?
@@ -45,10 +43,6 @@ class MLXAnomalyDetector: ObservableObject {
 
     /// Detect anomalies in current network state
     func detectAnomalies(currentDevices: [EnhancedDevice]) async -> [MLXNetworkAnomaly] {
-        guard capability.isMLXAvailable else {
-            return [MLXNetworkAnomaly.unavailable()]
-        }
-
         guard let baseline = baseline else {
             establishBaseline(devices: currentDevices)
             return []
@@ -136,23 +130,11 @@ class MLXAnomalyDetector: ObservableObject {
         Recommendation: [action to take]
         """
 
-        do {
-            let response = try await inference.generate(
-                prompt: userPrompt,
-                maxTokens: 500,
-                temperature: 0.3,
-                systemPrompt: systemPrompt
-            )
-
-            return parseAnomalyResponse(
-                response,
-                type: .newDevice,
-                affectedDevice: device,
-                detectedDate: Date()
-            )
-        } catch {
-            return nil
+        guard let response = await AppAI.reply(prompt: userPrompt, system: systemPrompt, temperature: 0.3,
+                                               maxTokens: 500, validate: AppAI.validAnomalyVerdict) else {
+            return BuiltInSecurityAnalysis.newDeviceAnomaly(device)
         }
+        return Self.parseAnomalyResponse(response, type: .newDevice, affectedDevice: device, detectedDate: Date())
     }
 
     private func analyzePortAnomaly(_ device: EnhancedDevice, baseline: NetworkBaseline) async -> MLXNetworkAnomaly? {
@@ -185,23 +167,11 @@ class MLXAnomalyDetector: ObservableObject {
         Recommendation: [action]
         """
 
-        do {
-            let response = try await inference.generate(
-                prompt: userPrompt,
-                maxTokens: 500,
-                temperature: 0.3,
-                systemPrompt: systemPrompt
-            )
-
-            return parseAnomalyResponse(
-                response,
-                type: .unusualPorts,
-                affectedDevice: device,
-                detectedDate: Date()
-            )
-        } catch {
-            return nil
+        guard let response = await AppAI.reply(prompt: userPrompt, system: systemPrompt, temperature: 0.3,
+                                               maxTokens: 500, validate: AppAI.validAnomalyVerdict) else {
+            return BuiltInSecurityAnalysis.portAnomaly(device, baselineAverage: baseline.averageOpenPorts)
         }
+        return Self.parseAnomalyResponse(response, type: .unusualPorts, affectedDevice: device, detectedDate: Date())
     }
 
     private func analyzeMissingDevices(count: Int, baseline: NetworkBaseline) async -> MLXNetworkAnomaly? {
@@ -234,23 +204,11 @@ class MLXAnomalyDetector: ObservableObject {
         Recommendation: [action]
         """
 
-        do {
-            let response = try await inference.generate(
-                prompt: userPrompt,
-                maxTokens: 500,
-                temperature: 0.3,
-                systemPrompt: systemPrompt
-            )
-
-            return parseAnomalyResponse(
-                response,
-                type: .missingDevices,
-                affectedDevice: nil,
-                detectedDate: Date()
-            )
-        } catch {
-            return nil
+        guard let response = await AppAI.reply(prompt: userPrompt, system: systemPrompt, temperature: 0.3,
+                                               maxTokens: 500, validate: AppAI.validAnomalyVerdict) else {
+            return BuiltInSecurityAnalysis.missingDevicesAnomaly(count: count, known: baseline.knownMACs.count)
         }
+        return Self.parseAnomalyResponse(response, type: .missingDevices, affectedDevice: nil, detectedDate: Date())
     }
 
     private func analyzeOverallNetwork(currentDevices: [EnhancedDevice], baseline: NetworkBaseline) async -> MLXNetworkAnomaly? {
@@ -289,35 +247,19 @@ class MLXAnomalyDetector: ObservableObject {
         Recommendation: [action]
         """
 
-        do {
-            let response = try await inference.generate(
-                prompt: userPrompt,
-                maxTokens: 600,
-                temperature: 0.4,
-                systemPrompt: systemPrompt
-            )
-
-            let parsed = parseAnomalyResponse(
-                response,
-                type: .networkChange,
-                affectedDevice: nil,
-                detectedDate: Date()
-            )
-
-            // Only return if actually concerning
-            if parsed?.severity == .critical || parsed?.severity == .high {
-                return parsed
-            }
-
-            return nil
-        } catch {
+        // Overall judgement is AI-only; without AI the heuristic checks above already reported what they found.
+        guard let response = await AppAI.reply(prompt: userPrompt, system: systemPrompt, temperature: 0.4,
+                                               maxTokens: 600, validate: AppAI.validAnomalyVerdict) else {
             return nil
         }
+        let parsed = Self.parseAnomalyResponse(response, type: .networkChange, affectedDevice: nil, detectedDate: Date())
+        // Only return if actually concerning
+        return (parsed?.severity == .critical || parsed?.severity == .high) ? parsed : nil
     }
 
     // MARK: - Response Parsing
 
-    private func parseAnomalyResponse(
+    nonisolated static func parseAnomalyResponse(
         _ response: String,
         type: AnomalyType,
         affectedDevice: EnhancedDevice?,
@@ -367,7 +309,7 @@ class MLXAnomalyDetector: ObservableObject {
         )
     }
 
-    private func extractValue(from line: String) -> String {
+    nonisolated private static func extractValue(from line: String) -> String {
         guard let colonIndex = line.firstIndex(of: ":") else {
             return line
         }
@@ -396,16 +338,6 @@ struct MLXNetworkAnomaly: Identifiable {
     let affectedDevice: EnhancedDevice?
     let detectedDate: Date
 
-    static func unavailable() -> MLXNetworkAnomaly {
-        MLXNetworkAnomaly(
-            type: .other,
-            severity: .low,
-            description: "Anomaly detection requires MLX AI toolkit",
-            recommendation: "Install MLX to enable anomaly detection",
-            affectedDevice: nil,
-            detectedDate: Date()
-        )
-    }
 }
 
 enum AnomalyType {

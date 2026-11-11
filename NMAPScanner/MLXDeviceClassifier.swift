@@ -10,6 +10,7 @@
 
 import Foundation
 import SwiftUI
+import NovaAIKit
 
 // MARK: - MLX Device Classifier
 
@@ -20,8 +21,8 @@ class MLXDeviceClassifier: ObservableObject {
     @Published var isClassifying: Bool = false
     @Published var classificationCache: [String: DeviceClassification] = [:] // MAC -> Classification
 
-    private let inference = MLXInferenceEngine.shared
-    private let capability = MLXCapabilityDetector.shared
+    /// Where the last classification came from ("AI · Ollama (qwen3:8b)" / "Built-in").
+    @Published var lastSource: NovaAISource?
 
     private init() {}
 
@@ -32,10 +33,6 @@ class MLXDeviceClassifier: ObservableObject {
         // Check cache first
         if let macAddress = device.macAddress, let cached = classificationCache[macAddress] {
             return cached
-        }
-
-        guard capability.isMLXAvailable else {
-            return DeviceClassification.fallback(device)
         }
 
         isClassifying = true
@@ -71,26 +68,20 @@ class MLXDeviceClassifier: ObservableObject {
         Reasoning: [brief explanation]
         """
 
-        do {
-            let response = try await inference.generate(
-                prompt: userPrompt,
-                maxTokens: 300,
-                temperature: 0.3,
-                systemPrompt: systemPrompt
-            )
+        let request = NovaAIRequest(prompt: userPrompt, system: systemPrompt, temperature: 0.3, maxTokens: 300)
+        let result = await AppAI.current.generate(
+            request,
+            validate: { try Self.validatedClassification($0, device: device) },
+            fallback: { DeviceClassification.fallback(device) }
+        )
+        lastSource = result.source
+        let classification = result.value
 
-            let classification = parseClassificationResponse(response, device: device)
-
-            // Cache the result
-            if let macAddress = device.macAddress {
-                classificationCache[macAddress] = classification
-            }
-
-            return classification
-        } catch {
-            print("Classification error: \(error)")
-            return DeviceClassification.fallback(device)
+        // Cache only AI answers (built-in results are cheap and should be retried with AI later)
+        if result.isAI, let macAddress = device.macAddress {
+            classificationCache[macAddress] = classification
         }
+        return classification
     }
 
     /// Classify multiple devices in batch
@@ -160,7 +151,28 @@ class MLXDeviceClassifier: ObservableObject {
 
     // MARK: - Response Parsing
 
-    private func parseClassificationResponse(_ response: String, device: EnhancedDevice) -> DeviceClassification {
+    /// Validator: the reply must contain a `Type:` line; every field is length-clamped and plain text.
+    nonisolated static func validatedClassification(_ response: String, device: EnhancedDevice) throws -> DeviceClassification {
+        guard response.lowercased().contains("type:") else {
+            throw NovaAIValidationError("reply must use the 'Type: … Manufacturer: … Name: … Confidence: …' format")
+        }
+        let c = parseClassificationResponse(response, device: device)
+        func clamp(_ s: String, _ n: Int, _ dflt: String) -> String {
+            let t = NovaAIText.plain(s, max: n)
+            return t.isEmpty ? dflt : t
+        }
+        return DeviceClassification(
+            originalDevice: device,
+            identifiedType: clamp(c.identifiedType, 60, device.deviceType.rawValue),
+            manufacturer: clamp(c.manufacturer, 80, device.manufacturer ?? "Unknown"),
+            model: clamp(c.model, 80, "Unknown"),
+            suggestedName: clamp(c.suggestedName, 64, device.displayName),
+            confidence: c.confidence,
+            reasoning: clamp(c.reasoning, 400, "")
+        )
+    }
+
+    nonisolated static func parseClassificationResponse(_ response: String, device: EnhancedDevice) -> DeviceClassification {
         var deviceType = device.deviceType.rawValue
         var manufacturer = device.manufacturer ?? "Unknown"
         var model = "Unknown"
@@ -204,7 +216,7 @@ class MLXDeviceClassifier: ObservableObject {
         )
     }
 
-    private func extractValue(from line: String) -> String {
+    nonisolated private static func extractValue(from line: String) -> String {
         guard let colonIndex = line.firstIndex(of: ":") else {
             return ""
         }
@@ -234,7 +246,7 @@ struct DeviceClassification: Identifiable {
             model: "Unknown",
             suggestedName: device.displayName,
             confidence: .low,
-            reasoning: "AI classification unavailable - using basic detection"
+            reasoning: "Built-in classification (AI off or unavailable): hostname, MAC vendor and open ports"
         )
     }
 }

@@ -1,5 +1,29 @@
 # NMAPScanner Changelog
 
+## v9.1.0 (November 11, 2026) - NovaAIKit
+**Authors:** Jordan Koch
+
+### AI
+- AI: migrated to NovaAIKit 1.0.0 (one AI feature set across all Nova macOS apps): AI on/off, backend picker
+  (Auto, Ollama, MLX, TinyLLM, TinyChat, OpenWebUI, Nova Gateway, OpenRouter, OpenAI), model picker, editable URLs,
+  Keychain-only keys under `com.jkoch.nmapscanner.*` (https only), status indicator, Auto failover with timeouts and
+  retries, and output validation with a corrective re-ask.
+- Every AI feature now has a built-in rule-based result (`BuiltInSecurityAnalysis`) when AI is off, unreachable or
+  rejected — features are no longer disabled when Python MLX isn't installed.
+- New AI tab in the Settings window; AI Assistant › AI Settings uses `NovaAISettingsView`.
+- Removed: `AIBackendManager` (+ load balancer, OpenRouter provider, model registry, KeychainStore),
+  `MLXInferenceEngine`, `MLXCapabilityDetector`, `UnifiedAICapabilities`, the dead repo-root copies
+  (`AIBackendManager*`, `AIBackendStatusMenu`, `EthicalAIGuardian`), the unused mlx-swift / mlx-swift-lm packages,
+  and the Google / Azure / AWS / IBM backends.
+
+### Security
+- One-time migration moves any plaintext OpenAI key from UserDefaults into the Keychain and deletes leftover
+  Google/Azure/AWS/IBM secrets and the old AI prompt log from UserDefaults and the Keychain.
+
+### Build / Tests
+- Info.plist version now comes from `MARKETING_VERSION` / `CURRENT_PROJECT_VERSION`; zero-warning Release build.
+- `AIKitAdoptionTests` (32 tests, all 7 categories); `ComprehensiveTestSuite` re-added to the test target; 319 tests.
+
 ## Unreleased - Multi-Model LLM Load Balancer
 **Authors:** Jordan Koch
 

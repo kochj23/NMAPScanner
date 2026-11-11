@@ -20,8 +20,6 @@ class MLXDocumentationGenerator: ObservableObject {
     @Published var currentDocumentation: NetworkDocumentation?
     @Published var isGenerating: Bool = false
 
-    private let inference = MLXInferenceEngine.shared
-    private let capability = MLXCapabilityDetector.shared
 
     private init() {}
 
@@ -34,10 +32,6 @@ class MLXDocumentationGenerator: ObservableObject {
         includeTopology: Bool = true,
         includeRecommendations: Bool = true
     ) async -> NetworkDocumentation? {
-        guard capability.isMLXAvailable else {
-            return NetworkDocumentation.unavailable()
-        }
-
         isGenerating = true
         defer { isGenerating = false }
 
@@ -103,15 +97,10 @@ class MLXDocumentationGenerator: ObservableObject {
         Format with clear Markdown headings and structure.
         """
 
-        do {
-            let response = try await inference.generate(
-                prompt: userPrompt,
-                maxTokens: 3000,
-                temperature: 0.5,
-                systemPrompt: systemPrompt
-            )
-
-            let documentation = NetworkDocumentation(
+        let documentation: NetworkDocumentation
+        if let response = await AppAI.reply(prompt: userPrompt, system: systemPrompt, temperature: 0.5, maxTokens: 3000,
+                                            validate: AppAI.requiring(["#"])) {
+            documentation = NetworkDocumentation(
                 title: "Network Documentation - \(Date().formatted(date: .long, time: .omitted))",
                 content: response,
                 generatedDate: Date(),
@@ -120,19 +109,19 @@ class MLXDocumentationGenerator: ObservableObject {
                 includesTopology: includeTopology,
                 includesRecommendations: includeRecommendations
             )
-
-            currentDocumentation = documentation
-            return documentation
-        } catch {
-            print("Documentation generation error: \(error)")
-            return NetworkDocumentation.error(error.localizedDescription)
+        } else {
+            // No AI → the template document built from the scan data.
+            documentation = BuiltInSecurityAnalysis.documentation(
+                devices: devices, includeSecurityAnalysis: includeSecurityAnalysis,
+                includeTopology: includeTopology, includeRecommendations: includeRecommendations)
         }
+
+        currentDocumentation = documentation
+        return documentation
     }
 
     /// Generate device-specific documentation
     func generateDeviceDocumentation(_ device: EnhancedDevice) async -> String? {
-        guard capability.isMLXAvailable else { return nil }
-
         let context = buildDeviceDocumentationContext(device: device)
 
         let systemPrompt = """
@@ -156,18 +145,8 @@ class MLXDocumentationGenerator: ObservableObject {
         Use clear Markdown formatting.
         """
 
-        do {
-            let response = try await inference.generate(
-                prompt: userPrompt,
-                maxTokens: 1200,
-                temperature: 0.4,
-                systemPrompt: systemPrompt
-            )
-
-            return response
-        } catch {
-            return nil
-        }
+        return await AppAI.reply(prompt: userPrompt, system: systemPrompt, temperature: 0.4, maxTokens: 1200)
+            ?? BuiltInSecurityAnalysis.deviceDocumentation(device)
     }
 
     /// Export documentation to file
@@ -352,29 +331,6 @@ struct NetworkDocumentation {
     let includesTopology: Bool
     let includesRecommendations: Bool
 
-    static func unavailable() -> NetworkDocumentation {
-        NetworkDocumentation(
-            title: "Documentation Unavailable",
-            content: "AI-powered documentation generation requires MLX toolkit on Apple Silicon.\n\nPlease install MLX to use this feature:\n```\npip3 install mlx mlx-lm\n```",
-            generatedDate: Date(),
-            deviceCount: 0,
-            includesSecurityAnalysis: false,
-            includesTopology: false,
-            includesRecommendations: false
-        )
-    }
-
-    static func error(_ message: String) -> NetworkDocumentation {
-        NetworkDocumentation(
-            title: "Documentation Generation Error",
-            content: "Failed to generate documentation: \(message)",
-            generatedDate: Date(),
-            deviceCount: 0,
-            includesSecurityAnalysis: false,
-            includesTopology: false,
-            includesRecommendations: false
-        )
-    }
 }
 
 enum DocumentationFormat {

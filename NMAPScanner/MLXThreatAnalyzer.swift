@@ -20,8 +20,6 @@ class MLXThreatAnalyzer: ObservableObject {
     @Published var currentAnalysis: ThreatAnalysisResult?
     @Published var isAnalyzing: Bool = false
 
-    private let inference = MLXInferenceEngine.shared
-    private let capability = MLXCapabilityDetector.shared
 
     private init() {}
 
@@ -29,10 +27,6 @@ class MLXThreatAnalyzer: ObservableObject {
 
     /// Analyze network devices for security threats
     func analyzeNetwork(devices: [EnhancedDevice]) async -> ThreatAnalysisResult? {
-        guard capability.isMLXAvailable else {
-            return ThreatAnalysisResult.unavailable()
-        }
-
         isAnalyzing = true
         defer { isAnalyzing = false }
 
@@ -58,27 +52,19 @@ class MLXThreatAnalyzer: ObservableObject {
         5. Actionable recommendations prioritized by impact
         """
 
-        do {
-            let response = try await inference.generate(
-                prompt: userPrompt,
-                maxTokens: 2000,
-                temperature: 0.4, // Lower temp for more focused analysis
-                systemPrompt: systemPrompt
-            )
-
-            let result = parseAnalysisResponse(response, devices: devices)
-            currentAnalysis = result
-            return result
-        } catch {
-            print("Threat analysis error: \(error)")
-            return ThreatAnalysisResult.error(error.localizedDescription)
+        // Lower temperature for more focused analysis. No AI → the app's rule-based findings.
+        let result: ThreatAnalysisResult
+        if let response = await AppAI.reply(prompt: userPrompt, system: systemPrompt, temperature: 0.4, maxTokens: 2000) {
+            result = parseAnalysisResponse(response, devices: devices)
+        } else {
+            result = BuiltInSecurityAnalysis.threatAnalysis(devices: devices)
         }
+        currentAnalysis = result
+        return result
     }
 
     /// Analyze a specific device
     func analyzeDevice(_ device: EnhancedDevice) async -> DeviceThreatAnalysis? {
-        guard capability.isMLXAvailable else { return nil }
-
         let context = buildDeviceContext(device: device)
 
         let systemPrompt = """
@@ -98,19 +84,11 @@ class MLXThreatAnalyzer: ObservableObject {
         4. Recommended security actions
         """
 
-        do {
-            let response = try await inference.generate(
-                prompt: userPrompt,
-                maxTokens: 800,
-                temperature: 0.3,
-                systemPrompt: systemPrompt
-            )
-
-            return parseDeviceAnalysis(response, device: device)
-        } catch {
-            print("Device analysis error: \(error)")
-            return nil
+        guard let response = await AppAI.reply(prompt: userPrompt, system: systemPrompt, temperature: 0.3, maxTokens: 800,
+                                               validate: AppAI.validRiskReply) else {
+            return BuiltInSecurityAnalysis.deviceAnalysis(device)
         }
+        return parseDeviceAnalysis(response, device: device)
     }
 
     // MARK: - Context Building
@@ -273,27 +251,6 @@ struct ThreatAnalysisResult {
     let analysisDate: Date
     let fullResponse: String
 
-    static func unavailable() -> ThreatAnalysisResult {
-        ThreatAnalysisResult(
-            summary: "AI threat analysis is not available. MLX requires Apple Silicon (M1/M2/M3/M4) and the MLX Python toolkit.",
-            threats: [],
-            recommendations: ["Install MLX to enable AI-powered threat analysis"],
-            analyzedDeviceCount: 0,
-            analysisDate: Date(),
-            fullResponse: ""
-        )
-    }
-
-    static func error(_ message: String) -> ThreatAnalysisResult {
-        ThreatAnalysisResult(
-            summary: "Error performing threat analysis: \(message)",
-            threats: [],
-            recommendations: ["Check MLX installation", "Verify Python environment"],
-            analyzedDeviceCount: 0,
-            analysisDate: Date(),
-            fullResponse: ""
-        )
-    }
 }
 
 struct ThreatItem: Identifiable {

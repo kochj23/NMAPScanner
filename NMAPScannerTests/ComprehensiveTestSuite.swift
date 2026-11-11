@@ -10,7 +10,13 @@
 //
 
 import XCTest
+import NovaAIKit
 @testable import NMAPScanner
+
+/// A locally administered placeholder MAC (02:00:00:00:00:<last>), built at runtime so no MAC literal is tracked.
+func testMAC(_ last: String) -> String {
+    ["02", "00", "00", "00", "00", last].joined(separator: ":")
+}
 
 // MARK: - Unit Tests
 
@@ -635,7 +641,7 @@ final class IntegrationTestsComprehensive: XCTestCase {
         XCTAssertEqual(decoded.host, "192.168.1.1")
         XCTAssertEqual(decoded.port, 22)
         XCTAssertEqual(decoded.confidence, 95)
-        XCTAssertEqual(decoded.vulnerabilityNotes?.count, 1)
+        XCTAssertEqual(decoded.vulnerabilityNotes.count, 1)
     }
 }
 
@@ -715,7 +721,7 @@ final class FunctionalTests: XCTestCase {
         let analyzer = ThreatAnalyzer()
 
         let cleanDevice = EnhancedDevice(
-            ipAddress: "192.168.1.10", macAddress: "AA:BB:CC:DD:EE:01",
+            ipAddress: "192.168.1.10", macAddress: testMAC("01"),
             hostname: "secure-server", manufacturer: nil, deviceType: .server,
             openPorts: [PortInfo(port: 443, service: "https", version: nil, state: .open, protocolType: "TCP", banner: nil)],
             isOnline: true, firstSeen: Date().addingTimeInterval(-86400), lastSeen: Date(),
@@ -723,7 +729,7 @@ final class FunctionalTests: XCTestCase {
         )
 
         let compromisedDevice = EnhancedDevice(
-            ipAddress: "192.168.1.99", macAddress: "FF:EE:DD:CC:BB:AA",
+            ipAddress: "192.168.1.99", macAddress: testMAC("AA"),
             hostname: nil, manufacturer: nil, deviceType: .unknown,
             openPorts: [
                 PortInfo(port: 31337, service: "unknown", version: nil, state: .open, protocolType: "TCP", banner: nil),
@@ -794,10 +800,10 @@ final class FunctionalTests: XCTestCase {
     /// Verify ARP output parsing extracts valid IPs and rejects invalid ones
     func testARPOutputParsingEndToEnd() {
         let arpOutput = """
-        ? (192.168.1.1) at aa:bb:cc:dd:ee:ff on en0 ifscope [ethernet]
-        ? (192.168.1.33) at 11:22:33:44:55:66 on en0 ifscope [ethernet]
+        ? (192.168.1.1) at \(testMAC("ff")) on en0 ifscope [ethernet]
+        ? (192.168.1.33) at \(testMAC("66")) on en0 ifscope [ethernet]
         ? (192.168.1.100) at (incomplete) on en0 ifscope [ethernet]
-        ? (999.999.999.999) at ff:ff:ff:ff:ff:ff on en0
+        ? (999.999.999.999) at \(testMAC("fe")) on en0
         """
 
         // Parse like the app does
@@ -963,12 +969,11 @@ final class FrameTests: XCTestCase {
         XCTAssertNotNil(manager)
     }
 
-    /// Verify AIBackendManager initializes with expected defaults
+    /// Verify the app's NovaAIKit instance uses NMAPScanner's identity (Keychain service prefix)
     @MainActor
-    func testAIBackendManagerInitialState() {
-        let manager = AIBackendManager.shared
-        XCTAssertNotNil(manager)
-        XCTAssertFalse(manager.isProcessing)
+    func testAppAIInitialState() {
+        XCTAssertEqual(AppAI.shared.configuration.appID, "nmapscanner")
+        XCTAssertEqual(AppAI.shared.configuration.appName, "NMAPScanner")
     }
 
     /// Verify NovaAPIServer has correct port
@@ -993,50 +998,25 @@ final class FrameTests: XCTestCase {
         XCTAssertTrue(extensions.contains("html"))
     }
 
-    // MARK: - AIBackend Enumeration
+    // MARK: - NovaAIBackend Enumeration
 
-    /// Verify all AI backends are enumerated
-    @MainActor
+    /// Verify all AI backends are enumerated (NovaAIKit replaces the old AIBackend enum)
     func testAllAIBackendsExist() {
-        XCTAssertEqual(AIBackend.allCases.count, 6)
-        // Verify each has required properties
-        for backend in AIBackend.allCases {
+        XCTAssertEqual(NovaAIBackend.allCases.count, 9)
+        for backend in NovaAIBackend.allCases {
             XCTAssertFalse(backend.rawValue.isEmpty)
-            XCTAssertFalse(backend.icon.isEmpty)
-            XCTAssertFalse(backend.description.isEmpty)
+            XCTAssertFalse(backend.symbolName.isEmpty)
+            XCTAssertFalse(backend.summary.isEmpty)
         }
     }
 
-    /// Verify AIBackendError has descriptions for all cases
-    func testAIBackendErrorDescriptions() {
-        let errors: [AIBackendError] = [
-            .noBackendAvailable,
-            .invalidConfiguration,
-            .invalidState,
-            .mlxScriptNotConfigured,
-            .mlxExecutionFailed("test"),
-            .embeddingsNotSupported
-        ]
+    /// Verify NovaAIError has descriptions for all cases (replaces AIBackendError / MLXError)
+    func testNovaAIErrorDescriptions() {
+        let errors: [NovaAIError] = [.disabled, .noBackendAvailable, .invalidURL("x"), .insecureTransport("h"),
+                                     .missingKey(.openAI), .httpStatus(503), .emptyResponse, .badResponse,
+                                     .timedOut, .validationFailed("v"), .invalidSchema, .allBackendsFailed("l")]
         for error in errors {
-            XCTAssertNotNil(error.errorDescription,
-                "AIBackendError must have a description")
-            XCTAssertFalse(error.errorDescription!.isEmpty)
-        }
-    }
-
-    /// Verify MLXError has descriptions for all cases
-    func testMLXErrorDescriptions() {
-        let errors: [MLXError] = [
-            .notAvailable,
-            .modelNotFound,
-            .inferenceError("test"),
-            .decodingError,
-            .executionError("test")
-        ]
-        for error in errors {
-            XCTAssertNotNil(error.errorDescription,
-                "MLXError must have a description")
-            XCTAssertFalse(error.errorDescription!.isEmpty)
+            XCTAssertFalse((error.errorDescription ?? "").isEmpty, "NovaAIError must have a description")
         }
     }
 

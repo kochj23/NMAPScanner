@@ -9,6 +9,7 @@
 //
 
 import SwiftUI
+import NovaAIKit
 import UniformTypeIdentifiers
 
 // MARK: - Security Report View
@@ -18,7 +19,7 @@ struct SecurityReportView: View {
     let threats: [ThreatFinding]
 
     @StateObject private var reportGenerator = LLMSecurityReportGenerator.shared
-    @StateObject private var aiBackend = AIBackendManager.shared
+    @ObservedObject private var ai = AppAI.current
     @State private var selectedTab: ReportTab = .generate
     @State private var showingExportSheet = false
     @State private var exportedURL: URL?
@@ -100,27 +101,12 @@ struct SecurityReportView: View {
 
     private var headerView: some View {
         HStack(spacing: 20) {
-            // AI Status
-            HStack(spacing: 12) {
-                Circle()
-                    .fill(aiBackend.activeBackend != nil ? Color.green : Color.red)
-                    .frame(width: 12, height: 12)
-
-                VStack(alignment: .leading, spacing: 2) {
-                    Text("AI Backend")
-                        .font(.system(size: 12, weight: .medium))
-                        .foregroundColor(.secondary)
-
-                    if let backend = aiBackend.activeBackend {
-                        Text(backend.rawValue)
-                            .font(.system(size: 14, weight: .semibold))
-                            .foregroundColor(.green)
-                    } else {
-                        Text("Not Available")
-                            .font(.system(size: 14, weight: .semibold))
-                            .foregroundColor(.red)
-                    }
-                }
+            // AI Status (NovaAIKit: dot + backend; click re-checks)
+            VStack(alignment: .leading, spacing: 4) {
+                Text("AI Backend")
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundColor(.secondary)
+                NovaAIStatusIndicator(ai: ai)
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 10)
@@ -213,53 +199,7 @@ struct SecurityReportView: View {
 
     private var generateTabView: some View {
         VStack(spacing: 24) {
-            if !reportGenerator.isLLMAvailable {
-                // AI not available warning
-                VStack(spacing: 16) {
-                    Image(systemName: "exclamationmark.triangle.fill")
-                        .font(.system(size: 48))
-                        .foregroundColor(.orange)
-
-                    Text("AI Backend Not Available")
-                        .font(.system(size: 24, weight: .bold))
-
-                    Text("To generate AI-powered security reports, please configure an LLM backend in the settings.")
-                        .font(.system(size: 16))
-                        .foregroundColor(.secondary)
-                        .multilineTextAlignment(.center)
-                        .frame(maxWidth: 500)
-
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("Supported backends:")
-                            .font(.system(size: 14, weight: .semibold))
-
-                        Text("- Ollama (localhost:11434)")
-                        Text("- TinyLLM (localhost:8000)")
-                        Text("- TinyChat (localhost:8000)")
-                        Text("- OpenWebUI (localhost:8080)")
-                        Text("- MLX Toolkit (Apple Silicon)")
-                    }
-                    .font(.system(size: 14))
-                    .foregroundColor(.secondary)
-                    .padding()
-                    .background(
-                        RoundedRectangle(cornerRadius: 8)
-                            .fill(Color.secondary.opacity(0.1))
-                    )
-
-                    Button("Check Backend Status") {
-                        Task {
-                            await reportGenerator.checkAvailability()
-                        }
-                    }
-                    .padding(.horizontal, 24)
-                    .padding(.vertical, 12)
-                    .background(Color.blue)
-                    .foregroundColor(.white)
-                    .cornerRadius(8)
-                }
-                .padding(40)
-            } else if reportGenerator.isGenerating {
+            if reportGenerator.isGenerating {
                 // Generation in progress
                 VStack(spacing: 24) {
                     ProgressView()
@@ -428,7 +368,7 @@ struct SecurityReportView: View {
                         .font(.system(size: 16))
                         .foregroundColor(.secondary)
 
-                    if reportGenerator.isLLMAvailable && !reportGenerator.isGenerating {
+                    if !reportGenerator.isGenerating {
                         Button("Generate Report") {
                             generateReport()
                         }
@@ -625,7 +565,7 @@ struct AIReportButton: View {
     let threats: [ThreatFinding]
 
     @State private var showingReportView = false
-    @StateObject private var aiBackend = AIBackendManager.shared
+    @ObservedObject private var ai = AppAI.current
 
     var body: some View {
         Button(action: { showingReportView = true }) {
@@ -645,10 +585,10 @@ struct AIReportButton: View {
                 )
             )
             .cornerRadius(10)
-            .opacity(aiBackend.activeBackend != nil ? 1.0 : 0.5)
         }
         .buttonStyle(.plain)
-        .help(aiBackend.activeBackend != nil ? "Generate AI-powered security report" : "AI backend not available")
+        .help(ai.status.isReachable ? "Generate an AI-assisted security report (\(ai.status.label))"
+              : "Generate a security report (AI unavailable: the built-in analysis is used)")
         .sheet(isPresented: $showingReportView) {
             SecurityReportView(devices: devices, threats: threats)
         }
@@ -662,13 +602,11 @@ struct AIReportMenuItem: View {
     let threats: [ThreatFinding]
 
     @State private var showingReportView = false
-    @StateObject private var aiBackend = AIBackendManager.shared
 
     var body: some View {
         Button(action: { showingReportView = true }) {
             Label("Generate AI Security Report", systemImage: "wand.and.stars")
         }
-        .disabled(aiBackend.activeBackend == nil)
         .sheet(isPresented: $showingReportView) {
             SecurityReportView(devices: devices, threats: threats)
         }
@@ -684,7 +622,7 @@ struct SecurityReportView_Previews: PreviewProvider {
             devices: [
                 EnhancedDevice(
                     ipAddress: "192.168.1.1",
-                    macAddress: "AA:BB:CC:DD:EE:FF",
+                    macAddress: nil,
                     hostname: "Router",
                     manufacturer: "Ubiquiti",
                     deviceType: .router,

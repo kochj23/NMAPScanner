@@ -9,12 +9,13 @@
 //
 
 import SwiftUI
+import NovaAIKit
 
 // MARK: - AI Assistant Tab View
 
 struct AIAssistantTabView: View {
     @StateObject private var scanner = IntegratedScannerV3.shared
-    @ObservedObject var capabilityDetector = MLXCapabilityDetector.shared
+    @ObservedObject var ai = AppAI.current
     @ObservedObject var threatAnalyzer = MLXThreatAnalyzer.shared
     @ObservedObject var deviceClassifier = MLXDeviceClassifier.shared
     @ObservedObject var securityAssistant = MLXSecurityAssistant.shared
@@ -34,7 +35,7 @@ struct AIAssistantTabView: View {
         case anomalyDetection = "Anomaly Detection"
         case recommendations = "Security Recommendations"
         case documentation = "Network Documentation"
-        case capabilities = "AI Capabilities"
+        case capabilities = "AI Settings"
 
         var id: String { rawValue }
 
@@ -71,7 +72,7 @@ struct AIAssistantTabView: View {
             case .documentation:
                 return "Generate professional network documentation"
             case .capabilities:
-                return "MLX system status and configuration"
+                return "Backend, model, keys and the AI on/off switch"
             }
         }
     }
@@ -109,11 +110,8 @@ struct AIAssistantTabView: View {
                     headerView
 
                     // Feature content
-                    if !capabilityDetector.isMLXAvailable && selectedFeature != .overview && selectedFeature != .capabilities {
-                        unavailableView
-                    } else {
-                        featureContent
-                    }
+                    // Every feature works without AI (built-in rule-based results), so nothing is gated.
+                    featureContent
                 }
                 .padding(24)
             }
@@ -124,8 +122,7 @@ struct AIAssistantTabView: View {
             #endif
         }
         .task {
-            // Check capabilities on load
-            await capabilityDetector.checkCapabilities()
+            await ai.refreshStatus()
         }
     }
 
@@ -160,21 +157,13 @@ struct AIAssistantTabView: View {
 
     @ViewBuilder
     private var aiStatusBadge: some View {
-        HStack(spacing: 6) {
-            Circle()
-                .fill(capabilityDetector.isMLXAvailable ? Color.green : Color.orange)
-                .frame(width: 8, height: 8)
-
-            Text(capabilityDetector.isMLXAvailable ? "AI Ready" : "AI Unavailable")
-                .font(.system(size: 12, weight: .medium))
-                .foregroundColor(.secondary)
-        }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 6)
-        .background(
-            Capsule()
-                .fill(.ultraThinMaterial)
-        )
+        NovaAIStatusIndicator(ai: ai)
+            .padding(.horizontal, 12)
+            .padding(.vertical, 6)
+            .background(
+                Capsule()
+                    .fill(.ultraThinMaterial)
+            )
     }
 
     // MARK: - Feature Content
@@ -207,7 +196,7 @@ struct AIAssistantTabView: View {
             DocumentationGeneratorView(devices: scanner.devices)
 
         case .capabilities:
-            MLXCapabilityStatusView()
+            NovaAISettingsView(ai: ai, footer: AppAI.settingsFooter)
         }
     }
 
@@ -221,7 +210,7 @@ struct AIAssistantTabView: View {
                 Text("🤖 AI-Powered Network Security")
                     .font(.system(size: 24, weight: .bold))
 
-                Text("NMAP Plus Security Scanner v8.0.0 introduces groundbreaking AI features powered by Apple's MLX framework. Experience intelligent network analysis with on-device processing—no cloud required.")
+                Text("Intelligent network analysis with the AI backend you choose: local Ollama, MLX, TinyLLM, TinyChat, OpenWebUI or Nova Gateway, or OpenRouter/OpenAI with your own key. With AI off, every feature uses NMAPScanner's built-in rule-based analysis.")
                     .font(.system(size: 16))
                     .foregroundColor(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
@@ -232,19 +221,11 @@ struct AIAssistantTabView: View {
                     .fill(.blue.opacity(0.1))
             )
 
-            // Capability status
-            MLXCapabilityStatusView()
+            // Feature cards grid
+            featureCardsGrid
 
-            if capabilityDetector.isMLXAvailable {
-                // Feature cards grid
-                featureCardsGrid
-
-                // Quick actions
-                quickActionsSection
-            } else {
-                // Setup instructions
-                setupInstructionsView
-            }
+            // Quick actions
+            quickActionsSection
         }
     }
 
@@ -325,76 +306,6 @@ struct AIAssistantTabView: View {
             }
         }
     }
-
-    // MARK: - Unavailable View
-
-    @ViewBuilder
-    private var unavailableView: some View {
-        VStack(spacing: 20) {
-            Image(systemName: "exclamationmark.triangle.fill")
-                .font(.system(size: 64))
-                .foregroundColor(.orange)
-
-            Text("AI Features Unavailable")
-                .font(.system(size: 24, weight: .bold))
-
-            Text(capabilityDetector.errorMessage ?? "MLX AI toolkit is not available on this system")
-                .font(.system(size: 16))
-                .foregroundColor(.secondary)
-                .multilineTextAlignment(.center)
-
-            Button("Configure AI Features") {
-                selectedFeature = .capabilities
-            }
-            .buttonStyle(.borderedProminent)
-            .controlSize(.large)
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .padding(40)
-    }
-
-    // MARK: - Setup Instructions View
-
-    @ViewBuilder
-    private var setupInstructionsView: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            Text("Setup Instructions")
-                .font(.system(size: 20, weight: .bold))
-
-            VStack(alignment: .leading, spacing: 12) {
-                SetupStep(
-                    number: 1,
-                    title: "Verify Apple Silicon",
-                    description: "AI features require M1, M2, M3, or M4 chip",
-                    status: capabilityDetector.isAppleSilicon ? .complete : .incomplete
-                )
-
-                SetupStep(
-                    number: 2,
-                    title: "Install MLX Python Toolkit",
-                    description: "Run: pip3 install mlx mlx-lm",
-                    status: capabilityDetector.isPythonMLXAvailable ? .complete : .incomplete
-                )
-
-                SetupStep(
-                    number: 3,
-                    title: "Model Download (Automatic)",
-                    description: "Phi-3.5-mini will download on first use (~2-3GB)",
-                    status: .pending
-                )
-            }
-            .padding(16)
-            .background(
-                RoundedRectangle(cornerRadius: 12)
-                    .fill(.ultraThinMaterial)
-            )
-
-            Button("View Setup Details") {
-                selectedFeature = .capabilities
-            }
-            .buttonStyle(.bordered)
-        }
-    }
 }
 
 // MARK: - Feature Card
@@ -473,74 +384,6 @@ struct QuickActionButton: View {
         }
         .buttonStyle(.plain)
         .help(title)
-    }
-}
-
-// MARK: - Setup Step
-
-struct SetupStep: View {
-    let number: Int
-    let title: String
-    let description: String
-    let status: StepStatus
-
-    enum StepStatus {
-        case complete
-        case incomplete
-        case pending
-
-        var icon: String {
-            switch self {
-            case .complete: return "checkmark.circle.fill"
-            case .incomplete: return "xmark.circle.fill"
-            case .pending: return "clock.fill"
-            }
-        }
-
-        var color: Color {
-            switch self {
-            case .complete: return .green
-            case .incomplete: return .red
-            case .pending: return .orange
-            }
-        }
-    }
-
-    var body: some View {
-        HStack(spacing: 16) {
-            // Step number
-            ZStack {
-                Circle()
-                    .fill(status.color.opacity(0.2))
-                    .frame(width: 40, height: 40)
-
-                Text("\(number)")
-                    .font(.system(size: 18, weight: .bold))
-                    .foregroundColor(status.color)
-            }
-
-            // Content
-            VStack(alignment: .leading, spacing: 4) {
-                Text(title)
-                    .font(.system(size: 15, weight: .semibold))
-
-                Text(description)
-                    .font(.system(size: 13))
-                    .foregroundColor(.secondary)
-            }
-
-            Spacer()
-
-            // Status icon
-            Image(systemName: status.icon)
-                .font(.system(size: 24))
-                .foregroundColor(status.color)
-        }
-        .padding(12)
-        .background(
-            RoundedRectangle(cornerRadius: 8)
-                .fill(status == .complete ? Color.green.opacity(0.05) : Color.clear)
-        )
     }
 }
 

@@ -22,8 +22,6 @@ class MLXQueryInterface: ObservableObject {
     @Published var isQuerying: Bool = false
     @Published var queryHistory: [QueryHistoryItem] = []
 
-    private let inference = MLXInferenceEngine.shared
-    private let capability = MLXCapabilityDetector.shared
 
     private init() {}
 
@@ -31,10 +29,6 @@ class MLXQueryInterface: ObservableObject {
 
     /// Process natural language query and return matching devices
     func query(_ naturalLanguageQuery: String, devices: [EnhancedDevice]) async -> QueryResult? {
-        guard capability.isMLXAvailable else {
-            return QueryResult.unavailable()
-        }
-
         isQuerying = true
         defer { isQuerying = false }
 
@@ -63,32 +57,27 @@ class MLXQueryInterface: ObservableObject {
         Summary: [brief summary of results]
         """
 
-        do {
-            let response = try await inference.generate(
-                prompt: userPrompt,
-                maxTokens: 800,
-                temperature: 0.3,
-                systemPrompt: systemPrompt
-            )
-
-            let result = parseQueryResponse(response, devices: devices, query: naturalLanguageQuery)
-
-            // Update state
-            queryResults = result.matchingDevices
-            queryExplanation = result.explanation
-
-            // Add to history
-            queryHistory.insert(QueryHistoryItem(
-                query: naturalLanguageQuery,
-                resultCount: result.matchingDevices.count,
-                timestamp: Date()
-            ), at: 0)
-
-            return result
-        } catch {
-            print("Query error: \(error)")
-            return QueryResult.error(error.localizedDescription)
+        // Validator: only device numbers that exist. No AI → built-in keyword search.
+        let result: QueryResult
+        if let response = await AppAI.reply(prompt: userPrompt, system: systemPrompt, temperature: 0.3, maxTokens: 800,
+                                            validate: AppAI.validQueryReply(deviceCount: devices.count)) {
+            result = Self.parseQueryResponse(response, devices: devices, query: naturalLanguageQuery)
+        } else {
+            result = BuiltInSecurityAnalysis.query(naturalLanguageQuery, devices: devices)
         }
+
+        // Update state
+        queryResults = result.matchingDevices
+        queryExplanation = result.explanation
+
+        // Add to history
+        queryHistory.insert(QueryHistoryItem(
+            query: naturalLanguageQuery,
+            resultCount: result.matchingDevices.count,
+            timestamp: Date()
+        ), at: 0)
+
+        return result
     }
 
     /// Get suggested queries based on network
@@ -157,7 +146,7 @@ class MLXQueryInterface: ObservableObject {
 
     // MARK: - Response Parsing
 
-    private func parseQueryResponse(_ response: String, devices: [EnhancedDevice], query: String) -> QueryResult {
+    nonisolated static func parseQueryResponse(_ response: String, devices: [EnhancedDevice], query: String) -> QueryResult {
         var matchingDevices: [EnhancedDevice] = []
         var explanation = ""
         var summary = ""
@@ -198,7 +187,7 @@ class MLXQueryInterface: ObservableObject {
         )
     }
 
-    private func extractValue(from line: String) -> String {
+    nonisolated private static func extractValue(from line: String) -> String {
         guard let colonIndex = line.firstIndex(of: ":") else {
             return ""
         }
@@ -217,25 +206,6 @@ struct QueryResult {
     let summary: String
     let timestamp: Date
 
-    static func unavailable() -> QueryResult {
-        QueryResult(
-            query: "",
-            matchingDevices: [],
-            explanation: "Natural language queries require MLX AI. Please install MLX to use this feature.",
-            summary: "Feature unavailable",
-            timestamp: Date()
-        )
-    }
-
-    static func error(_ message: String) -> QueryResult {
-        QueryResult(
-            query: "",
-            matchingDevices: [],
-            explanation: "Error: \(message)",
-            summary: "Query failed",
-            timestamp: Date()
-        )
-    }
 }
 
 struct QueryHistoryItem: Identifiable {

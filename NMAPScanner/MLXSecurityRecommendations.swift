@@ -20,8 +20,6 @@ class MLXSecurityRecommendations: ObservableObject {
     @Published var currentRecommendations: SecurityRecommendationSet?
     @Published var isGenerating: Bool = false
 
-    private let inference = MLXInferenceEngine.shared
-    private let capability = MLXCapabilityDetector.shared
 
     private init() {}
 
@@ -29,10 +27,6 @@ class MLXSecurityRecommendations: ObservableObject {
 
     /// Generate comprehensive security recommendations for the network
     func generateRecommendations(devices: [EnhancedDevice]) async -> SecurityRecommendationSet? {
-        guard capability.isMLXAvailable else {
-            return SecurityRecommendationSet.unavailable()
-        }
-
         isGenerating = true
         defer { isGenerating = false }
 
@@ -75,27 +69,18 @@ class MLXSecurityRecommendations: ObservableObject {
         - Estimated impact
         """
 
-        do {
-            let response = try await inference.generate(
-                prompt: userPrompt,
-                maxTokens: 2500,
-                temperature: 0.4,
-                systemPrompt: systemPrompt
-            )
-
-            let recommendations = parseRecommendations(response, devices: devices)
-            currentRecommendations = recommendations
-            return recommendations
-        } catch {
-            print("Recommendation generation error: \(error)")
-            return SecurityRecommendationSet.error(error.localizedDescription)
+        // An AI reply that yields no recommendation at all is treated as unusable → built-in rules.
+        var recommendations = BuiltInSecurityAnalysis.recommendationSet(devices: devices)
+        if let response = await AppAI.reply(prompt: userPrompt, system: systemPrompt, temperature: 0.4, maxTokens: 2500),
+           case let parsed = Self.parseRecommendations(response, devices: devices), parsed.totalCount > 0 {
+            recommendations = parsed
         }
+        currentRecommendations = recommendations
+        return recommendations
     }
 
     /// Generate device-specific recommendations
     func generateDeviceRecommendations(_ device: EnhancedDevice) async -> [SecurityRecommendation] {
-        guard capability.isMLXAvailable else { return [] }
-
         let context = buildDeviceSecurityContext(device: device)
 
         let systemPrompt = """
@@ -119,19 +104,12 @@ class MLXSecurityRecommendations: ObservableObject {
         Impact: [expected security benefit]
         """
 
-        do {
-            let response = try await inference.generate(
-                prompt: userPrompt,
-                maxTokens: 1000,
-                temperature: 0.3,
-                systemPrompt: systemPrompt
-            )
-
-            return parseDeviceRecommendations(response)
-        } catch {
-            print("Device recommendation error: \(error)")
-            return []
+        guard let response = await AppAI.reply(prompt: userPrompt, system: systemPrompt, temperature: 0.3, maxTokens: 1000,
+                                               validate: AppAI.requiring(["Title:", "Priority:"])),
+              case let parsed = Self.parseDeviceRecommendations(response), !parsed.isEmpty else {
+            return BuiltInSecurityAnalysis.deviceRecommendations(device)
         }
+        return parsed
     }
 
     // MARK: - Context Building
@@ -201,7 +179,7 @@ class MLXSecurityRecommendations: ObservableObject {
 
     // MARK: - Response Parsing
 
-    private func parseRecommendations(_ response: String, devices: [EnhancedDevice]) -> SecurityRecommendationSet {
+    nonisolated static func parseRecommendations(_ response: String, devices: [EnhancedDevice]) -> SecurityRecommendationSet {
         var critical: [SecurityRecommendation] = []
         var high: [SecurityRecommendation] = []
         var medium: [SecurityRecommendation] = []
@@ -233,7 +211,7 @@ class MLXSecurityRecommendations: ObservableObject {
         )
     }
 
-    private func extractRecommendations(from text: String, priority: SecurityPriority) -> [SecurityRecommendation] {
+    nonisolated static func extractRecommendations(from text: String, priority: SecurityPriority) -> [SecurityRecommendation] {
         var recommendations: [SecurityRecommendation] = []
         let lines = text.components(separatedBy: "\n")
 
@@ -291,7 +269,7 @@ class MLXSecurityRecommendations: ObservableObject {
         return recommendations
     }
 
-    private func parseDeviceRecommendations(_ response: String) -> [SecurityRecommendation] {
+    nonisolated static func parseDeviceRecommendations(_ response: String) -> [SecurityRecommendation] {
         var recommendations: [SecurityRecommendation] = []
         var currentTitle = ""
         var currentPriority: SecurityPriority = .medium
@@ -355,7 +333,7 @@ class MLXSecurityRecommendations: ObservableObject {
         return recommendations
     }
 
-    private func extractValue(from line: String) -> String {
+    nonisolated private static func extractValue(from line: String) -> String {
         guard let colonIndex = line.firstIndex(of: ":") else {
             return line
         }
@@ -380,35 +358,6 @@ struct SecurityRecommendationSet {
         critical.count + high.count + medium.count + low.count
     }
 
-    static func unavailable() -> SecurityRecommendationSet {
-        SecurityRecommendationSet(
-            critical: [],
-            high: [],
-            medium: [],
-            low: [SecurityRecommendation(
-                title: "Install MLX AI Toolkit",
-                priority: .high,
-                reason: "AI-powered security recommendations require MLX on Apple Silicon",
-                steps: ["Run: pip3 install mlx mlx-lm"],
-                impact: "Enable advanced security analysis"
-            )],
-            generatedDate: Date(),
-            networkSize: 0,
-            fullResponse: ""
-        )
-    }
-
-    static func error(_ message: String) -> SecurityRecommendationSet {
-        SecurityRecommendationSet(
-            critical: [],
-            high: [],
-            medium: [],
-            low: [],
-            generatedDate: Date(),
-            networkSize: 0,
-            fullResponse: "Error: \(message)"
-        )
-    }
 }
 
 struct SecurityRecommendation: Identifiable {

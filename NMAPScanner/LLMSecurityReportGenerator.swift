@@ -10,7 +10,6 @@
 
 import Foundation
 import SwiftUI
-import Combine
 
 // MARK: - LLM Security Report Generator
 
@@ -33,98 +32,85 @@ class LLMSecurityReportGenerator: ObservableObject {
     @Published var remediationPlan = ""
     @Published var riskAssessment = ""
 
-    // MARK: - Private Properties
-
-    private let aiBackend = AIBackendManager.shared
-    private var cancellables = Set<AnyCancellable>()
+    /// Sections that came from AI in the last report (the rest are the built-in data listing).
+    @Published var aiSectionCount = 0
+    private var sectionSources: [String] = []
 
     // MARK: - Initialization
 
     private init() {
-        // Monitor AI backend availability
-        aiBackend.$activeBackend
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] backend in
-                self?.isLLMAvailable = backend != nil
-            }
-            .store(in: &cancellables)
-
-        // Initial check
-        Task {
-            await checkAvailability()
-        }
+        Task { await checkAvailability() }
     }
 
     // MARK: - Availability Check
 
+    /// Re-probes the configured AI backends. Reports are always available: without AI each section lists the data.
     func checkAvailability() async {
-        await aiBackend.checkBackendAvailability()
-        isLLMAvailable = aiBackend.activeBackend != nil
+        await AppAI.current.refreshStatus()
+        isLLMAvailable = AppAI.current.status.isReachable
+    }
+
+    /// One report section: AI prose, or the built-in listing of `data` when AI is off/unreachable/rejected.
+    private func section(_ title: String, data: String, prompt: String, system: String,
+                         temperature: Double, maxTokens: Int) async -> String {
+        if let text = await AppAI.reply(prompt: prompt, system: system, temperature: temperature, maxTokens: maxTokens) {
+            aiSectionCount += 1
+            sectionSources.append(AppAI.lastSourceLabel)
+            return text
+        }
+        return BuiltInSecurityAnalysis.reportSection(title, data: data)
     }
 
     // MARK: - Report Generation
 
     /// Generate a comprehensive security report from scan results
     func generateReport(from scanResults: [EnhancedDevice], vulnerabilities: [ThreatFinding] = []) async {
-        guard isLLMAvailable else {
-            lastError = "No AI backend available. Please configure Ollama or another LLM service."
-            return
-        }
-
         isGenerating = true
         generationProgress = 0.0
         reportContent = ""
         lastError = nil
+        aiSectionCount = 0
+        sectionSources = []
 
         defer { isGenerating = false }
 
-        do {
-            // Generate each section
-            currentSection = "Executive Summary"
-            generationProgress = 0.1
-            executiveSummary = try await generateExecutiveSummarySection(scanResults: scanResults, vulnerabilities: vulnerabilities)
-            reportContent += "# Executive Summary\n\n\(executiveSummary)\n\n"
-            generationProgress = 0.3
+        // Generate each section
+        currentSection = "Executive Summary"
+        generationProgress = 0.1
+        executiveSummary = await generateExecutiveSummarySection(scanResults: scanResults, vulnerabilities: vulnerabilities)
+        reportContent += "# Executive Summary\n\n\(executiveSummary)\n\n"
+        generationProgress = 0.3
 
-            currentSection = "Risk Assessment"
-            riskAssessment = try await generateRiskAssessmentSection(scanResults: scanResults, vulnerabilities: vulnerabilities)
-            reportContent += "# Risk Assessment\n\n\(riskAssessment)\n\n"
-            generationProgress = 0.5
+        currentSection = "Risk Assessment"
+        riskAssessment = await generateRiskAssessmentSection(scanResults: scanResults, vulnerabilities: vulnerabilities)
+        reportContent += "# Risk Assessment\n\n\(riskAssessment)\n\n"
+        generationProgress = 0.5
 
-            currentSection = "Technical Details"
-            technicalDetails = try await generateTechnicalDetailsSection(scanResults: scanResults, vulnerabilities: vulnerabilities)
-            reportContent += "# Technical Details\n\n\(technicalDetails)\n\n"
-            generationProgress = 0.7
+        currentSection = "Technical Details"
+        technicalDetails = await generateTechnicalDetailsSection(scanResults: scanResults, vulnerabilities: vulnerabilities)
+        reportContent += "# Technical Details\n\n\(technicalDetails)\n\n"
+        generationProgress = 0.7
 
-            currentSection = "Remediation Plan"
-            remediationPlan = try await generateRemediationPlanSection(scanResults: scanResults, vulnerabilities: vulnerabilities)
-            reportContent += "# Remediation Plan\n\n\(remediationPlan)\n\n"
-            generationProgress = 0.9
+        currentSection = "Remediation Plan"
+        remediationPlan = await generateRemediationPlanSection(scanResults: scanResults, vulnerabilities: vulnerabilities)
+        reportContent += "# Remediation Plan\n\n\(remediationPlan)\n\n"
+        generationProgress = 0.9
 
-            // Add footer
-            reportContent += generateReportFooter()
-            generationProgress = 1.0
-            currentSection = "Complete"
+        // Add footer
+        reportContent += generateReportFooter()
+        generationProgress = 1.0
+        currentSection = "Complete"
 
-            ReportSecureLogger.log("LLM security report generated successfully", level: .info)
-
-        } catch {
-            lastError = "Report generation failed: \(error.localizedDescription)"
-            ReportSecureLogger.log("LLM report generation failed: \(error)", level: .error)
-        }
+        ReportSecureLogger.log("Security report generated (\(aiSectionCount)/4 sections from AI)", level: .info)
     }
 
     // MARK: - Executive Summary Generation
 
     func generateExecutiveSummary() async -> String {
-        guard isLLMAvailable else {
-            return "AI backend not available for generating executive summary."
-        }
-
         return executiveSummary
     }
 
-    private func generateExecutiveSummarySection(scanResults: [EnhancedDevice], vulnerabilities: [ThreatFinding]) async throws -> String {
+    private func generateExecutiveSummarySection(scanResults: [EnhancedDevice], vulnerabilities: [ThreatFinding]) async -> String {
         let networkContext = buildNetworkContext(scanResults: scanResults, vulnerabilities: vulnerabilities)
 
         let systemPrompt = """
@@ -148,25 +134,17 @@ class LLMSecurityReportGenerator: ObservableObject {
         Write in a professional tone suitable for executive leadership.
         """
 
-        return try await aiBackend.generate(
-            prompt: userPrompt,
-            systemPrompt: systemPrompt,
-            temperature: 0.7,
-            maxTokens: 1500
-        )
+        return await section("Executive Summary", data: networkContext, prompt: userPrompt, system: systemPrompt,
+                             temperature: 0.7, maxTokens: 1500)
     }
 
     // MARK: - Technical Details Generation
 
     func generateTechnicalDetails() async -> String {
-        guard isLLMAvailable else {
-            return "AI backend not available for generating technical details."
-        }
-
         return technicalDetails
     }
 
-    private func generateTechnicalDetailsSection(scanResults: [EnhancedDevice], vulnerabilities: [ThreatFinding]) async throws -> String {
+    private func generateTechnicalDetailsSection(scanResults: [EnhancedDevice], vulnerabilities: [ThreatFinding]) async -> String {
         let deviceDetails = buildDeviceDetails(scanResults: scanResults)
         let vulnerabilityDetails = buildVulnerabilityDetails(vulnerabilities: vulnerabilities)
 
@@ -196,25 +174,17 @@ class LLMSecurityReportGenerator: ObservableObject {
         Be specific and technical, but ensure the information is actionable.
         """
 
-        return try await aiBackend.generate(
-            prompt: userPrompt,
-            systemPrompt: systemPrompt,
-            temperature: 0.5,
-            maxTokens: 2500
-        )
+        return await section("Technical Details", data: deviceDetails + "\n\n" + vulnerabilityDetails, prompt: userPrompt, system: systemPrompt,
+                             temperature: 0.5, maxTokens: 2500)
     }
 
     // MARK: - Remediation Plan Generation
 
     func generateRemediationPlan() async -> String {
-        guard isLLMAvailable else {
-            return "AI backend not available for generating remediation plan."
-        }
-
         return remediationPlan
     }
 
-    private func generateRemediationPlanSection(scanResults: [EnhancedDevice], vulnerabilities: [ThreatFinding]) async throws -> String {
+    private func generateRemediationPlanSection(scanResults: [EnhancedDevice], vulnerabilities: [ThreatFinding]) async -> String {
         let prioritizedFindings = buildPrioritizedFindings(vulnerabilities: vulnerabilities)
         let networkSummary = buildNetworkSummary(scanResults: scanResults)
 
@@ -259,17 +229,13 @@ class LLMSecurityReportGenerator: ObservableObject {
         - Impact on risk reduction
         """
 
-        return try await aiBackend.generate(
-            prompt: userPrompt,
-            systemPrompt: systemPrompt,
-            temperature: 0.6,
-            maxTokens: 2500
-        )
+        return await section("Remediation Plan", data: networkSummary + "\n\n" + prioritizedFindings, prompt: userPrompt, system: systemPrompt,
+                             temperature: 0.6, maxTokens: 2500)
     }
 
     // MARK: - Risk Assessment Generation
 
-    private func generateRiskAssessmentSection(scanResults: [EnhancedDevice], vulnerabilities: [ThreatFinding]) async throws -> String {
+    private func generateRiskAssessmentSection(scanResults: [EnhancedDevice], vulnerabilities: [ThreatFinding]) async -> String {
         let riskContext = buildRiskContext(scanResults: scanResults, vulnerabilities: vulnerabilities)
 
         let systemPrompt = """
@@ -311,12 +277,8 @@ class LLMSecurityReportGenerator: ObservableObject {
            - Note concerning patterns
         """
 
-        return try await aiBackend.generate(
-            prompt: userPrompt,
-            systemPrompt: systemPrompt,
-            temperature: 0.5,
-            maxTokens: 2000
-        )
+        return await section("Risk Assessment", data: riskContext, prompt: userPrompt, system: systemPrompt,
+                             temperature: 0.5, maxTokens: 2000)
     }
 
     // MARK: - Context Building Helpers
@@ -597,11 +559,11 @@ class LLMSecurityReportGenerator: ObservableObject {
         ## Report Information
 
         **Generated:** \(Date().formatted(date: .long, time: .complete))
-        **Scanner:** NMAPScanner v8.6.0
-        **Report Type:** AI-Powered Security Assessment
-        **AI Backend:** \(aiBackend.activeBackend?.rawValue ?? "Unknown")
+        **Scanner:** NMAPScanner v\(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "")
+        **Report Type:** \(aiSectionCount > 0 ? "AI-Assisted Security Assessment" : "Built-in Security Assessment (AI off or unavailable)")
+        **AI Source:** \(sectionSources.last ?? "Built-in") (\(aiSectionCount) of 4 sections from AI)
 
-        *This report was generated using AI-powered analysis. While the AI provides valuable insights and recommendations, all findings should be validated by qualified security professionals before implementing remediation actions.*
+        *This report may include AI-generated analysis. While the AI provides valuable insights and recommendations, all findings should be validated by qualified security professionals before implementing remediation actions.*
 
         **Report generated by NMAPScanner**
         **Created by Jordan Koch**

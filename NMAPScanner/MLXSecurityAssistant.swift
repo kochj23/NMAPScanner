@@ -10,6 +10,7 @@
 
 import Foundation
 import SwiftUI
+import NovaAIKit
 
 // MARK: - MLX Security Assistant
 
@@ -20,8 +21,8 @@ class MLXSecurityAssistant: ObservableObject {
     @Published var messages: [ChatMessage] = []
     @Published var isResponding: Bool = false
 
-    private let inference = MLXInferenceEngine.shared
-    private let capability = MLXCapabilityDetector.shared
+    /// Where the last answer came from ("AI · Ollama (qwen3:8b)" / "Built-in").
+    @Published var lastSource: NovaAISource?
 
     // Context about current network
     private var networkContext: String = ""
@@ -37,36 +38,61 @@ class MLXSecurityAssistant: ObservableObject {
 
     // MARK: - Chat Interface
 
-    /// Send a message and get AI response
+    /// Send a message and get a (streamed) AI response. Same as `sendMessageStreaming`.
     func sendMessage(_ userMessage: String, networkDevices: [EnhancedDevice]) async {
-        guard capability.isMLXAvailable else {
-            let errorMsg = ChatMessage(
-                role: .assistant,
-                content: "I'm sorry, but I require the MLX AI toolkit to function. Please install MLX on Apple Silicon to use the security assistant.",
-                timestamp: Date()
-            )
-            messages.append(errorMsg)
-            return
-        }
+        await sendMessageStreaming(userMessage, networkDevices: networkDevices)
+    }
 
-        // Add user message
-        let userMsg = ChatMessage(
-            role: .user,
-            content: userMessage,
-            timestamp: Date()
-        )
-        messages.append(userMsg)
+    /// Stream a response token-by-token (for real-time chat). When AI is off or unreachable the transcript gets the
+    /// reason plus the built-in rule-based summary of the network, and the chat stays usable.
+    func sendMessageStreaming(_ userMessage: String, networkDevices: [EnhancedDevice]) async {
+        let history = Array(messages.suffix(10))
+        messages.append(ChatMessage(role: .user, content: userMessage, timestamp: Date()))
+        messages.append(ChatMessage(role: .assistant, content: "", timestamp: Date()))
+        let index = messages.count - 1
 
         isResponding = true
         defer { isResponding = false }
 
-        // Update network context
         networkContext = buildNetworkContext(devices: networkDevices)
+        let request = NovaAIRequest(messages: Self.chatMessages(system: systemPrompt(), history: history, user: userMessage),
+                                    temperature: 0.7, maxTokens: 1500)
+        do {
+            for try await delta in AppAI.current.stream(request) {
+                messages[index].content += delta
+            }
+            if messages[index].content.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                throw NovaAIValidationError("the AI returned an empty reply")
+            }
+            let status = AppAI.current.status
+            lastSource = .ai(backend: status.activeBackend ?? AppAI.current.settings.backend, model: status.activeModel ?? "")
+        } catch {
+            messages[index].content = Self.builtInAnswer(reason: error, devices: networkDevices)
+            lastSource = .fallback(.unavailable((error as? LocalizedError)?.errorDescription ?? "\(error)"))
+        }
+    }
 
-        // Build conversation history
-        let conversationHistory = buildConversationHistory()
+    /// The conversation as NovaAIKit messages: system prompt, the recent turns, then the new question.
+    static func chatMessages(system: String, history: [ChatMessage], user: String) -> [NovaAIMessage] {
+        [.system(system)]
+            + history.filter { !$0.content.isEmpty }.map { $0.role == .user ? .user($0.content) : .assistant($0.content) }
+            + [.user(user)]
+    }
 
-        let systemPrompt = """
+    /// Chat fallback: why AI didn't answer, then the built-in analysis of the current scan.
+    static func builtInAnswer(reason: Error, devices: [EnhancedDevice]) -> String {
+        let why = (reason as? LocalizedError)?.errorDescription ?? reason.localizedDescription
+        let analysis = BuiltInSecurityAnalysis.threatAnalysis(devices: devices)
+        var text = "AI is unavailable (\(why)). Here is the built-in analysis of your last scan instead:\n\n\(analysis.summary)"
+        if !analysis.recommendations.isEmpty {
+            text += "\n\nTop actions:\n" + analysis.recommendations.prefix(5).map { "• \($0)" }.joined(separator: "\n")
+        }
+        text += "\n\nTurn AI on or pick a backend in Settings › AI to chat."
+        return text
+    }
+
+    private func systemPrompt() -> String {
+        """
         You are an expert network security assistant with deep knowledge of:
         - Network security best practices
         - Device security and hardening
@@ -83,108 +109,6 @@ class MLXSecurityAssistant: ObservableObject {
         Be conversational but professional.
         Explain technical concepts clearly.
         """
-
-        let userPrompt = """
-        Conversation:
-        \(conversationHistory)
-
-        User: \(userMessage)
-
-        Assistant:
-        """
-
-        do {
-            let response = try await inference.generate(
-                prompt: userPrompt,
-                maxTokens: 1500,
-                temperature: 0.7,
-                systemPrompt: systemPrompt
-            )
-
-            let assistantMsg = ChatMessage(
-                role: .assistant,
-                content: response,
-                timestamp: Date()
-            )
-            messages.append(assistantMsg)
-        } catch {
-            let errorMsg = ChatMessage(
-                role: .assistant,
-                content: "I apologize, but I encountered an error: \(error.localizedDescription). Please try again.",
-                timestamp: Date()
-            )
-            messages.append(errorMsg)
-        }
-    }
-
-    /// Stream a response token-by-token (for real-time chat)
-    func sendMessageStreaming(_ userMessage: String, networkDevices: [EnhancedDevice]) async {
-        guard capability.isMLXAvailable else {
-            await sendMessage(userMessage, networkDevices: networkDevices)
-            return
-        }
-
-        // Add user message
-        let userMsg = ChatMessage(
-            role: .user,
-            content: userMessage,
-            timestamp: Date()
-        )
-        messages.append(userMsg)
-
-        // Create placeholder for assistant response
-        let assistantMsg = ChatMessage(
-            role: .assistant,
-            content: "",
-            timestamp: Date()
-        )
-        messages.append(assistantMsg)
-
-        isResponding = true
-        defer { isResponding = false }
-
-        // Update network context
-        networkContext = buildNetworkContext(devices: networkDevices)
-
-        let conversationHistory = buildConversationHistory()
-
-        let systemPrompt = """
-        You are an expert network security assistant.
-
-        Current Network Context:
-        \(networkContext)
-
-        Provide helpful security advice.
-        """
-
-        let userPrompt = """
-        Conversation:
-        \(conversationHistory)
-
-        User: \(userMessage)
-
-        Assistant:
-        """
-
-        do {
-            try await inference.generateStream(
-                prompt: userPrompt,
-                maxTokens: 1500,
-                temperature: 0.7,
-                systemPrompt: systemPrompt
-            ) { token in
-                // Update the last message with new token
-                if var lastMsg = self.messages.last {
-                    lastMsg.content += token
-                    self.messages[self.messages.count - 1] = lastMsg
-                }
-            }
-        } catch {
-            if var lastMsg = messages.last {
-                lastMsg.content = "Error: \(error.localizedDescription)"
-                messages[messages.count - 1] = lastMsg
-            }
-        }
     }
 
     /// Get suggested questions
@@ -226,15 +150,6 @@ class MLXSecurityAssistant: ObservableObject {
         return context
     }
 
-    private func buildConversationHistory() -> String {
-        // Include last 5 message pairs to keep context manageable
-        let recentMessages = messages.suffix(10)
-
-        return recentMessages.map { msg in
-            let role = msg.role == .user ? "User" : "Assistant"
-            return "\(role): \(msg.content)"
-        }.joined(separator: "\n\n")
-    }
 }
 
 // MARK: - Data Models

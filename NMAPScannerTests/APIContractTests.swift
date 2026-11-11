@@ -9,6 +9,7 @@
 //
 
 import XCTest
+import NovaAIKit
 @testable import NMAPScanner
 
 final class APIContractTests: XCTestCase {
@@ -475,30 +476,17 @@ final class APIContractTests: XCTestCase {
         XCTAssertNotEqual(invalidParsed["type"] as? String, "bundle")
     }
 
-    // MARK: - AIBackendError
+    // MARK: - NovaAIError (replaces AIBackendError / MLXError)
 
-    func testAIBackendErrorDescriptions() {
-        XCTAssertNotNil(AIBackendError.noBackendAvailable.errorDescription)
-        XCTAssertNotNil(AIBackendError.invalidConfiguration.errorDescription)
-        XCTAssertNotNil(AIBackendError.invalidState.errorDescription)
-        XCTAssertNotNil(AIBackendError.mlxScriptNotConfigured.errorDescription)
-        XCTAssertNotNil(AIBackendError.mlxExecutionFailed("test error").errorDescription)
-        XCTAssertNotNil(AIBackendError.embeddingsNotSupported.errorDescription)
-
-        XCTAssertTrue(AIBackendError.mlxExecutionFailed("custom error").errorDescription!.contains("custom error"))
-    }
-
-    // MARK: - MLXError
-
-    func testMLXErrorDescriptions() {
-        XCTAssertNotNil(MLXError.notAvailable.errorDescription)
-        XCTAssertNotNil(MLXError.modelNotFound.errorDescription)
-        XCTAssertNotNil(MLXError.inferenceError("test").errorDescription)
-        XCTAssertNotNil(MLXError.decodingError.errorDescription)
-        XCTAssertNotNil(MLXError.executionError("test").errorDescription)
-
-        XCTAssertTrue(MLXError.inferenceError("specific error").errorDescription!.contains("specific error"))
-        XCTAssertTrue(MLXError.executionError("exec fail").errorDescription!.contains("exec fail"))
+    func testNovaAIErrorDescriptions() {
+        let errors: [NovaAIError] = [.disabled, .noBackendAvailable, .insecureTransport("example.com"),
+                                     .missingKey(.openRouter), .httpStatus(500), .emptyResponse, .timedOut,
+                                     .allBackendsFailed("boom")]
+        for e in errors {
+            XCTAssertFalse((e.errorDescription ?? "").isEmpty, "\(e) must have a description")
+        }
+        XCTAssertTrue(NovaAIValidationError("specific error").errorDescription!.contains("specific error"))
+        XCTAssertTrue(NovaAIError.allBackendsFailed("exec fail").errorDescription!.contains("exec fail"))
     }
 
     // MARK: - UserFacingErrors
@@ -539,54 +527,31 @@ final class APIContractTests: XCTestCase {
             "Unknown error should give generic user-friendly message")
     }
 
-    // MARK: - AIBackend Properties
+    // MARK: - NovaAIBackend properties (replaces the old AIBackend enum)
 
-    func testAIBackendRawValues() {
-        XCTAssertEqual(AIBackend.ollama.rawValue, "Ollama")
-        XCTAssertEqual(AIBackend.mlx.rawValue, "MLX Toolkit")
-        XCTAssertEqual(AIBackend.tinyLLM.rawValue, "TinyLLM")
-        XCTAssertEqual(AIBackend.tinyChat.rawValue, "TinyChat")
-        XCTAssertEqual(AIBackend.openWebUI.rawValue, "OpenWebUI")
-        XCTAssertEqual(AIBackend.auto.rawValue, "Auto (Prefer Ollama)")
+    func testNovaAIBackendIDs() {
+        XCTAssertEqual(NovaAIBackend.ollama.displayName, "Ollama")
+        XCTAssertEqual(NovaAIBackend.auto.displayName, "Auto")
+        XCTAssertEqual(NovaAIBackend(legacyName: "MLX Toolkit"), .mlx)
+        XCTAssertEqual(NovaAIBackend(legacyName: "Auto (Prefer Ollama)"), .auto)
     }
 
-    func testAIBackendAllCasesCount() {
-        // ollama, mlx, tinyLLM, tinyChat, openWebUI, openRouter, novaGateway, auto
-        XCTAssertEqual(AIBackend.allCases.count, 8)
+    func testNovaAIBackendAllCasesCount() {
+        // auto, ollama, mlx, tinyLLM, tinyChat, openWebUI, novaGateway, openRouter, openAI
+        XCTAssertEqual(NovaAIBackend.allCases.count, 9)
     }
 
-    func testAIBackendIcons() {
-        for backend in AIBackend.allCases {
-            XCTAssertFalse(backend.icon.isEmpty,
-                "Backend \(backend.rawValue) should have an icon")
+    func testNovaAIBackendIconsAndSummaries() {
+        for backend in NovaAIBackend.allCases {
+            XCTAssertFalse(backend.symbolName.isEmpty, "Backend \(backend.rawValue) should have an icon")
+            XCTAssertFalse(backend.summary.isEmpty, "Backend \(backend.rawValue) should have a description")
         }
     }
 
-    func testAIBackendDescriptions() {
-        for backend in AIBackend.allCases {
-            XCTAssertFalse(backend.description.isEmpty,
-                "Backend \(backend.rawValue) should have a description")
-        }
-    }
-
-    func testAIBackendAttribution() {
-        // TinyLLM and TinyChat should have attribution
-        XCTAssertNotNil(AIBackend.tinyLLM.attribution)
-        XCTAssertNotNil(AIBackend.tinyChat.attribution)
-        XCTAssertNotNil(AIBackend.openWebUI.attribution)
-
-        // Ollama, MLX, auto should not
-        XCTAssertNil(AIBackend.ollama.attribution)
-        XCTAssertNil(AIBackend.mlx.attribution)
-        XCTAssertNil(AIBackend.auto.attribution)
-    }
-
-    func testAIBackendAttributionContainsURL() {
-        if let tinyLLMAttrib = AIBackend.tinyLLM.attribution {
-            XCTAssertTrue(tinyLLMAttrib.contains("github.com"))
-        }
-        if let tinyChatAttrib = AIBackend.tinyChat.attribution {
-            XCTAssertTrue(tinyChatAttrib.contains("github.com"))
-        }
+    func testOnlyCloudBackendsRequireKeys() {
+        XCTAssertTrue(NovaAIBackend.openRouter.requiresKey)
+        XCTAssertTrue(NovaAIBackend.openAI.requiresKey)
+        XCTAssertFalse(NovaAIBackend.ollama.requiresKey)
+        XCTAssertFalse(NovaAIBackend.mlx.requiresKey)
     }
 }

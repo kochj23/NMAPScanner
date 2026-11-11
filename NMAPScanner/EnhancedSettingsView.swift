@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import NovaAIKit
 
 struct EnhancedSettingsView: View {
     @StateObject private var scheduledScanManager = ScheduledScanManager.shared
@@ -59,6 +60,9 @@ struct EnhancedSettingsView: View {
                 SettingsTab(title: "Advanced", icon: "slider.horizontal.3", isSelected: selectedTab == 5) {
                     selectedTab = 5
                 }
+                SettingsTab(title: "AI", icon: "brain", isSelected: selectedTab == 6) {
+                    selectedTab = 6
+                }
             }
             .padding(.horizontal, 20)
 
@@ -80,6 +84,8 @@ struct EnhancedSettingsView: View {
                         GroupingSettings(groupingManager: groupingManager)
                     case 5:
                         AdvancedSettings()
+                    case 6:
+                        NovaAISettingsView(ai: AppAI.current, footer: AppAI.settingsFooter)
                     default:
                         EmptyView()
                     }
